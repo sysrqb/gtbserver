@@ -26,12 +26,12 @@ int authrequest(int sockfd, char *reqbufptr){
 	int retval;
 	
 	if(0 != strncmp("AUTH", reqbufptr, 5)){
-		fprintf(stderr, "Not AUTH");
+		fprintf(stderr, "Not AUTH\n");
 		return -3;
 	}
 	getclientinfo(sockfd, hash);
 	if((retval = checkhash(*hash)) < 1){
-		fprintf(stderr, "Authenication Failed");
+		fprintf(stderr, "Authenication Failed\n");
 		return retval;
 	}
 	
@@ -49,13 +49,18 @@ void getclientinfo(int sockfd, char *hash){
 	hash[numbytes] = '\0';
 }
 int numberofcars(int new_fd, char *reqbufptr){
+	char numofcars = '2';
+	int numbytes;
+	printf("Function: numberofcars\n");
 	if(0 != strncmp("CARS", reqbufptr, 5)){
-		fprintf(stderr, "Not CARS");
+		fprintf(stderr, "Not CARS\n");
 		return -3;
 	}
-	if(send(new_fd, "2", 3, 0) == -1){
-		fprintf(stderr, "Error on send");
+	printf("Sending packet\n");
+	if((numbytes = send(new_fd, &numofcars, sizeof numofcars, 0)) == -1){
+		fprintf(stderr, "Error on send\n");
 	}
+	printf("Number of bytes sent: %d\n", numbytes);
 	return 0;
 }
 	
@@ -162,7 +167,7 @@ int main(int argc, char *arv[]){
 		}
 
 		reqbuf[numbytes] = '\0';
-		printf("Received Transmission: %s", reqbuf);
+		printf("Received Transmission: %s\n", reqbuf);
 		if(!strncmp(reqbuf, "CARS", REQSIZE)){
 			printf("Type CAR, forking....\n");
 			if(!fork()){
@@ -170,6 +175,7 @@ int main(int argc, char *arv[]){
 				if(numberofcars(new_fd, reqbuf)){
 					numberofcars(new_fd, reqbuf);
 				}
+				printf("Done....returning to Listening state\n\n");
 				break;
 			}
 		}else
