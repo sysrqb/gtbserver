@@ -21,11 +21,46 @@ void *get_in_addr(struct sockaddr *sa){
 }
 
 
-int authrequest(int sockfs, char authbuf, int AUTHSIZE){
+int authrequest(int sockfd, char *reqbufptr){
+	char hash[AUTHSIZE];
+	int retval;
+	
+	if(0 != strncmp("AUTH", reqbufptr, 5)){
+		fprintf(stderr, "Not AUTH");
+		return -3;
+	}
+	getclientinfo(sockfd, hash);
+	if((retval = checkhash(*hash)) < 1){
+		fprintf(stderr, "Authenication Failed");
+		return retval;
+	}
 	
 
 	return 0;
 }
+
+void getclientinfo(int sockfd, char *hash){
+	int numbytes;
+	if((numbytes = recv(sockfd, hash, AUTHSIZE-1, 0)) == -1){
+		perror("reqrecv");
+		exit(1);
+	}
+
+	hash[numbytes] = '\0';
+}
+int numberofcars(int new_fd, char *reqbufptr){
+	if(0 != strncmp("CARS", reqbufptr, 5)){
+		fprintf(stderr, "Not CARS");
+		return -3;
+	}
+	if(send(new_fd, "2", 3, 0) == -1){
+		fprintf(stderr, "Error on send");
+	}
+	return 0;
+}
+	
+
+
 
 int main(int argc, char *arv[]){
 //FileDescriptors: sockfd (listen), new_fd (new connections)
@@ -47,6 +82,7 @@ int main(int argc, char *arv[]){
 	char reqbuf[REQSIZE];
 	char loginbuf[LOGINSIZE];
 //	char buf[MAXSIZE]
+	char s[INET6_ADDRSTRLEN];
 
 	memset(&hints, 0, sizeof hints);
 
@@ -73,7 +109,7 @@ int main(int argc, char *arv[]){
 		if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, //If unsuccessful in setting socket options
 				sizeof(int)) == -1){ //exit on error
 			perror("setsockopt");
-			error(1);
+			exit(1);
 		}
 
 		if(bind(sockfd, p->ai_addr, p->ai_addrlen) == -1){ //Assign a name to an addr
@@ -114,17 +150,35 @@ int main(int argc, char *arv[]){
 			perror("accept");
 			continue;
 		}
+		
+		inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s);
 
-		if((numbytes = recv(sockfd, reqbuf, REQSIZE-1, 0)) == -1){
-			perror("reqrecv");
-			exit(1);
+		printf("Accepting Connection from: %s\n", s);
+
+		if((numbytes = recv(new_fd, &reqbuf, REQSIZE-1, 0)) == -1){
+			fprintf(stderr, "Code reqrecv %s\n", strerror(errno));
+			perror("");
+			continue;
 		}
 
 		reqbuf[numbytes] = '\0';
+		printf("Received Transmission: %s", reqbuf);
+		if(!strncmp(reqbuf, "CARS", REQSIZE)){
+			printf("Type CAR, forking....\n");
+			if(!fork()){
+				printf("Forked, retreiving number of cars\n");
+				if(numberofcars(new_fd, reqbuf)){
+					numberofcars(new_fd, reqbuf);
+				}
+				break;
+			}
+		}else
 
 		if(!strncmp(reqbuf, "AUTH", REQSIZE)){
-			authrequest(sockfs, authbuf, AUTHSIZE);
-			break;
+			if(!fork()){
+				authrequest(sockfd, reqbuf);
+				break;
+			}
 		} else 
 		if(1){
 		}
