@@ -30,10 +30,10 @@ int authrequest(int sockfd, char *reqbufptr){
 		return -3;
 	}
 	getclientinfo(sockfd, hash);
-	if((retval = checkhash(*hash)) < 1){
+	/*if((retval = checkhash(*hash)) < 1){
 		fprintf(stderr, "Authenication Failed\n");
 		return retval;
-	}
+	}*/
 	
 
 	return 0;
@@ -41,13 +41,16 @@ int authrequest(int sockfd, char *reqbufptr){
 
 void getclientinfo(int sockfd, char *hash){
 	int numbytes;
+	printf("Get hash\n");
 	if((numbytes = recv(sockfd, hash, AUTHSIZE-1, 0)) == -1){
 		perror("reqrecv");
 		exit(1);
 	}
 
 	hash[numbytes] = '\0';
+	printf("Received Hash: %s\n", hash);
 }
+
 int numberofcars(int new_fd, char *reqbufptr){
 	char numofcars = 7;
 	int numbytes;
@@ -58,13 +61,23 @@ int numberofcars(int new_fd, char *reqbufptr){
 	}
 	printf("Sending packet\n");
 	if((numbytes = send(new_fd, &numofcars, sizeof numofcars, 0)) == -1){
-		fprintf(stderr, "Error on send\n");
+		fprintf(stderr, "Error on send for cars: %s\n", strerror(errno));
 	}
 	printf("Number of bytes sent: %d\n", numbytes);
 	return 0;
 }
-	
 
+int sendAOK(int new_fd){
+	char ok = 0;
+	int numofbytes;
+
+	if((numofbytes = send(new_fd, &ok, sizeof ok, 0)) == -1){
+		fprintf(stderr, "Error on send for OK: %s\n", strerror(errno));
+	}
+	printf("Number of bytes sent: %d\n", numofbytes);
+	
+	return numofbytes;
+}
 
 
 int main(int argc, char *arv[]){
@@ -181,8 +194,13 @@ int main(int argc, char *arv[]){
 		}else
 
 		if(!strncmp(reqbuf, "AUTH", REQSIZE)){
+			printf("Type AUTH, forking...\n");
 			if(!fork()){
-				authrequest(sockfd, reqbuf);
+				int authret;
+				printf("Forked, processing request\n");
+				if(!(authret = authrequest(new_fd, reqbuf))){
+					sendAOK(new_fd);
+				}
 				break;
 			}
 		} else 
