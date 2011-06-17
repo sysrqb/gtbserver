@@ -49,7 +49,7 @@ void getclientinfo(int sockfd, char *hash){
 	hash[numbytes] = '\0';
 }
 int numberofcars(int new_fd, char *reqbufptr){
-	char numofcars = '2';
+	char numofcars = 7;
 	int numbytes;
 	printf("Function: numberofcars\n");
 	if(0 != strncmp("CARS", reqbufptr, 5)){
