@@ -13,17 +13,20 @@
  *  is not valid and authorization fails
  */
 
-int checkhash(char * hashptr){
+int checkhash(char * ptr2hash){
 	int retval; //Used for error handling and for result set
 	MYSQL * myhandler; //Used to establish connection with MySQL server
 	MYSQL_STMT * mystmthdler; //Used with prepared statement
-	MYSQL_RES * myres; //Returned by result metadata
+	MYSQL_RES * myres = NULL; //Returned by result metadata
 	MYSQL_BIND bind[1]; //Binds hash to query
 	unsigned long length[1];
 	my_bool is_null[1];
 	my_bool error[1];
 	unsigned long num_rows;
+	char hashptr[HASH_LEN];
+	unsigned long hash_len;
 	
+	strncpy(hashptr, ptr2hash, sizeof ptr2hash);
 	if(DEBUG){
 		printf("Hash: %s\n", hashptr);
 		printf("mysql_init\n");
@@ -64,6 +67,12 @@ int checkhash(char * hashptr){
 		printf("mysql_stmt_result_metadata \n");
 	//Obtain resultset metadata
 	myres = mysql_stmt_result_metadata(mystmthdler);
+	if(DEBUG){
+		if(myres == NULL)
+			printf("myres is NULL\n");
+		else
+			printf("myres is not NULL\n");
+	}
 	
 	if(DEBUG)
 		printf("set bind struct values \n");
@@ -72,11 +81,15 @@ int checkhash(char * hashptr){
 	
 	//Fill out struct
 	bind[0].buffer_type = MYSQL_TYPE_STRING;
-	bind[0].buffer = hashptr;
-	bind[0].buffer_length = (long) sizeof(*hashptr);
+	bind[0].buffer = (char *)hashptr;
+	bind[0].buffer_length = HASH_LEN;
+	bind[0].length = &hash_len;
+
+	hash_len = strlen(hashptr); //set length of hashso mysql knows how many characters are in the string
 
 	if(DEBUG)
-		printf("check to make sure hash is present \n");
+		printf("check to make sure hash is present: %s \n", hashptr);
+		printf("Bound Hash: %s\n", bind[0].buffer);
 	//if hash is null, set is_null == true
 	if(!strncmp(hashptr, "", sizeof &hashptr)){
 		fprintf(stderr, "Hash Checking Error: Hash Present Check\n");
@@ -148,9 +161,12 @@ int checkhash(char * hashptr){
 		
 	if(DEBUG)
 		printf("mysql_stmt_fetch\n");
+		printf("num_rows = %lu \n", num_rows);
 	int rows = 0;
+	int fetchret = 0;
 	//Fetch the next row in the result set
-	while(!mysql_stmt_fetch(mystmthdler)){
+	while(!(fetchret = mysql_stmt_fetch(mystmthdler))){
+		printf("num_rows: %lu\t rows: %d\n", num_rows, rows);
 		if(++rows > num_rows){
 			//TODO Return invalid login
 			closeall(myhandler, mystmthdler, myres);
@@ -159,6 +175,11 @@ int checkhash(char * hashptr){
 	}
 
 	closeall(myhandler, mystmthdler, myres);
+	if(DEBUG){
+		printf("Car ID: %d\n", retval);
+		printf("Rows: %d\n", rows);
+		printf("fetret: %d\n", fetchret);
+	}
 	
 	return retval;
 }

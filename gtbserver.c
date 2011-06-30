@@ -201,6 +201,9 @@ int main(int argc, char *arv[]){
 				if(!(authret = authrequest(new_fd, reqbuf))){
 					sendAOK(new_fd);
 				}
+				else{
+					sendNopes(authret, new_fd);
+				}
 				break;
 			}
 		} else 
