@@ -24,6 +24,8 @@ int authrequest(int sockfd, char *reqbufptr);
 void getclientinfo(int sockfd, char *hash);
 int checkhash(char hash);
 int numberofcars(int new_fd, char *reqbufptr);
+int sendAOK(int new_fd);
+int sendNope(int retval, int new_fd);
 
 /*Return Values:
 -4: Error MySQL query prep

@@ -80,6 +80,17 @@ int sendAOK(int new_fd){
 }
 
 
+int sendNopes(int retval, int new_fd){
+	int numofbytes;
+
+	if((numofbytes = send(new_fd, &retval, sizeof retval, 0)) == -1){
+		fprintf(stderr, "Error on send for retval: %s\n", strerror(errno));
+	}
+	printf("Number of bytes sent: %d\n", numofbytes);
+	
+	return numofbytes;
+}
+
 int main(int argc, char *arv[]){
 //FileDescriptors: sockfd (listen), new_fd (new connections)
 	int sockfd, new_fd;
@@ -200,6 +211,7 @@ int main(int argc, char *arv[]){
 				printf("Forked, processing request\n");
 				if(!(authret = authrequest(new_fd, reqbuf))){
 					sendAOK(new_fd);
+					initDH(new_fd);
 				}
 				else{
 					sendNopes(authret, new_fd);
