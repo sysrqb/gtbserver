@@ -1,0 +1,13 @@
+confirm AUTH from tablet
+return assigned rides 
+Update rides (As necessary)
+
+Keys:
+AUTH
+CURR
+UPDT
+PAST
+
+On successful AUTH, update user's position to Ride-along, store IP Addr in DB
+On successful DHKE, store key in DB
+

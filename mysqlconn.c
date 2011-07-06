@@ -1,42 +1,15 @@
 #include "mysqlconn.h"
 
-/*Function: checkhash
+/*Function: mysqlinit
  * params:
- * hash: char*
- *
- * Establish connection with MySQL server
- * Query table for instance of ride-along with\
- *  specified hash
- * If query returns a result, then hash is valid\
- *  and authorization is given
- * If query does not return a result, then hash\
- *  is not valid and authorization fails
- */
+ * ret: int*
+ * myhandler: MYSQL*
+ * myssh: MYSQL_STMT*
+ * Establish connection with server and handlers
+*/
 
-int checkhash(char * ptr2hash){
-	int retval; //Used for error handling and for result set
-	MYSQL * myhandler; //Used to establish connection with MySQL server
-	MYSQL_STMT * mystmthdler; //Used with prepared statement
-	MYSQL_RES * myres = NULL; //Returned by result metadata
-	MYSQL_BIND bind[1]; //Binds hash to query
-	unsigned long length[1];
-	my_bool is_null[1];
-	my_bool error[1];
-	unsigned long num_rows;
-	char hashptr[HASH_LEN];
-	unsigned long hash_len;
-	
-	strncpy(hashptr, ptr2hash, sizeof ptr2hash);
-	if(DEBUG){
-		printf("Hash: %s\n", hashptr);
-		printf("mysql_init\n");
-	}
-	//Initiates MySQL handler; PARAM: NULL because myhandler is not allocated yet: SEGV
-	if((myhandler = mysql_init(NULL)) == NULL){
-		fprintf(stderr, "Init: Out of Memory:\n");
-		exit(1);
-	}
-
+MYSQL_STMT *mysqlinit(int *ret, MYSQL *myhandler, MYSQL_STMT *myssh){
+	MYSQL_STMT *mystmthdler = myssh;
 	if(DEBUG)
 		printf("mysql_real_connect\n");
 	//Establishes connection handler for communication with server
@@ -53,7 +26,86 @@ int checkhash(char * ptr2hash){
 		fprintf(stderr, "Hash Checking Error: MYSQL_STMT initg: %s\n", mysql_stmt_error(mystmthdler));
 		exit(1);
 	}
-		
+	*ret = 0;
+	return mystmthdler;
+}
+
+/*Function: mysqlbindexec
+ * params:
+ * ret: int*
+ * mystmthdler: MYSQL_STMT*
+ * bind: MYSQL_BIND*
+ * myres: MYSQL_RES*
+ *
+ * Bind and execute statement
+*/
+
+int mysqlbindexec(int *ret, MYSQL_STMT *mystmthdler, MYSQL_BIND bind[], MYSQL_RES *myres){
+	if(DEBUG)
+		printf("mysql_stmt_bind_param \n");
+	//Bind hash to STMT
+	if(mysql_stmt_bind_param(mystmthdler, bind)){
+		fprintf(stderr, "Hash Checking Error: Binding: %s\n", mysql_stmt_error(mystmthdler));
+		*ret = -4;
+	}
+
+	if(DEBUG)
+		printf("mysql_num_fields\n");
+	//Retrieve the number of columns returned in result set
+	if(mysql_num_fields(myres) != 1){
+		fprintf(stderr, "Hash Checking Error: Returned Fields: %s\n", mysql_stmt_error(mystmthdler));
+		*ret = -4;
+	}
+  
+	if(DEBUG)
+		printf("mysq_stmt_execute\n");
+	//Execute query
+	if(mysql_stmt_execute(mystmthdler)){
+		fprintf(stderr, "Hash Checking Error: Executing: %s\n", mysql_stmt_error(mystmthdler));
+		*ret = -4;
+	}
+	return 0;
+}
+
+/*Function: checkhash
+ * params:
+ * hash: char*
+ *
+ * Establish connection with MySQL server
+ * Query table for instance of ride-along with\
+ *  specified hash
+ * If query returns a result, then hash is valid\
+ *  and authorization is given
+ * If query does not return a result, then hash\
+ *  is not valid and authorization fails
+ */
+
+int checkhash(char hashptr[]){
+	int retval; //Used for error handling and for result set
+	MYSQL * myhandler; //Used to establish connection with MySQL server
+	MYSQL_STMT * mystmthdler; //Used with prepared statement
+	MYSQL_RES * myres = NULL; //Returned by result metadata
+	MYSQL_BIND bind[1]; //Binds hash to query
+	unsigned long length[1];
+	my_bool is_null[1];
+	my_bool error[1];
+	unsigned long num_rows;
+	unsigned long hash_len;
+	int *ret =&retval;
+	
+	if(DEBUG){
+		printf("Hash: %s\n", hashptr);
+		printf("mysql_init\n");
+	}
+	//Initiates MySQL handler; PARAM: NULL because myhandler is not allocated yet: SEGV
+	if((myhandler = mysql_init(NULL)) == NULL){
+		fprintf(stderr, "Init: Out of Memory:\n");
+		exit(1);
+	}
+
+	mystmthdler = mysqlinit(ret, myhandler, mystmthdler);
+	if(*ret < 0)
+		return *ret;
 
 	if(DEBUG)
 		printf("mysql_stmt_prepare\n");
@@ -100,29 +152,9 @@ int checkhash(char * ptr2hash){
 		bind[0].is_null = (my_bool *)0;
 	}
 	
-	if(DEBUG)
-		printf("mysql_stmt_bind_param \n");
-	//Bind hash to STMT
-	if(mysql_stmt_bind_param(mystmthdler, bind)){
-		fprintf(stderr, "Hash Checking Error: Binding: %s\n", mysql_stmt_error(mystmthdler));
-		return -4;
-	}
-
-	if(DEBUG)
-		printf("mysql_num_fields\n");
-	//Retrieve the number of columns returned in result set
-	if(mysql_num_fields(myres) != 1){
-		fprintf(stderr, "Hash Checking Error: Returned Fields: %s\n", mysql_stmt_error(mystmthdler));
-		return -4;
-	}
-  
-	if(DEBUG)
-		printf("mysq_stmt_execute\n");
-	//Execute query
-	if(mysql_stmt_execute(mystmthdler)){
-		fprintf(stderr, "Hash Checking Error: Executing: %s\n", mysql_stmt_error(mystmthdler));
-		return -4;
-	}
+	mysqlbindexec(ret, mystmthdler, bind, myres);
+	if(*ret < 0)
+		return *ret;
 
 	if(DEBUG)
 		printf("reset bind struct values\n");
