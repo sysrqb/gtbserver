@@ -1,16 +1,28 @@
 #include "gtbserver.h"
 
-/*function sigchld_handler
+/*
+ *
+ *
+ * function sigchld_handler
+ *
  *SIGCHLD handler: wait for all dead (zombie) processes
+ *
+ *
 */
 
 void sigchld_handler(int s){
 	while(waitpid(-1, NULL, WNOHANG) > 0);
 }
 
-/*function *get_in_addr
+/*
+ *
+ *
+ * function *get_in_addr
+ *
  *get_in_addr:
- *Get Internet Address returns the IP address of the client
+ * Get Internet Address returns the IP address of the client
+ *
+ *
 */
 
 void *get_in_addr(struct sockaddr *sa){
@@ -19,6 +31,13 @@ void *get_in_addr(struct sockaddr *sa){
 	}
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
+/******
+ *
+ *
+ * int authrequest()
+ *
+ *
+*/ 
 
 
 int authrequest(int sockfd, char *reqbufptr){
@@ -38,6 +57,14 @@ int authrequest(int sockfd, char *reqbufptr){
 
 	return 0;
 }
+/******
+ *
+ *
+ * void getclientinfo()
+ *
+ *
+*/ 
+
 
 void getclientinfo(int sockfd, char *hash){
 	int numbytes;
@@ -50,68 +77,25 @@ void getclientinfo(int sockfd, char *hash){
 	hash[numbytes] = '\0';
 	printf("Received Hash: %s\n", hash);
 }
-
-int numberofcars(int new_fd, char *reqbufptr){
-	char numofcars = 7;
-	int numbytes;
-	printf("Function: numberofcars\n");
-	if(0 != strncmp("CARS", reqbufptr, 5)){
-		fprintf(stderr, "Not CARS\n");
-		return -3;
-	}
-	printf("Sending packet\n");
-	if((numbytes = send(new_fd, &numofcars, sizeof numofcars, 0)) == -1){
-		fprintf(stderr, "Error on send for cars: %s\n", strerror(errno));
-	}
-	printf("Number of bytes sent: %d\n", numbytes);
-	return 0;
-}
-
-int sendAOK(int new_fd){
-	char ok = 0;
-	int numofbytes;
-
-	if((numofbytes = send(new_fd, &ok, sizeof ok, 0)) == -1){
-		fprintf(stderr, "Error on send for OK: %s\n", strerror(errno));
-	}
-	printf("Number of bytes sent: %d\n", numofbytes);
-	
-	return numofbytes;
-}
+/******
+ *
+ *
+ * int getsocket()
+ *
+ *
+*/ 
 
 
-int sendNopes(int retval, int new_fd){
-	int numofbytes;
-
-	if((numofbytes = send(new_fd, &retval, sizeof retval, 0)) == -1){
-		fprintf(stderr, "Error on send for retval: %s\n", strerror(errno));
-	}
-	printf("Number of bytes sent: %d\n", numofbytes);
-	
-	return numofbytes;
-}
-
-int main(int argc, char *arv[]){
+int get_socket(){
 //FileDescriptors: sockfd (listen), new_fd (new connections)
 	int sockfd, new_fd;
 
 //STRUCTS
 //addrinfo: hints (used to retrieve addr), servinfo (used to store retrieved addr), p (iterator)
 	struct addrinfo hints, *servinfo, *p;
-//sockaddr_storage: their_addr (IP Address of the requestor)
-	struct sockaddr_storage their_addr;
-//sigaction: sa (used to make sys call to change action taken on receipt of a certain sig)
-	struct sigaction sa;
 
-//socklen_t: sin_size (set size of socket)
-	socklen_t sin_size;
 //int rv: return value; i: iterator; yes: optval set in setsockopt
-	int rv, i = 0, yes = 1, numbytes;
-//char buf: buffer to hold incoming connection requests
-	char reqbuf[REQSIZE];
-	char loginbuf[LOGINSIZE];
-//	char buf[MAXSIZE]
-	char s[INET6_ADDRSTRLEN];
+	int rv, i = 0, yes = 1;
 
 	memset(&hints, 0, sizeof hints);
 
@@ -152,10 +136,41 @@ int main(int argc, char *arv[]){
 
 	if(p == NULL){
 		fprintf(stderr, "server: Failed to bind for unknown reason\n Iterated through loop %d times\n", i);
+		freeaddrinfo(servinfo); //no longer need this struct
 		return 2;
 	}
 
-	freeaddrinfo(servinfo); //no longer need this struct
+	if(servinfo)
+		freeaddrinfo(servinfo); //no longer need this struct
+	return sockfd;
+}
+/******
+ *
+ *
+ * int main()
+ *
+ *
+*/ 
+
+int main(int argc, char *arv[]){
+//FileDescriptors: sockfd (listen), new_fd (new connections)
+	int sockfd, new_fd;
+//STRUCTS
+//sigaction: sa (used to make sys call to change action taken on receipt of a certain sig)
+	struct sigaction sa;
+//sockaddr_storage: their_addr (IP Address of the requestor)
+	struct sockaddr_storage their_addr;
+//socklen_t: sin_size (set size of socket)
+	socklen_t sin_size;
+//	char buf[MAXSIZE]
+//char: s (stores the IP Addr of the incoming connection so it can be diplayed)
+	char s[INET6_ADDRSTRLEN];
+//char: reqbuf (request key)
+	char reqbuf[REQSIZE];
+//int: numbytes (received)
+	int numbytes;
+	
+	sockfd = get_socket();
 
 	if (listen(sockfd, BACKLOG) == -1){ //marks socket as passive, so it accepts incoming connections
 		perror("listen: failed to mark as passive");
@@ -169,6 +184,8 @@ int main(int argc, char *arv[]){
 		perror("sigaction");
 		exit(1);
 	}
+
+	gnutls_global_init(); //Initialize gnutls
 
 	printf("server: waiting for connection\n");
 
@@ -211,7 +228,7 @@ int main(int argc, char *arv[]){
 				printf("Forked, processing request\n");
 				if(!(authret = authrequest(new_fd, reqbuf))){
 					sendAOK(new_fd);
-					initDH(new_fd);
+					movekey(new_fd);
 				}
 				else{
 					sendNopes(authret, new_fd);
@@ -219,6 +236,22 @@ int main(int argc, char *arv[]){
 				break;
 			}
 		} else 
+
+		if(!strncmp(reqbuf, "DHKE", REQSIZE)){
+			printf("Type DHKE, forking...\n");
+			if(!fork()){
+				int authret;
+				printf("Forked, processing request\n");
+				if(!(authret = dhkerequest(new_fd, reqbuf))){
+					sendAOK(new_fd);
+				}
+				else{
+					sendNopes(authret, new_fd);
+				}
+				break;
+			}
+		} else
+	
 		if(1){
 		}
 

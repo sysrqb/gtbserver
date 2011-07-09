@@ -1,16 +1,14 @@
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <netdb.h>
-#include <errno.h>
 #include <arpa/inet.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
 #include "mysqlconn.h"
+#include "comm.h"
 
 #define PORT "4680"
 #define BACKLOG 1
@@ -22,10 +20,7 @@ void sigchld_handler(int s);
 void *get_in_addr(struct sockaddr *sa);
 int authrequest(int sockfd, char *reqbufptr);
 void getclientinfo(int sockfd, char *hash);
-int checkhash(char hash);
-int numberofcars(int new_fd, char *reqbufptr);
-int sendAOK(int new_fd);
-int sendNope(int retval, int new_fd);
+
 
 /*Return Values:
 -4: Error MySQL query prep

@@ -1,5 +1,5 @@
-#include "mysqlconn.h"
 #include <openssl/sha.h>
+#include "mysqlconn.h"
 
 void initDB();
 int clearActTable();

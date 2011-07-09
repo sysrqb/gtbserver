@@ -2,8 +2,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <errno.h>
 #include "cred.h"
-#include "setDB.h"
 
 #define STMT	"SELECT car FROM activeusers WHERE nightlyhash = ?"
 //#define STMT	"SELECT nightlyhash FROM activeusers"
@@ -15,3 +17,4 @@ int execauth(char hash);
 void closeall(MYSQL * mysql, MYSQL_STMT * stmt, MYSQL_RES * result);
 MYSQL_STMT *mysqlinit(int *ret, MYSQL *myhandler, MYSQL_STMT *myssh);
 int mysqlbindexec(int *ret, MYSQL_STMT *mystmthdler, MYSQL_BIND bind[], MYSQL_RES *myres);
+int movekey(int new_fd);
