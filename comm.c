@@ -7,7 +7,7 @@ dhkerequest(int new_fd, char *reqbufptr){
 }
 
 int 
-sendAOK(int new_fd){
+sendAOK(int new_fd, gnutls_session_t session){
 	char ok = 0;
 	int numofbytes;
 
@@ -20,7 +20,7 @@ sendAOK(int new_fd){
 }
 
 int 
-sendNopes(int retval, int new_fd){
+sendNopes(int retval, int new_fd, gnutls_session_t session){
 	int numofbytes;
 
 	if((numofbytes = send(new_fd, &retval, sizeof retval, 0)) == -1){
@@ -49,7 +49,7 @@ numberofcars(int new_fd, char *reqbufptr){
 }
 
 int 
-movekey(int new_fd){
+movekey(int new_fd, gnutls_session_t session){
 	//TODO
 	return 0;
 }

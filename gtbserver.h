@@ -34,17 +34,20 @@
 
 //CA, CERT, and CRL files
 #define KEYFILE "pem/key.pem"
-#define CAFILE "cacrt.pem"
+#define CAFILE "pem/cacrt.pem"
 #define CRLFILE "pem/cacrl.pem"
 #define CERTFILE "pem/crt.pem"
 
+//Insert session into temp DB
+#define TEMPSESHSTMT "INSERT INTO tempconnection\
+  (ipaddr, sessionkey, sessiondata) values (?, ?, ?)"
 
 void sigchld_handler (int s);
 void *get_in_addr (struct sockaddr *sa);
 int authrequest (int sockfd, char *reqbufptr);
 void getclientinfo (int sockfd, char *hash);
 int get_socket ();
-int dealwithreq (char * reqbuf, int new_fd);
+int dealwithreq (char * reqbuf, int new_fd, gnutls_session_t session);
 static gnutls_session_t init_tls_session 
                         (gnutls_priority_t * priority_cache,
                          gnutls_certificate_credentials_t * x509_cred);

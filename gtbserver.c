@@ -1,5 +1,8 @@
 #include "gtbserver.h"
 
+//Global
+char ipaddr[INET6_ADDRSTRLEN];
+
 /*
  *
  *
@@ -151,45 +154,45 @@ get_socket(){
 }
 
 int 
-dealwithreq (char * reqbuf, int new_fd){
+dealwithreq (char * reqbuf, int new_fd, gnutls_session_t session){
   if(!strncmp(reqbuf, "CARS", REQSIZE)){
     printf("Type CAR, forking....\n");
     if(!fork()){
     printf("Forked, retreiving number of cars\n");
-    if(numberofcars(new_fd, reqbuf)){
-      numberofcars(new_fd, reqbuf);
+    if(numberofcars (new_fd, reqbuf)){
+      numberofcars (new_fd, reqbuf);
     }
     printf("Done....returning to Listening state\n\n");
     return 0;
     }
   }else
 
-  if(!strncmp(reqbuf, "AUTH", REQSIZE)){
-    printf("Type AUTH, forking...\n");
-    if(!fork()){
+  if(!strncmp (reqbuf, "AUTH", REQSIZE)){
+    printf ("Type AUTH, forking...\n");
+    if(!fork ()){
       int authret;
-      printf("Forked, processing request\n");
-      if(!(authret = authrequest(new_fd, reqbuf))){
-        sendAOK(new_fd);
-        movekey(new_fd);
+      printf ("Forked, processing request\n");
+      if(!(authret = authrequest (new_fd, reqbuf))){
+        sendAOK (new_fd, session);
+        movekey(new_fd, session);
       }
       else{
-        sendNopes(authret, new_fd);
+        sendNopes(authret, new_fd, session);
       }
       return 0;
     }
   } else 
 
-  if(!strncmp(reqbuf, "DHKE", REQSIZE)){
+  if(!strncmp (reqbuf, "DHKE", REQSIZE)){
     printf("Type DHKE, forking...\n");
     if(!fork()){
     int authret;
     printf("Forked, processing request\n");
-      if(!(authret = dhkerequest(new_fd, reqbuf))){
-        sendAOK(new_fd);
+      if(!(authret = dhkerequest (new_fd, reqbuf))){
+        sendAOK(new_fd, session);
       }
       else{
-        sendNopes(authret, new_fd);
+        sendNopes(authret, new_fd, session);
       }
       return 0;
     }
@@ -274,7 +277,9 @@ load_cert_files (gnutls_certificate_credentials_t * x509_cred,
   if ((retval = gnutls_certificate_set_x509_trust_file (*x509_cred, CAFILE, GNUTLS_X509_FMT_PEM))){
     //TODO
     fprintf(stderr, "gnutls_certificate_set_x509_trust_file error code: %d\n", retval);
+    fprintf(stderr, "gnutls_certificate_set_x509_trust_file error code: %s\n", strerror(retval));
   }
+  printf("retval %d\n", retval);
   stdprintf("load_cert_files: load CSL\n");
   if((retval = gnutls_certificate_set_x509_crl_file (*x509_cred, CRLFILE, 
                                         GNUTLS_X509_FMT_PEM)) < 1){
@@ -306,6 +311,151 @@ stdprintf(char * s){
     printf("%s", s);
   return 0;
 }
+
+int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data){
+  int retval; //Used for error handling and for result set
+  MYSQL * myhandler; //Used to establish connection with MySQL server
+  MYSQL_STMT * mystmthdler; //Used with prepared statement
+  MYSQL_RES * myres = NULL; //Returned by result metadata
+  MYSQL_BIND bind[3]; //Binds hash to query
+  unsigned long length[3];
+  my_bool is_null[3];
+  my_bool error[3];
+  unsigned long num_rows;
+  unsigned long bind_len[3];
+  int *ret =&retval;
+
+  if(DEBUG){
+    printf("mysql_init\n");
+  }
+  //Initiates MySQL handler; PARAM: NULL because myhandler is not allocated yet: SEGV
+  if((myhandler = mysql_init(NULL)) == NULL){
+    fprintf(stderr, "Init: Out of Memory:\n");
+    exit(1);
+  }
+
+  mystmthdler = mysqlinit(ret, myhandler, mystmthdler);
+  if(*ret < 0)
+    return *ret;
+
+  if(DEBUG)
+    printf("mysql_stmt_prepare\n");
+  //Prepare the provided statement TEMPSESJSTMT for execution by binding it to the handler
+  if(mysql_stmt_prepare(mystmthdler, TEMPSESHSTMT, strlen(TEMPSESHSTMT))){
+    fprintf(stderr, "TempDB Checking Error: Preparing: %s\n", mysql_stmt_error(mystmthdler));
+    exit(1);
+  }
+
+  if(DEBUG)
+    printf("mysql_stmt_result_metadata \n");
+  //Obtain resultset metadata
+  myres = mysql_stmt_result_metadata(mystmthdler);
+  if(DEBUG){
+    if(myres == NULL)
+      printf("myres is NULL\n");
+    else
+      printf("myres is not NULL\n");
+  }
+
+  if(DEBUG)
+    printf("set bind struct values \n");
+  //Zero-out handler
+  memset(bind, 0, sizeof(bind));
+	
+  //Fill out struct
+  bind[0].buffer_type = MYSQL_TYPE_STRING;
+  bind[0].buffer = (char *)ipaddr;
+  bind[0].buffer_length = INET6_ADDRSTRLEN;
+  bind[0].length = &bind_len[0];
+  bind[1].buffer_type = MYSQL_TYPE_BLOB;
+  bind[1].buffer = (char *)&(key.data);
+  bind[1].buffer_length = HASH_LEN;
+  bind[1].length = &bind_len[1];
+  bind[2].buffer_type = MYSQL_TYPE_BLOB;
+  bind[2].buffer = (char *)&(data.data);
+  bind[2].buffer_length = HASH_LEN;
+  bind[2].length = &bind_len[2];
+
+  bind_len[0] = strlen(ipaddr); //set length of hashso mysql knows how many characters are in the string
+  bind_len[1] = key.size;
+  bind_len[2] = data.size;
+
+  if(DEBUG)
+    printf("Bound Hash: %s\n", bind[0].buffer);
+  //if hash is null, set is_null == true
+  if(!strncmp(ipaddr, "", sizeof &ipaddr)){
+    fprintf(stderr, "Hash Checking Error: Hash Present Check\n");
+    closeall(myhandler, mystmthdler, myres);
+    return -1; //No hash
+  }
+  else{
+    bind[0].is_null = (my_bool *)0;
+  }
+	
+  mysqlbindexec(ret, mystmthdler, bind, myres);
+  if(*ret < 0)
+    return *ret;
+
+  if(DEBUG)
+    printf("reset bind struct values\n");
+  //Bind result set
+  memset(bind, 0, sizeof(bind));
+  bind[0].buffer_type = MYSQL_TYPE_LONG;
+  bind[0].buffer = (char *)&retval;
+  bind[0].length = &length[0];
+  bind[0].is_null = &is_null[0];
+  bind[0].error = &error[0];
+  if(DEBUG)
+    printf("mysql_stmt_bind_result\n");
+  //Bind result set to retrieve the returned rows
+  if(mysql_stmt_bind_result(mystmthdler, bind)){
+    fprintf(stderr, "Hash Checking Error: Binding Results: %s\n", mysql_stmt_error(mystmthdler));
+    return -4;
+  }
+
+  if(DEBUG)
+    printf("mysql_stmt_store_result\n");
+  //Buffer all results
+  if(mysql_stmt_store_result(mystmthdler)){
+    fprintf(stderr, "Hash Checking Error: Binding Results: %s\n", mysql_stmt_error(mystmthdler));
+    return -4;
+  }
+
+  if(DEBUG)
+    printf("mysql_stmt_num_rows\n");
+  //Check the number of rows returned from query
+
+  // If >1, fail authentication
+  if((num_rows = mysql_stmt_num_rows(mystmthdler)) > 1){
+    closeall(myhandler, mystmthdler, myres);
+    return -2; //Multiple results returned...should not be possible
+  }
+		
+  if(DEBUG)
+    printf("mysql_stmt_fetch\n");
+  printf("num_rows = %lu \n", num_rows);
+  int rows = 0;
+  int fetchret = 0;
+  //Fetch the next row in the result set
+  while(!(fetchret = mysql_stmt_fetch(mystmthdler))){
+    printf("num_rows: %lu\t rows: %d\n", num_rows, rows);
+    if(++rows > num_rows){
+      //TODO Return invalid login
+      closeall(myhandler, mystmthdler, myres);
+      return -2;
+    }
+  }
+
+  closeall(myhandler, mystmthdler, myres);
+  if(DEBUG){
+    printf("Car ID: %d\n", retval);
+    printf("Rows: %d\n", rows);
+    printf("fetret: %d\n", fetchret);
+  }
+	
+  return retval;
+}
+
 
 /******
  *
@@ -378,6 +528,7 @@ main(int argc, char *arv[]){
     inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s);
 
     printf("Accepting Connection from: %s\n", s);
+    strncpy(ipaddr, s, INET6_ADDRSTRLEN);
 
     stdprintf("Start TLS Session\n");
     gnutls_transport_set_ptr (session, (gnutls_transport_ptr_t) new_fd);
@@ -390,7 +541,10 @@ main(int argc, char *arv[]){
       continue;
     }
 
-    if((numbytes = recv(new_fd, &reqbuf, REQSIZE-1, 0)) == -1){
+    printf("Receiving request");
+
+    if((numbytes = gnutls_record_recv (session, &reqbuf, REQSIZE-1)) < 0){
+    //if((numbytes = recv(new_fd, &reqbuf, REQSIZE-1, 0)) == -1){
       fprintf(stderr, "Code reqrecv %s\n", strerror(errno));
       perror("");
       continue;
@@ -399,7 +553,7 @@ main(int argc, char *arv[]){
     reqbuf[numbytes] = '\0';
     printf("Received Transmission: %s\n", reqbuf);
 
-    if(!dealwithreq(reqbuf, new_fd))
+    if(!dealwithreq(reqbuf, new_fd, session))
       continue;
 		
 

@@ -110,7 +110,7 @@ int checkhash(char hashptr[]){
 	if(DEBUG)
 		printf("mysql_stmt_prepare\n");
 	//Prepare the provided statement STMT for execution by binding it to the handler
-	if(mysql_stmt_prepare(mystmthdler, STMT, strlen(STMT))){
+	if(mysql_stmt_prepare(mystmthdler, HASHSTMT, strlen(HASHSTMT))){
 		fprintf(stderr, "Hash Checking Error: Preparing: %s\n", mysql_stmt_error(mystmthdler));
 		exit(1);
 	}
