@@ -1,0 +1,14 @@
+message Patron {
+  optional string name = 1;
+  optional uint32 passangers = 2;
+  optional string pickup = 3;
+  optional string dropoff = 4;
+  optional string phone = 5;
+  optional string status = 6;
+  optional string notes = 7;
+  optional string timetaken = 8;
+  optional string timeassigned = 9;
+  optional string timedone = 10;
+  optional int32 pid = 11;
+}
+

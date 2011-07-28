@@ -273,7 +273,7 @@ load_cert_files (gnutls_certificate_credentials_t * x509_cred,
   if ((retval = gnutls_certificate_allocate_credentials (&x509_crd))){
     //TODO
   }
-  stdprintf("load_cert_files: load cert trust file\n");
+/*  stdprintf("load_cert_files: load cert trust file\n");
   if ((retval = gnutls_certificate_set_x509_trust_file (*x509_cred, CAFILE, GNUTLS_X509_FMT_PEM))){
     //TODO
     fprintf(stderr, "gnutls_certificate_set_x509_trust_file error code: %d\n", retval);
@@ -294,7 +294,7 @@ load_cert_files (gnutls_certificate_credentials_t * x509_cred,
   if((retval = gnutls_priority_init (priority_cache, GNUTLS_PRIORITY, NULL))){
     //TODO
     fprintf(stderr, "gnutls_priority_init error code");
-  }
+  }*/
   /*if (**err_pos){
     fprintf(stderr, "gnutls_priority_init error code %d", **err_pos);
   }*/
@@ -324,32 +324,19 @@ int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data)
   unsigned long num_rows;
   unsigned long bind_len[3];
   int *ret =&retval;
+  header *stmthder;
 
-  if(DEBUG){
-    printf("mysql_init\n");
-  }
-  //Initiates MySQL handler; PARAM: NULL because myhandler is not allocated yet: SEGV
-  if((myhandler = mysql_init(NULL)) == NULL){
-    fprintf(stderr, "Init: Out of Memory:\n");
-    exit(1);
-  }
-
-  mystmthdler = mysqlinit(ret, myhandler, mystmthdler);
-  if(*ret < 0)
-    return *ret;
-
-  if(DEBUG)
-    printf("mysql_stmt_prepare\n");
-  //Prepare the provided statement TEMPSESJSTMT for execution by binding it to the handler
-  if(mysql_stmt_prepare(mystmthdler, TEMPSESHSTMT, strlen(TEMPSESHSTMT))){
-    fprintf(stderr, "TempDB Checking Error: Preparing: %s\n", mysql_stmt_error(mystmthdler));
-    exit(1);
+  stmthder = (header *) malloc (sizeof(header));
+	
+  if ((retval = mysqlheader (stmthder))) {
+    fprintf(stderr, "mysqlheader returned %d\n", retval);
+    return retval;
   }
 
   if(DEBUG)
     printf("mysql_stmt_result_metadata \n");
   //Obtain resultset metadata
-  myres = mysql_stmt_result_metadata(mystmthdler);
+  myres = mysql_stmt_result_metadata(stmthder->mystmthdler);
   if(DEBUG){
     if(myres == NULL)
       printf("myres is NULL\n");
@@ -385,7 +372,7 @@ int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data)
   //if hash is null, set is_null == true
   if(!strncmp(ipaddr, "", sizeof &ipaddr)){
     fprintf(stderr, "Hash Checking Error: Hash Present Check\n");
-    closeall(myhandler, mystmthdler, myres);
+    closeall(myhandler, mystmthdler, myres, stmthder);
     return -1; //No hash
   }
   else{
@@ -427,7 +414,7 @@ int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data)
 
   // If >1, fail authentication
   if((num_rows = mysql_stmt_num_rows(mystmthdler)) > 1){
-    closeall(myhandler, mystmthdler, myres);
+    closeall(myhandler, mystmthdler, myres, stmthder);
     return -2; //Multiple results returned...should not be possible
   }
 		
@@ -441,12 +428,12 @@ int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data)
     printf("num_rows: %lu\t rows: %d\n", num_rows, rows);
     if(++rows > num_rows){
       //TODO Return invalid login
-      closeall(myhandler, mystmthdler, myres);
+      closeall(myhandler, mystmthdler, myres, stmthder);
       return -2;
     }
   }
 
-  closeall(myhandler, mystmthdler, myres);
+  closeall(myhandler, mystmthdler, myres, stmthder);
   if(DEBUG){
     printf("Car ID: %d\n", retval);
     printf("Rows: %d\n", rows);

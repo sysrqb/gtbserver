@@ -7,13 +7,22 @@
 #include <errno.h>
 #include "cred.h"
 
-#define HASHSTMT	"SELECT car FROM activeusers WHERE nightlyhash = ?"
+#define HASHSTMT  "SELECT car FROM activeusers WHERE nightlyhash = ?"
 //#define STMT	"SELECT nightlyhash FROM activeusers"
 #define DEBUG 1
-#define HASH_LEN	8
+#define HASH_LEN  8
+#ifndef MYINIT
+#define MYINIT
+typedef struct myinit{
+  int retval;
+  MYSQL *myhandler;
+  MYSQL_STMT *mystmthdler;
+} header;
+#endif
 
 int checkhash(char * ptr2hash);
 int execauth(char hash);
-void closeall(MYSQL * mysql, MYSQL_STMT * stmt, MYSQL_RES * result);
+void closeall(MYSQL * mysql, MYSQL_STMT * stmt, MYSQL_RES * result, header *stmthder);
 MYSQL_STMT *mysqlinit(int *ret, MYSQL *myhandler, MYSQL_STMT *myssh);
+int mysqlheader (header *stmthder);
 int mysqlbindexec(int *ret, MYSQL_STMT *mystmthdler, MYSQL_BIND bind[], MYSQL_RES *myres);

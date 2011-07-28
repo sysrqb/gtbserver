@@ -1,5 +1,6 @@
 #include "mysqlconn.h"
 #include <gnutls/gnutls.h>
+#include "patron.pb-c.h"
 
 int sendAOK(int new_fd, gnutls_session_t session);
 int sendNopes(int retval, int new_fd, gnutls_session_t session);
