@@ -9,30 +9,32 @@ dhkerequest(int new_fd, char *reqbufptr){
 int 
 sendAOK(int new_fd, gnutls_session_t session){
 	char ok = 0;
-	int numofbytes;
+	int numbytes;
 
-	if((numofbytes = send(new_fd, &ok, sizeof ok, 0)) == -1){
+	//if((numofbytes = send(new_fd, &ok, sizeof ok, 0)) == -1){
+	if((numbytes = gnutls_record_send (session, &ok, sizeof ok)) == -1){
 		fprintf(stderr, "Error on send for OK: %s\n", strerror(errno));
 	}
-	printf("Number of bytes sent: %d\n", numofbytes);
+	printf("Number of bytes sent: %d\n", numbytes);
 	
-	return numofbytes;
+	return numbytes;
 }
 
 int 
 sendNopes(int retval, int new_fd, gnutls_session_t session){
-	int numofbytes;
+	int numbytes;
 
-	if((numofbytes = send(new_fd, &retval, sizeof retval, 0)) == -1){
+	//if((numofbytes = send(new_fd, &retval, sizeof retval, 0)) == -1){
+	if ((numbytes = gnutls_record_send (session, &retval, sizeof retval)) == -1){
 		fprintf(stderr, "Error on send for retval: %s\n", strerror(errno));
 	}
-	printf("Number of bytes sent: %d\n", numofbytes);
+	printf("Number of bytes sent: %d\n", numbytes);
 	
-	return numofbytes;
+	return numbytes;
 }
 
 int 
-numberofcars(int new_fd, char *reqbufptr){
+numberofcars(gnutls_session_t session, int new_fd, char *reqbufptr){
 	char numofcars = 7;
 	int numbytes;
 	printf("Function: numberofcars\n");
@@ -41,7 +43,8 @@ numberofcars(int new_fd, char *reqbufptr){
 		return -3;
 	}
 	printf("Sending packet\n");
-	if((numbytes = send(new_fd, &numofcars, sizeof numofcars, 0)) == -1){
+	//if((numbytes = send(new_fd, &numofcars, sizeof numofcars, 0)) == -1){
+	if ((numbytes = gnutls_record_send (session, &numofcars, sizeof numofcars)) == -1){
 		fprintf(stderr, "Error on send for cars: %s\n", strerror(errno));
 	}
 	printf("Number of bytes sent: %d\n", numbytes);
@@ -53,3 +56,5 @@ movekey(int new_fd, gnutls_session_t session){
 	//TODO
 	return 0;
 }
+
+

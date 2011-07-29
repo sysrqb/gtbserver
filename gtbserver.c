@@ -159,8 +159,8 @@ dealwithreq (char * reqbuf, int new_fd, gnutls_session_t session){
     printf("Type CAR, forking....\n");
     if(!fork()){
     printf("Forked, retreiving number of cars\n");
-    if(numberofcars (new_fd, reqbuf)){
-      numberofcars (new_fd, reqbuf);
+    if(numberofcars (session, new_fd, reqbuf)){
+      numberofcars (session, new_fd, reqbuf);
     }
     printf("Done....returning to Listening state\n\n");
     return 0;
@@ -372,7 +372,7 @@ int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data)
   //if hash is null, set is_null == true
   if(!strncmp(ipaddr, "", sizeof &ipaddr)){
     fprintf(stderr, "Hash Checking Error: Hash Present Check\n");
-    closeall(myhandler, mystmthdler, myres, stmthder);
+    closeall(myres, stmthder);
     return -1; //No hash
   }
   else{
@@ -414,7 +414,7 @@ int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data)
 
   // If >1, fail authentication
   if((num_rows = mysql_stmt_num_rows(mystmthdler)) > 1){
-    closeall(myhandler, mystmthdler, myres, stmthder);
+    closeall(myres, stmthder);
     return -2; //Multiple results returned...should not be possible
   }
 		
@@ -428,12 +428,12 @@ int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data)
     printf("num_rows: %lu\t rows: %d\n", num_rows, rows);
     if(++rows > num_rows){
       //TODO Return invalid login
-      closeall(myhandler, mystmthdler, myres, stmthder);
+      closeall(myres, stmthder);
       return -2;
     }
   }
 
-  closeall(myhandler, mystmthdler, myres, stmthder);
+  closeall(myres, stmthder);
   if(DEBUG){
     printf("Car ID: %d\n", retval);
     printf("Rows: %d\n", rows);
@@ -474,6 +474,7 @@ main(int argc, char *arv[]){
   gnutls_priority_t priority_cache;
   gnutls_certificate_credentials_t * x509_cred;
   gnutls_session_t session;
+  //gnutls_certificate_server_set_request (session, GNUTLS_CERT_REQUIRE); //UNCOMMENT
   static gnutls_dh_params_t dh_params;
 	
   sockfd = get_socket();
@@ -503,6 +504,7 @@ main(int argc, char *arv[]){
   while(1){
     stdprintf("Initialize TLS Session\n");
     session = init_tls_session(&priority_cache, x509_cred);
+    gnutls_certificate_send_x509_rdn_sequence (session, 1); //REMOVE IN ORDER TO COMPLETE CERT EXCHANGE
 
     stdprintf("Accepting Connection\n");
     new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);

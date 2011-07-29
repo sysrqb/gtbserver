@@ -9,6 +9,7 @@ PROTOBUF_C_BEGIN_DECLS
 
 
 typedef struct _Patron Patron;
+typedef struct _PatroList PatroList;
 
 
 /* --- enums --- */
@@ -38,6 +39,17 @@ struct  _Patron
     , NULL, 0,0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0,0 }
 
 
+struct  _PatroList
+{
+  ProtobufCMessage base;
+  size_t n_patron;
+  Patron **patron;
+};
+#define PATRO_LIST__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&patro_list__descriptor) \
+    , 0,NULL }
+
+
 /* Patron methods */
 void   patron__init
                      (Patron         *message);
@@ -57,10 +69,32 @@ Patron *
 void   patron__free_unpacked
                      (Patron *message,
                       ProtobufCAllocator *allocator);
+/* PatroList methods */
+void   patro_list__init
+                     (PatroList         *message);
+size_t patro_list__get_packed_size
+                     (const PatroList   *message);
+size_t patro_list__pack
+                     (const PatroList   *message,
+                      uint8_t             *out);
+size_t patro_list__pack_to_buffer
+                     (const PatroList   *message,
+                      ProtobufCBuffer     *buffer);
+PatroList *
+       patro_list__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   patro_list__free_unpacked
+                     (PatroList *message,
+                      ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
 typedef void (*Patron_Closure)
                  (const Patron *message,
+                  void *closure_data);
+typedef void (*PatroList_Closure)
+                 (const PatroList *message,
                   void *closure_data);
 
 /* --- services --- */
@@ -69,6 +103,7 @@ typedef void (*Patron_Closure)
 /* --- descriptors --- */
 
 extern const ProtobufCMessageDescriptor patron__descriptor;
+extern const ProtobufCMessageDescriptor patro_list__descriptor;
 
 PROTOBUF_C_END_DECLS
 

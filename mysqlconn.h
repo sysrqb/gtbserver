@@ -22,7 +22,7 @@ typedef struct myinit{
 
 int checkhash(char * ptr2hash);
 int execauth(char hash);
-void closeall(MYSQL * mysql, MYSQL_STMT * stmt, MYSQL_RES * result, header *stmthder);
+int closeall(MYSQL_RES * result, header *stmthder);
 MYSQL_STMT *mysqlinit(int *ret, MYSQL *myhandler, MYSQL_STMT *myssh);
 int mysqlheader (header *stmthder);
 int mysqlbindexec(int *ret, MYSQL_STMT *mystmthdler, MYSQL_BIND bind[], MYSQL_RES *myres);

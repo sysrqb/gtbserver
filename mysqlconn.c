@@ -83,9 +83,9 @@ int mysqlbindexec(int *ret, MYSQL_STMT *mystmthdler, MYSQL_BIND bind[], MYSQL_RE
  */
 
 int checkhash(char hashptr[]){
-  int retval; //Used for error handling and for result set
-  MYSQL * myhandler; //Used to establish connection with MySQL server
-  MYSQL_STMT * mystmthdler; //Used with prepared statement
+  //int retval; //Used for error handling and for result set
+  //MYSQL * myhandler; //Used to establish connection with MySQL server
+  //MYSQL_STMT * mystmthdler; //Used with prepared statement
   MYSQL_RES * myres = NULL; //Returned by result metadata
   MYSQL_BIND bind[1]; //Binds hash to query
   unsigned long length[1];
@@ -93,22 +93,22 @@ int checkhash(char hashptr[]){
   my_bool error[1];
   unsigned long num_rows;
   unsigned long hash_len;
-  int *ret =&retval;
+  //int *ret =&retval;
   header *stmthder;
 
   stmthder = (header *) malloc (sizeof(header));
 	
   if(DEBUG)
     printf("Hash: %s\n", hashptr);
-  if ((retval = mysqlheader (stmthder))) {
-    fprintf(stderr, "mysqlheader returned %d\n", retval);
-    return retval;
+  if ((stmthder->retval = mysqlheader (stmthder))) {
+    fprintf(stderr, "mysqlheader returned %d\n", stmthder->retval);
+    return closeall (myres, stmthder);
   }
 
   if(DEBUG)
     printf("mysql_stmt_result_metadata \n");
 //Obtain resultset metadata
-  myres = mysql_stmt_result_metadata(mystmthdler);
+  myres = mysql_stmt_result_metadata(stmthder->mystmthdler);
   if(DEBUG){
     if(myres == NULL)
       printf("myres is NULL\n");
@@ -135,23 +135,23 @@ int checkhash(char hashptr[]){
 //if hash is null, set is_null == true
   if(!strncmp(hashptr, "", sizeof &hashptr)){
     fprintf(stderr, "Hash Checking Error: Hash Present Check\n");
-    closeall(myhandler, mystmthdler, myres, stmthder);
+    closeall(myres, stmthder);
     return -1; //No hash
   }
   else{
     bind[0].is_null = (my_bool *)0;
   }
 	
-  mysqlbindexec(ret, mystmthdler, bind, myres);
-  if(*ret < 0)
-    return *ret;
+  mysqlbindexec(&(stmthder->retval), stmthder->mystmthdler, bind, myres);
+  if(stmthder->retval < 0)
+    return closeall(myres, stmthder);
 
   if(DEBUG)
     printf("reset bind struct values\n");
 //Bind result set
   memset(bind, 0, sizeof(bind));
   bind[0].buffer_type = MYSQL_TYPE_LONG;
-  bind[0].buffer = (char *)&retval;
+  bind[0].buffer = (char *)&(stmthder->retval);
   bind[0].length = &length[0];
   bind[0].is_null = &is_null[0];
   bind[0].error = &error[0];
@@ -159,16 +159,18 @@ int checkhash(char hashptr[]){
   if(DEBUG)
     printf("mysql_stmt_bind_result\n");
 //Bind result set to retrieve the returned rows
-  if(mysql_stmt_bind_result(mystmthdler, bind)){
-    fprintf(stderr, "Hash Checking Error: Binding Results: %s\n", mysql_stmt_error(mystmthdler));
+  if(mysql_stmt_bind_result(stmthder->mystmthdler, bind)){
+    fprintf(stderr, "Hash Checking Error: Binding Results: %s\n", mysql_stmt_error(stmthder->mystmthdler));
+    closeall(myres, stmthder);
     return -4;
   }
 
   if(DEBUG)
     printf("mysql_stmt_store_result\n");
 //Buffer all results
-  if(mysql_stmt_store_result(mystmthdler)){
-    fprintf(stderr, "Hash Checking Error: Binding Results: %s\n", mysql_stmt_error(mystmthdler));
+  if(mysql_stmt_store_result(stmthder->mystmthdler)){
+    fprintf(stderr, "Hash Checking Error: Binding Results: %s\n", mysql_stmt_error(stmthder->mystmthdler));
+    closeall(myres, stmthder);
     return -4;
   }
 
@@ -176,8 +178,8 @@ int checkhash(char hashptr[]){
     printf("mysql_stmt_num_rows\n");
 //Check the number of rows returned from query
 // If >1, fail authentication
-  if((num_rows = mysql_stmt_num_rows(mystmthdler)) > 1){
-    closeall(myhandler, mystmthdler, myres, stmthder);
+  if((num_rows = mysql_stmt_num_rows(stmthder->mystmthdler)) > 1){
+    closeall(myres, stmthder);
     return -2; //Multiple results returned...should not be possible
   }
 		
@@ -187,23 +189,23 @@ int checkhash(char hashptr[]){
   int rows = 0;
   int fetchret = 0;
 //Fetch the next row in the result set
-  while(!(fetchret = mysql_stmt_fetch(mystmthdler))){
+  while(!(fetchret = mysql_stmt_fetch(stmthder->mystmthdler))){
     printf("num_rows: %lu\t rows: %d\n", num_rows, rows);
     if(++rows > num_rows){
 //TODO Return invalid login
-      closeall(myhandler, mystmthdler, myres, stmthder);
+      closeall(myres, stmthder);
       return -2;
     }
   }
 
-  closeall(myhandler, mystmthdler, myres, stmthder);
+  closeall(myres, stmthder);
   if(DEBUG){
-    printf("Car ID: %d\n", retval);
+    printf("Car ID: %d\n", stmthder->retval);
     printf("Rows: %d\n", rows);
     printf("fetret: %d\n", fetchret);
   }
 	
-  return retval;
+  return closeall(myres, stmthder);
 }
 
 int mysqlheader (header *stmthder){
@@ -230,14 +232,16 @@ int mysqlheader (header *stmthder){
   return 0;
 }
 
-void closeall(MYSQL * mysql, MYSQL_STMT * stmt, MYSQL_RES * result, header *stmthder){
-	mysql_free_result(result);
-	if(mysql_stmt_close(stmt)){
-		fprintf(stderr, "Hash Checking Error: Closing statement: %s\n", mysql_stmt_error(stmt));
-		exit(1);
-	}
-		
-	mysql_close(mysql);
-	mysql_library_end();
-	free (stmthder);
+int closeall(MYSQL_RES * result, header *stmthder){
+  int ret = stmthder->retval;
+  mysql_free_result(result); 
+  if(mysql_stmt_close(stmthder->mystmthdler)){
+    fprintf(stderr, "Hash Checking Error: Closing statement: %s\n", mysql_stmt_error(stmthder->mystmthdler));
+    exit(1);
+  }
+	
+  mysql_close(stmthder->myhandler);
+  mysql_library_end();
+  free (stmthder);
+  return ret;
 }

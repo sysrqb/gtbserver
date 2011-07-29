@@ -49,6 +49,49 @@ void   patron__free_unpacked
   PROTOBUF_C_ASSERT (message->base.descriptor == &patron__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
+void   patro_list__init
+                     (PatroList         *message)
+{
+  static PatroList init_value = PATRO_LIST__INIT;
+  *message = init_value;
+}
+size_t patro_list__get_packed_size
+                     (const PatroList *message)
+{
+  PROTOBUF_C_ASSERT (message->base.descriptor == &patro_list__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t patro_list__pack
+                     (const PatroList *message,
+                      uint8_t       *out)
+{
+  PROTOBUF_C_ASSERT (message->base.descriptor == &patro_list__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t patro_list__pack_to_buffer
+                     (const PatroList *message,
+                      ProtobufCBuffer *buffer)
+{
+  PROTOBUF_C_ASSERT (message->base.descriptor == &patro_list__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+PatroList *
+       patro_list__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (PatroList *)
+     protobuf_c_message_unpack (&patro_list__descriptor,
+                                allocator, len, data);
+}
+void   patro_list__free_unpacked
+                     (PatroList *message,
+                      ProtobufCAllocator *allocator)
+{
+  PROTOBUF_C_ASSERT (message->base.descriptor == &patro_list__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
 static const ProtobufCFieldDescriptor patron__field_descriptors[11] =
 {
   {
@@ -215,5 +258,43 @@ const ProtobufCMessageDescriptor patron__descriptor =
   patron__field_indices_by_name,
   1,  patron__number_ranges,
   (ProtobufCMessageInit) patron__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor patro_list__field_descriptors[1] =
+{
+  {
+    "patron",
+    1,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    PROTOBUF_C_OFFSETOF(PatroList, n_patron),
+    PROTOBUF_C_OFFSETOF(PatroList, patron),
+    &patron__descriptor,
+    NULL,
+    0,            /* packed */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned patro_list__field_indices_by_name[] = {
+  0,   /* field[0] = patron */
+};
+static const ProtobufCIntRange patro_list__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 1 }
+};
+const ProtobufCMessageDescriptor patro_list__descriptor =
+{
+  PROTOBUF_C_MESSAGE_DESCRIPTOR_MAGIC,
+  "PatroList",
+  "PatroList",
+  "PatroList",
+  "",
+  sizeof(PatroList),
+  1,
+  patro_list__field_descriptors,
+  patro_list__field_indices_by_name,
+  1,  patro_list__number_ranges,
+  (ProtobufCMessageInit) patro_list__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
