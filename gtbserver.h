@@ -58,6 +58,11 @@ void load_cert_files (gnutls_certificate_credentials_t * x509_cred,
 		 gnutls_dh_params_t * dh_params);
 static int generate_dh_params (gnutls_dh_params_t * dh_params);
 int stdprintf (char * s);
+int 
+listening_for_client (int sockfd, 
+  gnutls_priority_t * priority_cache,
+  gnutls_certificate_credentials_t * x509_cred,
+  gnutls_session_t session);
 
 
 /*Return Values:

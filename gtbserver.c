@@ -14,7 +14,8 @@ char ipaddr[INET6_ADDRSTRLEN];
 */
 
 void 
-sigchld_handler (int s){
+sigchld_handler (int s)
+{
   while(waitpid(-1, NULL, WNOHANG) > 0);
 }
 
@@ -30,8 +31,10 @@ sigchld_handler (int s){
 */
 
 void *
-get_in_addr(struct sockaddr *sa){
-  if(sa->sa_family == AF_INET){
+get_in_addr(struct sockaddr *sa)
+{
+  if(sa->sa_family == AF_INET)
+  {
     return &(((struct sockaddr_in*)sa)->sin_addr);
   }
   return &(((struct sockaddr_in6*)sa)->sin6_addr);
@@ -46,11 +49,13 @@ get_in_addr(struct sockaddr *sa){
 
 
 int 
-authrequest (int sockfd, char *reqbufptr){
+authrequest (int sockfd, char *reqbufptr)
+{
   char hash[AUTHSIZE];
   int retval;
 	
-  if(0 != strncmp("AUTH", reqbufptr, 5)){
+  if(0 != strncmp("AUTH", reqbufptr, 5))
+  {
     fprintf(stderr, "Not AUTH\n");
     return -3;
   }
@@ -73,10 +78,12 @@ authrequest (int sockfd, char *reqbufptr){
 
 
 void 
-getclientinfo (int sockfd, char *hash){
+getclientinfo (int sockfd, char *hash)
+{
   int numbytes;
   printf("Get hash\n");
-  if((numbytes = recv(sockfd, hash, AUTHSIZE-1, 0)) == -1){
+  if((numbytes = recv(sockfd, hash, AUTHSIZE-1, 0)) == -1)
+  {
     perror("reqrecv");
     exit(1);
   }
@@ -94,7 +101,8 @@ getclientinfo (int sockfd, char *hash){
 
 
 int 
-get_socket(){
+get_socket()
+{
 //FileDescriptors: sockfd (listen), new_fd (new connections)
   int sockfd, new_fd;
 
@@ -113,27 +121,32 @@ get_socket(){
   hints.ai_flags = AI_PASSIVE; //uses extern local IP
 
 //Retrieve addr and socket
-  if((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0){
+  if((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0)
+  {
     fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
     return 1;
   }
 
 //Iterate through servinfo and bind to the first available
-  for(p = servinfo; p != NULL; p = p->ai_next){
+  for(p = servinfo; p != NULL; p = p->ai_next)
+  {
     i++;
     if ((sockfd = socket(p->ai_family, p->ai_socktype, //If socket is unseccessful in creating an
-      p->ai_protocol)) == -1) { //endpoint, e.g. filedescriptor, then it returns -1,
+      p->ai_protocol)) == -1) 
+    { //endpoint, e.g. filedescriptor, then it returns -1,
       perror("server: socket"); //so continue to the next addr
       continue;
     }
 
     if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, //If unsuccessful in setting socket options
-      sizeof(int)) == -1){ //exit on error
+      sizeof(int)) == -1)
+    { //exit on error
       perror("setsockopt");
       exit(1);
     }
 
-    if(bind(sockfd, p->ai_addr, p->ai_addrlen) == -1){ //Assign a name to an addr
+    if(bind(sockfd, p->ai_addr, p->ai_addrlen) == -1)
+    { //Assign a name to an addr
     close(sockfd);	//If unsuccessful, print error and check next
     perror("server: bind");
     continue;
@@ -142,7 +155,8 @@ get_socket(){
     break; //if successful, exit loop
   }
 
-  if(p == NULL){
+  if(p == NULL)
+  {
     fprintf(stderr, "server: Failed to bind for unknown reason\n Iterated through loop %d times\n", i);
     freeaddrinfo(servinfo); //no longer need this struct
     return 2;
@@ -154,47 +168,63 @@ get_socket(){
 }
 
 int 
-dealwithreq (char * reqbuf, int new_fd, gnutls_session_t session){
-  if(!strncmp(reqbuf, "CARS", REQSIZE)){
+dealwithreq (char * reqbuf, int new_fd, gnutls_session_t session)
+{
+  if(!strncmp(reqbuf, "CARS", REQSIZE))
+  {
     printf("Type CAR, forking....\n");
-    if(!fork()){
-    printf("Forked, retreiving number of cars\n");
-    if(numberofcars (session, new_fd, reqbuf)){
-      numberofcars (session, new_fd, reqbuf);
-    }
-    printf("Done....returning to Listening state\n\n");
-    return 0;
-    }
-  }else
-
-  if(!strncmp (reqbuf, "AUTH", REQSIZE)){
-    printf ("Type AUTH, forking...\n");
-    if(!fork ()){
-      int authret;
-      printf ("Forked, processing request\n");
-      if(!(authret = authrequest (new_fd, reqbuf))){
-        sendAOK (new_fd, session);
-        movekey(new_fd, session);
+    if(!fork())
+    {
+      printf("Forked, retreiving number of cars\n");
+      if(numberofcars (session, new_fd, reqbuf))
+      {
+        numberofcars (session, new_fd, reqbuf);
       }
-      else{
-        sendNopes(authret, new_fd, session);
-      }
+      printf("Done....returning to Listening state\n\n");
       return 0;
     }
-  } else 
-
-  if(!strncmp (reqbuf, "DHKE", REQSIZE)){
-    printf("Type DHKE, forking...\n");
-    if(!fork()){
-    int authret;
-    printf("Forked, processing request\n");
-      if(!(authret = dhkerequest (new_fd, reqbuf))){
-        sendAOK(new_fd, session);
+  }
+  else
+  {
+    if(!strncmp (reqbuf, "AUTH", REQSIZE))
+    {
+      printf ("Type AUTH, forking...\n");
+      if(!fork ())
+      {
+        int authret;
+        printf ("Forked, processing request\n");
+        if(!(authret = authrequest (new_fd, reqbuf)))
+	{
+          sendAOK (new_fd, session);
+          movekey(new_fd, session);
+        }
+        else
+        {
+          sendNopes(authret, new_fd, session);
+        }
+        return 0;
       }
-      else{
-        sendNopes(authret, new_fd, session);
+    } 
+    else
+    {
+      if(!strncmp (reqbuf, "DHKE", REQSIZE))
+      {
+        printf("Type DHKE, forking...\n");
+        if(!fork())
+	{
+          int authret;
+          printf("Forked, processing request\n");
+          if(!(authret = dhkerequest (new_fd, reqbuf)))
+	  {
+            sendAOK(new_fd, session);
+          }
+          else
+	  {
+            sendNopes(authret, new_fd, session);
+          }
+          return 0;
+        }
       }
-      return 0;
     }
   }
   return 0;
@@ -208,25 +238,29 @@ dealwithreq (char * reqbuf, int new_fd, gnutls_session_t session){
  *
  8*****/
 
- static gnutls_session_t
- init_tls_session (gnutls_priority_t * priority_cache,
-                   gnutls_certificate_credentials_t * x509_cred){
+static gnutls_session_t
+init_tls_session (gnutls_priority_t * priority_cache,
+                   gnutls_certificate_credentials_t * x509_cred)
+{
 
   gnutls_session_t session;
   int retval;
  //Initialize session
-  if ((retval = gnutls_init (&session, GNUTLS_SERVER))){
+  if ((retval = gnutls_init (&session, GNUTLS_SERVER)))
+  {
     fprintf(stderr, "gnutls_init error code: %d", retval);
     exit(1);
   }
  //Sets priority of session, i.e. specifies which crypto algos to use
-  if ((retval = gnutls_priority_set (session, *priority_cache))) {
+  if ((retval = gnutls_priority_set (session, *priority_cache))) 
+  {
     fprintf(stderr, "gnutls_priority_set error code: %d", retval);
     exit(1);
   }
     
  //Sets the needed credentials for the specified type; an x509 cert, in this case
-  if ((retval = gnutls_credentials_set (session, GNUTLS_CRD_CERTIFICATE, *x509_cred))) {
+  if ((retval = gnutls_credentials_set (session, GNUTLS_CRD_CERTIFICATE, *x509_cred))) 
+  {
     fprintf(stderr, "gnutls_credentials_set error code:  %d", retval);
     exit (1);
   }
@@ -246,7 +280,8 @@ dealwithreq (char * reqbuf, int new_fd, gnutls_session_t session){
  *****/
 
 static int
-generate_dh_params (gnutls_dh_params_t * dh_params){
+generate_dh_params (gnutls_dh_params_t * dh_params)
+{
   gnutls_dh_params_init(dh_params);
   gnutls_dh_params_generate2(*dh_params, DH_BITS);
 
@@ -269,12 +304,14 @@ load_cert_files (gnutls_certificate_credentials_t * x509_cred,
   int retval;
 
   stdprintf("load_cert_files: allocate creds\n");
-  if ((retval = gnutls_certificate_allocate_credentials (x509_cred))){
+  if ((retval = gnutls_certificate_allocate_credentials (x509_cred)))
+  {
     //TODO
     stdprintf("load_cert_files: gnutls_certificate_allocate_credentials: false\n");
   }
   stdprintf("load_cert_files: load cert trust file\n");
-  if ((retval = gnutls_certificate_set_x509_trust_file (*x509_cred, CAFILE, GNUTLS_X509_FMT_PEM))){
+  if ((retval = gnutls_certificate_set_x509_trust_file (*x509_cred, CAFILE, GNUTLS_X509_FMT_PEM)))
+  {
     //TODO
     if ( retval > 0 )
       printf("gnutls_certificate_set_x509_trust_file: certs loaded: %d\n", retval);
@@ -283,7 +320,8 @@ load_cert_files (gnutls_certificate_credentials_t * x509_cred,
   }
   stdprintf("load_cert_files: load CSL\n");
   if((retval = gnutls_certificate_set_x509_crl_file (*x509_cred, CRLFILE, 
-                                        GNUTLS_X509_FMT_PEM)) < 1){
+                                        GNUTLS_X509_FMT_PEM)) < 1)
+  {
     //TODO
     fprintf(stderr, "gnutls_certificate_set_x509_crl_file error code: %d\n", retval);
   }
@@ -292,7 +330,8 @@ load_cert_files (gnutls_certificate_credentials_t * x509_cred,
   generate_dh_params (dh_params);
   stdprintf("load_cert_files: priority init\n");
   //Set gnutls priority string
-  if((retval = gnutls_priority_init (priority_cache, GNUTLS_PRIORITY, NULL))){
+  if((retval = gnutls_priority_init (priority_cache, GNUTLS_PRIORITY, NULL)))
+  {
     //TODO
     fprintf(stderr, "gnutls_priority_init error code");
   }
@@ -306,13 +345,15 @@ load_cert_files (gnutls_certificate_credentials_t * x509_cred,
 }
 
 int
-stdprintf(char * s){
+stdprintf(char * s)
+{
   if (DEBUG)
     printf("%s", s);
   return 0;
 }
 
-int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data){
+int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data)
+{
   int retval; //Used for error handling and for result set
   MYSQL * myhandler; //Used to establish connection with MySQL server
   MYSQL_STMT * mystmthdler; //Used with prepared statement
@@ -328,7 +369,8 @@ int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data)
 
   stmthder = (header *) malloc (sizeof(header));
 	
-  if ((retval = mysqlheader (stmthder))) {
+  if ((retval = mysqlheader (stmthder))) 
+  {
     fprintf(stderr, "mysqlheader returned %d\n", retval);
     return retval;
   }
@@ -370,12 +412,14 @@ int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data)
   if(DEBUG)
     printf("Bound Hash: %s\n", bind[0].buffer);
   //if hash is null, set is_null == true
-  if(!strncmp(ipaddr, "", sizeof &ipaddr)){
+  if(!strncmp(ipaddr, "", sizeof &ipaddr))
+  {
     fprintf(stderr, "Hash Checking Error: Hash Present Check\n");
     closeall(myres, stmthder);
     return -1; //No hash
   }
-  else{
+  else
+  {
     bind[0].is_null = (my_bool *)0;
   }
 	
@@ -395,7 +439,8 @@ int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data)
   if(DEBUG)
     printf("mysql_stmt_bind_result\n");
   //Bind result set to retrieve the returned rows
-  if(mysql_stmt_bind_result(mystmthdler, bind)){
+  if(mysql_stmt_bind_result(mystmthdler, bind))
+  {
     fprintf(stderr, "Hash Checking Error: Binding Results: %s\n", mysql_stmt_error(mystmthdler));
     return -4;
   }
@@ -403,7 +448,8 @@ int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data)
   if(DEBUG)
     printf("mysql_stmt_store_result\n");
   //Buffer all results
-  if(mysql_stmt_store_result(mystmthdler)){
+  if(mysql_stmt_store_result(mystmthdler))
+  {
     fprintf(stderr, "Hash Checking Error: Binding Results: %s\n", mysql_stmt_error(mystmthdler));
     return -4;
   }
@@ -413,7 +459,8 @@ int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data)
   //Check the number of rows returned from query
 
   // If >1, fail authentication
-  if((num_rows = mysql_stmt_num_rows(mystmthdler)) > 1){
+  if((num_rows = mysql_stmt_num_rows(mystmthdler)) > 1)
+  {
     closeall(myres, stmthder);
     return -2; //Multiple results returned...should not be possible
   }
@@ -424,9 +471,11 @@ int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data)
   int rows = 0;
   int fetchret = 0;
   //Fetch the next row in the result set
-  while(!(fetchret = mysql_stmt_fetch(mystmthdler))){
+  while(!(fetchret = mysql_stmt_fetch(mystmthdler)))
+  {
     printf("num_rows: %lu\t rows: %d\n", num_rows, rows);
-    if(++rows > num_rows){
+    if(++rows > num_rows)
+    {
       //TODO Return invalid login
       closeall(myres, stmthder);
       return -2;
@@ -434,7 +483,8 @@ int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data)
   }
 
   closeall(myres, stmthder);
-  if(DEBUG){
+  if(DEBUG)
+  {
     printf("Car ID: %d\n", retval);
     printf("Rows: %d\n", rows);
     printf("fetret: %d\n", fetchret);
@@ -444,21 +494,13 @@ int storetempconnections (void * param, gnutls_datum_t key, gnutls_datum_t data)
 }
 
 
-/******
- *
- *
- * int main()
- *
- *
-*******/ 
-
 int 
-main(int argc, char *arv[]){
-//FileDescriptors: sockfd (listen), new_fd (new connections)
-  int sockfd, new_fd;
-//STRUCTS
-//sigaction: sa (used to make sys call to change action taken on receipt of a certain sig)
-  struct sigaction sa;
+listening_for_client (int sockfd, 
+  gnutls_priority_t * priority_cache,
+  gnutls_certificate_credentials_t * x509_cred,
+  gnutls_session_t session)
+{
+  int new_fd;
 //sockaddr_storage: their_addr (IP Address of the requestor)
   struct sockaddr_storage their_addr;
 //socklen_t: sin_size (set size of socket)
@@ -470,41 +512,10 @@ main(int argc, char *arv[]){
   char reqbuf[REQSIZE], buf[8193];
 //int: numbytes (received)
   int numbytes;
-//GNUTLS settings
-  gnutls_priority_t * priority_cache;
-  gnutls_certificate_credentials_t * x509_cred;
-  gnutls_session_t session;
-  static gnutls_dh_params_t dh_params;
-	
-  sockfd = get_socket();
-
-  stdprintf("Establish Incoming Connections\n");
-  if (listen(sockfd, BACKLOG) == -1){ //marks socket as passive, so it accepts incoming connections
-    perror("listen: failed to mark as passive");
-    exit(1);
-  }
-
-  sa.sa_handler = sigchld_handler;
-  sigemptyset(&sa.sa_mask);
-  sa.sa_flags = SA_RESTART;
-  if(sigaction(SIGCHLD, &sa, NULL) == -1){
-    perror("sigaction");
-    exit(1);
-  }
-  
-  stdprintf("Initialize gnutls\n");
-  //Initialize gnutls
-  if( gnutls_global_init() ) stdprintf("gnutls_global_init: Failed to intialize\n");
-
-
-  x509_cred = malloc(sizeof x509_cred);
-  priority_cache = malloc(sizeof priority_cache);
-  load_cert_files (x509_cred, priority_cache, &dh_params);
-  
-  printf("server: waiting for connection\n");
 
   sin_size = sizeof their_addr;
-  while(1){
+  while(1)
+  {
     stdprintf("Initialize TLS Session\n");
     session = init_tls_session(priority_cache, x509_cred);
     gnutls_certificate_server_set_request (session, GNUTLS_CERT_REQUIRE); //Require client to provide cert
@@ -513,7 +524,8 @@ main(int argc, char *arv[]){
     stdprintf("Accepting Connection\n");
     new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
     printf("accept new_fd: %d\n", new_fd);
-    if (new_fd == -1){
+    if (new_fd == -1)
+    {
       perror("accept");
       continue;
     }
@@ -526,7 +538,8 @@ main(int argc, char *arv[]){
     stdprintf("Start TLS Session\n");
     gnutls_transport_set_ptr (session, (gnutls_transport_ptr_t) new_fd);
     int retval;
-    if ((retval = gnutls_handshake (session))){
+    if ((retval = gnutls_handshake (session)))
+    {
       fprintf(stderr, "Failed to perform handshake, error code : %s\n", gnutls_strerror(retval));
       fprintf(stderr, "Closing connection...\n");
       close(new_fd);
@@ -536,7 +549,8 @@ main(int argc, char *arv[]){
 
     printf("Receiving request");
 
-    if((numbytes = gnutls_record_recv (session, &reqbuf, REQSIZE-1)) < 0){
+    if((numbytes = gnutls_record_recv (session, &reqbuf, REQSIZE-1)) < 0)
+    {
     //if((numbytes = recv(new_fd, &reqbuf, REQSIZE-1, 0)) == -1){
       fprintf(stderr, "Code reqrecv %s\n", strerror(errno));
       perror("");
@@ -552,6 +566,62 @@ main(int argc, char *arv[]){
 
     close(new_fd);
   }
+}
 
-  return 0;
+/******
+ *
+ *
+ * int main()
+ *
+ *
+*******/ 
+
+int 
+main(int argc, char *arv[])
+{
+//FileDescriptors: sockfd (listen), new_fd (new connections)
+  int sockfd;
+//STRUCTS
+//sigaction: sa (used to make sys call to change action taken on receipt of a certain sig)
+  struct sigaction sa;
+//GNUTLS settings
+  gnutls_priority_t * priority_cache;
+  gnutls_certificate_credentials_t * x509_cred;
+  gnutls_session_t session;
+  static gnutls_dh_params_t dh_params;
+	
+  sockfd = get_socket();
+
+  stdprintf("Establish Incoming Connections\n");
+  if (listen(sockfd, BACKLOG) == -1)
+  { //marks socket as passive, so it accepts incoming connections
+    perror("listen: failed to mark as passive");
+    exit(1);
+  }
+
+  sa.sa_handler = sigchld_handler;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = SA_RESTART;
+  if(sigaction(SIGCHLD, &sa, NULL) == -1)
+  {
+    perror("sigaction");
+    exit(1);
+  }
+  
+  stdprintf("Initialize gnutls\n");
+  //Initialize gnutls
+  if( gnutls_global_init() ) stdprintf("gnutls_global_init: Failed to intialize\n");
+
+
+  x509_cred = malloc(sizeof x509_cred);
+  priority_cache = malloc(sizeof priority_cache);
+  load_cert_files (x509_cred, priority_cache, &dh_params);
+  
+  printf("server: waiting for connection\n");
+
+  return listening_for_client 
+            (sockfd, 
+             priority_cache,
+             x509_cred,
+             session);
 }
