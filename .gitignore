@@ -1,0 +1,8 @@
+*.o
+gtb
+DOC
+*.sh
+cred.h
+pem/
+proto/
+test*

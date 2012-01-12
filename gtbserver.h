@@ -35,6 +35,7 @@
 //CA, CERT, and CRL files
 #define KEYFILE "pem/key.pem"
 #define CAFILE "pem/cacrt.pem"
+//#define CAFILE "/etc/ssl/certs/Thawte_Premium_Server_CA.pem"
 #define CRLFILE "pem/cacrl.pem"
 #define CERTFILE "pem/crt.pem"
 
@@ -52,8 +53,7 @@ static gnutls_session_t init_tls_session
                         (gnutls_priority_t * priority_cache,
                          gnutls_certificate_credentials_t * x509_cred);
 static int gen_dh_params (gnutls_dh_params_t * dh_params);
-gnutls_certificate_credentials_t 
-*load_cert_files (gnutls_certificate_credentials_t * x509_cred,
+void load_cert_files (gnutls_certificate_credentials_t * x509_cred,
                  gnutls_priority_t * priority_cache,
 		 gnutls_dh_params_t * dh_params);
 static int generate_dh_params (gnutls_dh_params_t * dh_params);

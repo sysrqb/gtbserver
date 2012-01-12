@@ -260,26 +260,27 @@ generate_dh_params (gnutls_dh_params_t * dh_params){
  *
  * ****/
 
-gnutls_certificate_credentials_t *
+void
 load_cert_files (gnutls_certificate_credentials_t * x509_cred,
                  gnutls_priority_t * priority_cache, 
 		 gnutls_dh_params_t * dh_params)
 {
-  gnutls_certificate_credentials_t x509_crd;
   const char ** err_pos; //store returned code (error or successful)
   int retval;
 
   stdprintf("load_cert_files: allocate creds\n");
-  if ((retval = gnutls_certificate_allocate_credentials (&x509_crd))){
+  if ((retval = gnutls_certificate_allocate_credentials (x509_cred))){
     //TODO
+    stdprintf("load_cert_files: gnutls_certificate_allocate_credentials: false\n");
   }
-/*  stdprintf("load_cert_files: load cert trust file\n");
+  stdprintf("load_cert_files: load cert trust file\n");
   if ((retval = gnutls_certificate_set_x509_trust_file (*x509_cred, CAFILE, GNUTLS_X509_FMT_PEM))){
     //TODO
-    fprintf(stderr, "gnutls_certificate_set_x509_trust_file error code: %d\n", retval);
-    fprintf(stderr, "gnutls_certificate_set_x509_trust_file error code: %s\n", strerror(retval));
+    if ( retval > 0 )
+      printf("gnutls_certificate_set_x509_trust_file: certs loaded: %d\n", retval);
+    else
+      fprintf(stderr, "gnutls_certificate_set_x509_trust_file error code: %s\n", strerror(retval));
   }
-  printf("retval %d\n", retval);
   stdprintf("load_cert_files: load CSL\n");
   if((retval = gnutls_certificate_set_x509_crl_file (*x509_cred, CRLFILE, 
                                         GNUTLS_X509_FMT_PEM)) < 1){
@@ -294,15 +295,14 @@ load_cert_files (gnutls_certificate_credentials_t * x509_cred,
   if((retval = gnutls_priority_init (priority_cache, GNUTLS_PRIORITY, NULL))){
     //TODO
     fprintf(stderr, "gnutls_priority_init error code");
-  }*/
+  }
   /*if (**err_pos){
     fprintf(stderr, "gnutls_priority_init error code %d", **err_pos);
   }*/
 
-  //gnutls_certificate_set_dh_params (*x509_cred, *dh_params);
-  x509_cred = &x509_crd;
-
-  return x509_cred;
+  gnutls_certificate_set_dh_params (*x509_cred, *dh_params);
+  //*x509_cred = lx509_cred;
+  //*priority_cache = lpriority_cache;
 }
 
 int
@@ -467,19 +467,18 @@ main(int argc, char *arv[]){
 //char: s (stores the IP Addr of the incoming connection so it can be diplayed)
   char s[INET6_ADDRSTRLEN];
 //char: reqbuf (request key)
-  char reqbuf[REQSIZE];
+  char reqbuf[REQSIZE], buf[8193];
 //int: numbytes (received)
   int numbytes;
 //GNUTLS settings
-  gnutls_priority_t priority_cache;
+  gnutls_priority_t * priority_cache;
   gnutls_certificate_credentials_t * x509_cred;
   gnutls_session_t session;
-  //gnutls_certificate_server_set_request (session, GNUTLS_CERT_REQUIRE); //UNCOMMENT
   static gnutls_dh_params_t dh_params;
 	
   sockfd = get_socket();
 
-  stdprintf("Establish Incomming Connections\n");
+  stdprintf("Establish Incoming Connections\n");
   if (listen(sockfd, BACKLOG) == -1){ //marks socket as passive, so it accepts incoming connections
     perror("listen: failed to mark as passive");
     exit(1);
@@ -494,16 +493,21 @@ main(int argc, char *arv[]){
   }
   
   stdprintf("Initialize gnutls\n");
-//Initialize gnutls
-  gnutls_global_init(); 
-  x509_cred = load_cert_files (x509_cred, &priority_cache, &dh_params);
+  //Initialize gnutls
+  if( gnutls_global_init() ) stdprintf("gnutls_global_init: Failed to intialize\n");
+
+
+  x509_cred = malloc(sizeof x509_cred);
+  priority_cache = malloc(sizeof priority_cache);
+  load_cert_files (x509_cred, priority_cache, &dh_params);
   
   printf("server: waiting for connection\n");
 
   sin_size = sizeof their_addr;
   while(1){
     stdprintf("Initialize TLS Session\n");
-    session = init_tls_session(&priority_cache, x509_cred);
+    session = init_tls_session(priority_cache, x509_cred);
+    gnutls_certificate_server_set_request (session, GNUTLS_CERT_REQUIRE); //Require client to provide cert
     gnutls_certificate_send_x509_rdn_sequence (session, 1); //REMOVE IN ORDER TO COMPLETE CERT EXCHANGE
 
     stdprintf("Accepting Connection\n");
