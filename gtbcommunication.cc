@@ -136,8 +136,8 @@ GTBCommunication::initTLSSession ()
  *
  *****/
 
-static int
-generate_dh_params (gnutls_dh_params_t * dh_params)
+int
+GTBCommunication::generateDHParams (gnutls_dh_params_t * dh_params)
 {
   gnutls_dh_params_init(dh_params);
   gnutls_dh_params_generate2(*dh_params, DH_BITS);
@@ -153,21 +153,21 @@ generate_dh_params (gnutls_dh_params_t * dh_params)
  * ****/
 
 void
-load_cert_files (gnutls_certificate_credentials_t * x509_cred,
-                 gnutls_priority_t * priority_cache, 
-		 gnutls_dh_params_t * dh_params)
+GTBCommunication::loadCertFiles (gnutls_certificate_credentials_t * i_pX509Cred,
+                 gnutls_priority_t * i_pPriorityCache, 
+		 gnutls_dh_params_t * i_pDHParams)
 {
   const char ** err_pos; //store returned code (error or successful)
   int retval;
 
   cout << "load_cert_files: allocate creds" << endl;
-  if ((retval = gnutls_certificate_allocate_credentials (x509_cred)))
+  if ((retval = gnutls_certificate_allocate_credentials (i_pX509Cred)))
   {
     //TODO
     cout <<"load_cert_files: gnutls_certificate_allocate_credentials: false" << endl;
   }
   cout << "load_cert_files: load cert trust file" << endl;
-  if ((retval = gnutls_certificate_set_x509_trust_file (*x509_cred, CAFILE, GNUTLS_X509_FMT_PEM)))
+  if ((retval = gnutls_certificate_set_x509_trust_file (*i_pX509Cred, CAFILE, GNUTLS_X509_FMT_PEM)))
   {
     //TODO
     if ( retval > 0 )
@@ -176,7 +176,7 @@ load_cert_files (gnutls_certificate_credentials_t * x509_cred,
       cerr << "gnutls_certificate_set_x509_trust_file error code: " << strerror(retval) << endl;
   }
   cout << "load_cert_files: load CSL" << endl;
-  if((retval = gnutls_certificate_set_x509_crl_file (*x509_cred, CRLFILE, 
+  if((retval = gnutls_certificate_set_x509_crl_file (*i_pX509Cred, CRLFILE, 
                                         GNUTLS_X509_FMT_PEM)) < 1)
   {
     //TODO
@@ -184,20 +184,18 @@ load_cert_files (gnutls_certificate_credentials_t * x509_cred,
   }
     
   cout << "load_cert_files: gen DH params" << endl;
-  generate_dh_params (dh_params);
+  generateDHParams (i_pDHParams);
   cout << "load_cert_files: priority init" << endl;
   //Set gnutls priority string
-  if((retval = gnutls_priority_init (priority_cache, GNUTLS_PRIORITY, NULL)))
+  if((retval = gnutls_priority_init (i_pPriorityCache, GNUTLS_PRIORITY, NULL)))
   {
     //TODO
     cerr << "gnutls_priority_init error code" << endl;
   }
-  /*if (**err_pos){
-    fprintf(stderr, "gnutls_priority_init error code %d", **err_pos);
-  }*/
 
-  gnutls_certificate_set_dh_params (*x509_cred, *dh_params);
-  //*x509_cred = lx509_cred;
-  //*priority_cache = lpriority_cache;
+  gnutls_certificate_set_dh_params (*i_pX509Cred, *i_pDHParams);
+  
+  m_pX509Cred = i_pX509Cred;
+  m_pPriorityCache = i_pPriorityCache;
 }
 

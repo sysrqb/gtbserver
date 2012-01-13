@@ -34,17 +34,13 @@ class GTBConnection {
   
   public:
 
-  friend class GTBCommunication;
+    friend class GTBCommunication;
    
 /*
- *
- *
  * function *get_in_addr
  *
  *get_in_addr:
  * Get Internet Address returns the IP address of the client
- *
- *
 */
     void *getInAddr (struct sockaddr *i_sa)
     {//Extracts addr from sa

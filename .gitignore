@@ -1,5 +1,5 @@
 *.o
-gtb
+gtbserver
 DOC
 *.sh
 cred.h

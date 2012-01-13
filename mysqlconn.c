@@ -245,3 +245,146 @@ int closeall(MYSQL_RES * result, header *stmthder){
   free (stmthder);
   return ret;
 }
+
+
+int storetempconnections (char ipaddr[], void * param, gnutls_datum_t key, gnutls_datum_t data)
+{
+  int retval; //Used for error handling and for result set
+  MYSQL * myhandler; //Used to establish connection with MySQL server
+  MYSQL_STMT * mystmthdler; //Used with prepared statement
+  MYSQL_RES * myres = NULL; //Returned by result metadata
+  MYSQL_BIND bind[3]; //Binds hash to query
+  unsigned long length[3];
+  my_bool is_null[3];
+  my_bool error[3];
+  unsigned long num_rows;
+  unsigned long bind_len[3];
+  int *ret =&retval;
+  header *stmthder;
+
+  stmthder = (header *) malloc (sizeof(header));
+	
+  if ((retval = mysqlheader (stmthder))) 
+  {
+    fprintf(stderr, "mysqlheader returned %d\n", retval);
+    return retval;
+  }
+
+  if(DEBUG)
+    printf("mysql_stmt_result_metadata \n");
+  //Obtain resultset metadata
+  myres = mysql_stmt_result_metadata(stmthder->mystmthdler);
+  if(DEBUG){
+    if(myres == NULL)
+      printf("myres is NULL\n");
+    else
+      printf("myres is not NULL\n");
+  }
+
+  if(DEBUG)
+    printf("set bind struct values \n");
+  //Zero-out handler
+  memset(bind, 0, sizeof(bind));
+	
+  //Fill out struct
+  bind[0].buffer_type = MYSQL_TYPE_STRING;
+  bind[0].buffer = (char *)ipaddr;
+  bind[0].buffer_length = INET6_ADDRSTRLEN;
+  bind[0].length = &bind_len[0];
+  bind[1].buffer_type = MYSQL_TYPE_BLOB;
+  bind[1].buffer = (char *)&(key.data);
+  bind[1].buffer_length = HASH_LEN;
+  bind[1].length = &bind_len[1];
+  bind[2].buffer_type = MYSQL_TYPE_BLOB;
+  bind[2].buffer = (char *)&(data.data);
+  bind[2].buffer_length = HASH_LEN;
+  bind[2].length = &bind_len[2];
+
+  bind_len[0] = strlen(ipaddr); //set length of hashso mysql knows how many characters are in the string
+  bind_len[1] = key.size;
+  bind_len[2] = data.size;
+
+  if(DEBUG)
+    printf("Bound Hash: %s\n", bind[0].buffer);
+  //if hash is null, set is_null == true
+  if(!strncmp(ipaddr, "", sizeof &ipaddr))
+  {
+    fprintf(stderr, "Hash Checking Error: Hash Present Check\n");
+    closeall(myres, stmthder);
+    return -1; //No hash
+  }
+  else
+  {
+    bind[0].is_null = (my_bool *)0;
+  }
+	
+  mysqlbindexec(ret, mystmthdler, bind, myres);
+  if(*ret < 0)
+    return *ret;
+
+  if(DEBUG)
+    printf("reset bind struct values\n");
+  //Bind result set
+  memset(bind, 0, sizeof(bind));
+  bind[0].buffer_type = MYSQL_TYPE_LONG;
+  bind[0].buffer = (char *)&retval;
+  bind[0].length = &length[0];
+  bind[0].is_null = &is_null[0];
+  bind[0].error = &error[0];
+  if(DEBUG)
+    printf("mysql_stmt_bind_result\n");
+  //Bind result set to retrieve the returned rows
+  if(mysql_stmt_bind_result(mystmthdler, bind))
+  {
+    fprintf(stderr, "Hash Checking Error: Binding Results: %s\n", mysql_stmt_error(mystmthdler));
+    return -4;
+  }
+
+  if(DEBUG)
+    printf("mysql_stmt_store_result\n");
+  //Buffer all results
+  if(mysql_stmt_store_result(mystmthdler))
+  {
+    fprintf(stderr, "Hash Checking Error: Binding Results: %s\n", mysql_stmt_error(mystmthdler));
+    return -4;
+  }
+
+  if(DEBUG)
+    printf("mysql_stmt_num_rows\n");
+  //Check the number of rows returned from query
+
+  // If >1, fail authentication
+  if((num_rows = mysql_stmt_num_rows(mystmthdler)) > 1)
+  {
+    closeall(myres, stmthder);
+    return -2; //Multiple results returned...should not be possible
+  }
+		
+  if(DEBUG)
+    printf("mysql_stmt_fetch\n");
+  printf("num_rows = %lu \n", num_rows);
+  int rows = 0;
+  int fetchret = 0;
+  //Fetch the next row in the result set
+  while(!(fetchret = mysql_stmt_fetch(mystmthdler)))
+  {
+    printf("num_rows: %lu\t rows: %d\n", num_rows, rows);
+    if(++rows > num_rows)
+    {
+      //TODO Return invalid login
+      closeall(myres, stmthder);
+      return -2;
+    }
+  }
+
+  closeall(myres, stmthder);
+  if(DEBUG)
+  {
+    printf("Car ID: %d\n", retval);
+    printf("Rows: %d\n", rows);
+    printf("fetret: %d\n", fetchret);
+  }
+	
+  return retval;
+}
+

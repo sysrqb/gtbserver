@@ -1,7 +1,13 @@
 #ifndef gtbcommunication_h
 #define gtbcommunication_h
+
 #include "mysqlconn.h"
+
+#ifndef gnutls_h
+#define gnutls_h
 #include <gnutls/gnutls.h>
+#endif
+
 #include "patron.pb-c.h"
 #include <string>
 
@@ -33,19 +39,13 @@ class GTBCommunication {
   public:
     friend class GTBConnection;
 
-    /*Constructors*/
-    GTBCommunication();
-
-    GTBCommunication(
-    gnutls_priority_t * pPriorityCache,
-    gnutls_certificate_credentials_t * pX509Cred) : 
-        m_pPriorityCache (pPriorityCache),
-	m_pX509Cred (pX509Cred) {}
-
     /*GNUTLS related methods*/
     void initTLSSession ();
-    int generateDHParams ();
-    void loadCertFiles ();
+    int generateDHParams (gnutls_dh_params_t * dh_params);
+    void loadCertFiles (
+        gnutls_certificate_credentials_t * x509_cred,
+	gnutls_priority_t * priority_cache,
+	gnutls_dh_params_t * dh_params);
 
     /*GNUTLS variables accessor methods */
     gnutls_priority_t * getPriorityCache() { return m_pPriorityCache; }
