@@ -6,3 +6,4 @@ cred.h
 pem/
 proto/
 test*
+.*

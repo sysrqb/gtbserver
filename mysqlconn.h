@@ -1,3 +1,5 @@
+#ifndef MYINIT
+#define MYINIT
 #include <mysql/mysql.h>
 #include <string.h>
 #include <stdio.h>
@@ -11,14 +13,11 @@
 //#define STMT	"SELECT nightlyhash FROM activeusers"
 #define DEBUG 1
 #define HASH_LEN  8
-#ifndef MYINIT
-#define MYINIT
 typedef struct myinit{
   int retval;
   MYSQL *myhandler;
   MYSQL_STMT *mystmthdler;
 } header;
-#endif
 
 int checkhash(char * ptr2hash);
 int execauth(char hash);
@@ -26,3 +25,4 @@ int closeall(MYSQL_RES * result, header *stmthder);
 MYSQL_STMT *mysqlinit(int *ret, MYSQL *myhandler, MYSQL_STMT *myssh);
 int mysqlheader (header *stmthder);
 int mysqlbindexec(int *ret, MYSQL_STMT *mystmthdler, MYSQL_BIND bind[], MYSQL_RES *myres);
+#endif

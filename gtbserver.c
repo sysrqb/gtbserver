@@ -1,3 +1,4 @@
+#include "comm.h"
 #include "gtbserver.h"
 
 //Global
@@ -28,24 +29,17 @@ sigchld_handler (int s)
  * Get Internet Address returns the IP address of the client
  *
  *
-*/
-
+ */
+ 
 void *
 get_in_addr(struct sockaddr *sa)
 {
-  if(sa->sa_family == AF_INET)
-  {
-    return &(((struct sockaddr_in*)sa)->sin_addr);
-  }
-  return &(((struct sockaddr_in6*)sa)->sin6_addr);
+   if(sa->sa_family == AF_INET)
+   {
+     return &(((struct sockaddr_in*)sa)->sin_addr);
+   }
+   return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
-/******
- *
- *
- * int authrequest()
- *
- *
-*/ 
 
 
 int 
@@ -91,6 +85,7 @@ getclientinfo (int sockfd, char *hash)
   hash[numbytes] = '\0';
   printf("Received Hash: %s\n", hash);
 }
+
 /******
  *
  *
@@ -303,13 +298,13 @@ load_cert_files (gnutls_certificate_credentials_t * x509_cred,
   const char ** err_pos; //store returned code (error or successful)
   int retval;
 
-  stdprintf("load_cert_files: allocate creds\n");
+  printf("load_cert_files: allocate creds\n");
   if ((retval = gnutls_certificate_allocate_credentials (x509_cred)))
   {
     //TODO
-    stdprintf("load_cert_files: gnutls_certificate_allocate_credentials: false\n");
+    printf("load_cert_files: gnutls_certificate_allocate_credentials: false\n");
   }
-  stdprintf("load_cert_files: load cert trust file\n");
+  printf("load_cert_files: load cert trust file\n");
   if ((retval = gnutls_certificate_set_x509_trust_file (*x509_cred, CAFILE, GNUTLS_X509_FMT_PEM)))
   {
     //TODO
@@ -318,7 +313,7 @@ load_cert_files (gnutls_certificate_credentials_t * x509_cred,
     else
       fprintf(stderr, "gnutls_certificate_set_x509_trust_file error code: %s\n", strerror(retval));
   }
-  stdprintf("load_cert_files: load CSL\n");
+  printf("load_cert_files: load CSL\n");
   if((retval = gnutls_certificate_set_x509_crl_file (*x509_cred, CRLFILE, 
                                         GNUTLS_X509_FMT_PEM)) < 1)
   {
@@ -326,9 +321,9 @@ load_cert_files (gnutls_certificate_credentials_t * x509_cred,
     fprintf(stderr, "gnutls_certificate_set_x509_crl_file error code: %d\n", retval);
   }
     
-  stdprintf("load_cert_files: gen DH params\n");
+  printf("load_cert_files: gen DH params\n");
   generate_dh_params (dh_params);
-  stdprintf("load_cert_files: priority init\n");
+  printf("load_cert_files: priority init\n");
   //Set gnutls priority string
   if((retval = gnutls_priority_init (priority_cache, GNUTLS_PRIORITY, NULL)))
   {
@@ -345,7 +340,7 @@ load_cert_files (gnutls_certificate_credentials_t * x509_cred,
 }
 
 int
-stdprintf(char * s)
+printf(char * s)
 {
   if (DEBUG)
     printf("%s", s);
@@ -516,12 +511,12 @@ listening_for_client (int sockfd,
   sin_size = sizeof their_addr;
   while(1)
   {
-    stdprintf("Initialize TLS Session\n");
+    printf("Initialize TLS Session\n");
     session = init_tls_session(priority_cache, x509_cred);
     gnutls_certificate_server_set_request (session, GNUTLS_CERT_REQUIRE); //Require client to provide cert
     gnutls_certificate_send_x509_rdn_sequence (session, 1); //REMOVE IN ORDER TO COMPLETE CERT EXCHANGE
 
-    stdprintf("Accepting Connection\n");
+    printf("Accepting Connection\n");
     new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
     printf("accept new_fd: %d\n", new_fd);
     if (new_fd == -1)
@@ -535,7 +530,7 @@ listening_for_client (int sockfd,
     printf("Accepting Connection from: %s\n", s);
     strncpy(ipaddr, s, INET6_ADDRSTRLEN);
 
-    stdprintf("Start TLS Session\n");
+    printf("Start TLS Session\n");
     gnutls_transport_set_ptr (session, (gnutls_transport_ptr_t) new_fd);
     int retval;
     if ((retval = gnutls_handshake (session)))
@@ -589,10 +584,13 @@ main(int argc, char *arv[])
   gnutls_certificate_credentials_t * x509_cred;
   gnutls_session_t session;
   static gnutls_dh_params_t dh_params;
-	
-  sockfd = get_socket();
 
-  stdprintf("Establish Incoming Connections\n");
+  GTBConnection aConn;
+	
+  //sockfd = get_socket();
+  sockfd = aConn.getSocket();
+
+  printf("Establish Incoming Connections\n");
   if (listen(sockfd, BACKLOG) == -1)
   { //marks socket as passive, so it accepts incoming connections
     perror("listen: failed to mark as passive");
@@ -608,20 +606,24 @@ main(int argc, char *arv[])
     exit(1);
   }
   
-  stdprintf("Initialize gnutls\n");
+  printf("Initialize gnutls\n");
   //Initialize gnutls
-  if( gnutls_global_init() ) stdprintf("gnutls_global_init: Failed to intialize\n");
+  if( gnutls_global_init() ) printf("gnutls_global_init: Failed to intialize\n");
 
 
-  x509_cred = malloc(sizeof x509_cred);
-  priority_cache = malloc(sizeof priority_cache);
+  x509_cred = (gnutls_certificate_credentials_t * )malloc(sizeof x509_cred);
+  priority_cache = (gnutls_priority_t *)malloc(sizeof priority_cache);
   load_cert_files (x509_cred, priority_cache, &dh_params);
+
+  GTBCommunication aComm = GTBCommunication(priority_cache, x509_cred);
   
   printf("server: waiting for connection\n");
-
+/*
   return listening_for_client 
             (sockfd, 
              priority_cache,
              x509_cred,
              session);
+*/
+  return aConn.listeningForClient (sockfd, &aComm);
 }
