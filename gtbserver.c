@@ -1,19 +1,28 @@
 #include "gtbserver.h"
+#include <pthread.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/wait.h>
+#include <signal.h>
 
-//Global
-char ipaddr[INET6_ADDRSTRLEN];
+#include "gtbcommunication.hh"
+
+
+/*  struct GNUTLSArgs {
+    gnutls_certificate_credentials_t * x509_cred;
+    gnutls_priority_t * priority_cache;
+    gnutls_dh_params_t dh_params;
+  } * pGNUTLSArgs ,aGNUTLSArgs;
+*/
 
 /*
- *
- *
  * function sigchld_handler
  *
  *SIGCHLD handler: wait for all dead (zombie) processes
- *
- *
 */
-
-extern "C" 
+extern "C" {
 void 
 sigchld_handler (int s)
 {
@@ -21,6 +30,43 @@ sigchld_handler (int s)
 }
 
 
+void *initIncomingCon(void * i_pfdSock)
+{
+  int fdSock, * pfdSock;
+  struct sigaction sa, * pSa;
+
+  pfdSock = (int *)i_pfdSock;
+  fdSock = *pfdSock;
+
+
+   if (listen(fdSock, BACKLOG) == -1)
+  { //marks socket as passive, so it accepts incoming connections
+    perror("listen: failed to mark as passive\n");
+    exit(1);
+  }
+  printf("Socket marked as passive...listening for connections\n");
+
+  sa.sa_handler = sigchld_handler;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = SA_RESTART;
+  if(sigaction(SIGCHLD, &sa, NULL) == -1)
+  {
+    perror("sigaction");
+    exit(1);
+  }
+  return NULL;
+} 
+
+}
+
+void *initGNUTLS( void * ptr)
+{
+  GTBCommunication aComm = *(GTBCommunication *)ptr;
+  printf("Initialize gnutls\n");
+  if( gnutls_global_init() ) printf("gnutls_global_init: Failed to intialize\n");
+  aComm.loadCertFiles();
+  return NULL;
+}
 
 /******
  *
@@ -38,42 +84,42 @@ main(int argc, char *arv[])
 //STRUCTS
 //sigaction: sa (used to make sys call to change action taken on receipt of a certain sig)
   struct sigaction sa;
-//GNUTLS settings
-  gnutls_priority_t * priority_cache;
-  gnutls_certificate_credentials_t * x509_cred;
-  gnutls_session_t session;
-  static gnutls_dh_params_t dh_params;
 
-  GTBConnection aConn;
+  //Thread structures
+  //pthread_t * pIncomingConThread, * pGNUTLSThread;
+
   GTBCommunication aComm;
 
-  sockfd = aConn.getSocket();
+  sockfd = aComm.getSocket();
 
   printf("Establish Incoming Connections\n");
-  if (listen(sockfd, BACKLOG) == -1)
-  { //marks socket as passive, so it accepts incoming connections
-    perror("listen: failed to mark as passive");
-    exit(1);
-  }
+  /*printf("Spawning PassiveSocket Thread\n");
+  if (
+  pthread_create(
+      pIncomingConThread, 
+      NULL, 
+      initIncomingCon, 
+      &sockfd ) )
+    fprintf(stderr, "Thread Create Failed on initIncomingCon\n" );
+  */
+  initIncomingCon (&sockfd);
+  //printf("Continuing...\n");
 
-  sa.sa_handler = sigchld_handler;
-  sigemptyset(&sa.sa_mask);
-  sa.sa_flags = SA_RESTART;
-  if(sigaction(SIGCHLD, &sa, NULL) == -1)
-  {
-    perror("sigaction");
-    exit(1);
-  }
-  
   //Initialize gnutls
-  printf("Initialize gnutls\n");
-  if( gnutls_global_init() ) printf("gnutls_global_init: Failed to intialize\n");
+  /*printf("Spawning GNUTLS Thread\n");
+  pthread_create(
+      pGNUTLSThread,
+      NULL,
+      initGNUTLS,
+      NULL);
+  */
+  initGNUTLS (&aComm);
 
-
-  x509_cred = (gnutls_certificate_credentials_t * )malloc(sizeof x509_cred);
-  priority_cache = (gnutls_priority_t *)malloc(sizeof priority_cache);
-  aComm.loadCertFiles(x509_cred, priority_cache, &dh_params);
+  //void * retval;
+  //pthread_join(*pGNUTLSThread, &retval);
+  //pthread_join(*pIncomingConThread, &retval);
 
   printf("server: waiting for connection\n");
-  return aConn.listeningForClient (sockfd, &aComm);
+  return aComm.listeningForClient (sockfd);
+  
 }
