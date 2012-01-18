@@ -7,7 +7,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-#include "gtbcommunication.hh"
+#include "gtbcommunication.hpp"
 
 
 /*  struct GNUTLSArgs {

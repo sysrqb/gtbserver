@@ -1,7 +1,8 @@
 #ifndef gtbcommunication_h
 #define gtbcommunication_h
 
-#include "mysqlconn.hh"
+#include "sqlconn.hpp"
+#include <errno.h>
 
 #ifndef gnutls_h
 #define gnutls_h
@@ -45,6 +46,7 @@ class GTBCommunication {
     gnutls_session_t m_aSession;
     char m_vIPAddr[INET6_ADDRSTRLEN];
     std::string m_sHash;
+    MySQLConn * m_MySQLConn;
 
   public:
     //Constructors
@@ -55,6 +57,7 @@ class GTBCommunication {
           operator new (sizeof (gnutls_certificate_credentials_t));
       m_pDHParams = (gnutls_dh_params_t * ) 
           operator new (sizeof (gnutls_dh_params_t));
+      m_MySQLConn = new MySQLConn();
     }
 
     /*GNUTLS related methods*/

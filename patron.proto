@@ -12,6 +12,6 @@ message Patron {
   optional int32 pid = 11;
 }
 
-message PatroList {
+message PatronList {
   repeated Patron patron = 1;
 }

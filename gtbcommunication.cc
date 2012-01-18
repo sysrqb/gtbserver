@@ -6,7 +6,8 @@
 #include <iostream>
 #include <string>
 
-#include "gtbcommunication.hh"
+#include "gtbcommunication.hpp"
+#include "sqlconn.hpp"
 
 using namespace std;
 
@@ -101,16 +102,6 @@ GTBCommunication::authRequest (string i_sReqBuf, int i_fdSock)
   return 0;
 }
 
-
-
-/******
- *
- *
- * init_tls_session()
- *
- *
- 8*****/
-
 void
 GTBCommunication::initTLSSession ()
 {
@@ -143,15 +134,6 @@ GTBCommunication::initTLSSession ()
   gnutls_certificate_server_set_request (m_aSession, GNUTLS_CERT_REQUEST);
 }
 
-
-/****
- *
- *
- * generate_dh_params()
- *
- *
- *****/
-
 int
 GTBCommunication::generateDHParams ()
 {
@@ -160,13 +142,6 @@ GTBCommunication::generateDHParams ()
 
   return 0;
 }
-
-/*****
- *
- * load_certs_files()
- *
- *
- * ****/
 
 void
 GTBCommunication::loadCertFiles ()
@@ -245,24 +220,17 @@ void GTBCommunication::getClientInfo(int i_fdSock)
   cout<<"Received Hash: " << m_sHash << endl;
 }
 
-/******
- *
- *
- * int getsocket()
- *
- *
-*******/ 
-
-
 int 
 GTBCommunication::getSocket()
 {
 //FileDescriptors: sockfd (listen), new_fd (new connections)
   int fdSock;
 
-//STRUCTS
-//addrinfo: aHints (used to retrieve addr), 
-//pServinfo (used to store retrieved addr), pPIterator (iterator)
+/*
+   STRUCTS
+   addrinfo: aHints (used to retrieve addr), 
+   pServinfo (used to store retrieved addr), pPIterator (iterator)
+ */
   struct addrinfo aHints, aServinfo, *pServinfo, *pIterator;
 
 //int rv: return value; i: iterator; yes: optval set in setsockopt
@@ -396,18 +364,18 @@ GTBCommunication::dealWithReq (string i_sReqBuf, int i_fdSock)
 int 
 GTBCommunication::listeningForClient (int i_fdSock)
 {
-  int fdAccepted;
-//sockaddr_storage: their_addr (IP Address of the requestor)
+  int fdAccepted = 0;
+//sockaddr_storage: aClientAddr (IP Address of the requestor)
   struct sockaddr_storage aClientAddr;
-//socklen_t: sin_size (set size of socket)
+//socklen_t: nSinSize (set size of socket)
   socklen_t nSinSize;
-//	char buf[MAXSIZE]
-//char: s (stores the IP Addr of the incoming connection so it can be diplayed)
-  char vAddr[INET6_ADDRSTRLEN];
+//char: vAddr (stores the IP Addr of the incoming connection so it can be diplayed)
+  char vAddr[INET6_ADDRSTRLEN] = "";
 //char: reqbuf (request key)
-  char vReqBuf[REQSIZE];
+  char vReqBuf[REQSIZE] = "";
+  char * ntopRetVal;
 //int: numbytes (received)
-  int nNumBytes;
+  int nNumBytes=0;
 
   nSinSize = sizeof aClientAddr;
   while(1)
@@ -428,10 +396,19 @@ GTBCommunication::listeningForClient (int i_fdSock)
       cerr << "Error at accept!" << endl;
       continue;
     }
-		
+
     inet_ntop(aClientAddr.ss_family, 
               getInAddr((struct sockaddr *)&aClientAddr), 
 	      vAddr, sizeof vAddr);
+
+    if ( vAddr == NULL ) 
+    {
+      cerr << "Failed to convert the client IP Address!";
+      cerr << " Error: " << strerror(errno) << endl;
+      cerr << "Closing connection..." << endl;
+      close(fdAccepted);
+      continue;
+    }
 
     cout << "Accepting Connection from: " << vAddr << endl;
     //They're already char*, might as well just compare without wasting
@@ -443,12 +420,16 @@ GTBCommunication::listeningForClient (int i_fdSock)
     int nRetVal;
     if ((nRetVal = gnutls_handshake (m_aSession)))
     {
-      cerr << "Failed to perform handshake, error code : " << gnutls_strerror(nRetVal) << endl;;
+      cerr << "Failed to perform handshake, error code : ";
+      cerr << gnutls_strerror(nRetVal) << endl;;
       cerr << "Closing connection..." << endl;
       close(fdAccepted);
       gnutls_deinit(m_aSession);
       continue;
     }
+
+    cout << "Storing connection information" << endl;
+
 
     cout << "Receiving request" << endl;
 
