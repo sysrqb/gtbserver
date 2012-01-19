@@ -1,5 +1,9 @@
 #include "gtbserver.h"
+
+#if THREADS
 #include <pthread.h>
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -8,7 +12,6 @@
 #include <signal.h>
 
 #include "gtbcommunication.hpp"
-
 
 /*  struct GNUTLSArgs {
     gnutls_certificate_credentials_t * x509_cred;
@@ -22,7 +25,6 @@
  *
  *SIGCHLD handler: wait for all dead (zombie) processes
 */
-extern "C" {
 void 
 sigchld_handler (int s)
 {
@@ -57,8 +59,6 @@ void *initIncomingCon(void * i_pfdSock)
   return NULL;
 } 
 
-}
-
 void *initGNUTLS( void * ptr)
 {
   GTBCommunication aComm = *(GTBCommunication *)ptr;
@@ -68,32 +68,26 @@ void *initGNUTLS( void * ptr)
   return NULL;
 }
 
-/******
- *
- *
- * int main()
- *
- *
-*******/ 
-
 int 
 main(int argc, char *arv[])
 {
 //FileDescriptors: sockfd (listen), new_fd (new connections)
   int sockfd;
-//STRUCTS
+//
 //sigaction: sa (used to make sys call to change action taken on receipt of a certain sig)
   struct sigaction sa;
 
-  //Thread structures
-  //pthread_t * pIncomingConThread, * pGNUTLSThread;
+#if THREADS
+  pthread_t * pIncomingConThread, * pGNUTLSThread;
+#endif
 
   GTBCommunication aComm;
 
   sockfd = aComm.getSocket();
 
   printf("Establish Incoming Connections\n");
-  /*printf("Spawning PassiveSocket Thread\n");
+#if THREADS
+  printf("Spawning PassiveSocket Thread\n");
   if (
   pthread_create(
       pIncomingConThread, 
@@ -101,23 +95,30 @@ main(int argc, char *arv[])
       initIncomingCon, 
       &sockfd ) )
     fprintf(stderr, "Thread Create Failed on initIncomingCon\n" );
-  */
+#else 
   initIncomingCon (&sockfd);
-  //printf("Continuing...\n");
+#endif
+  printf("Continuing...\n");
 
   //Initialize gnutls
-  /*printf("Spawning GNUTLS Thread\n");
+#if THREADS
+  printf("Spawning GNUTLS Thread\n");
+  if (
   pthread_create(
       pGNUTLSThread,
       NULL,
       initGNUTLS,
-      NULL);
-  */
+      (void *)&aComm) )
+    fprintf(stderr, "Thread Create Failed on initGNUTLS\n" );
+#else
   initGNUTLS (&aComm);
+#endif
 
-  //void * retval;
-  //pthread_join(*pGNUTLSThread, &retval);
-  //pthread_join(*pIncomingConThread, &retval);
+#if THREADS
+  void * retval;
+  pthread_join(*pGNUTLSThread, &retval);
+  pthread_join(*pIncomingConThread, &retval);
+#endif
 
   printf("server: waiting for connection\n");
   return aComm.listeningForClient (sockfd);
