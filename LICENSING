@@ -1,0 +1,22 @@
+All licenses that cover parts of this work are 
+reproduced in the corresponding COPYING/COPYING[.*] files.
+
+This worked is covered under the AGPL (GNU Affero General Public License)
+
+This work also includes/is linked again:
+Google Protocol Buffers:
+  Licensed under the terms within COPYING.PROTOBUF
+  This work is covered by the 3-Clause BSD license
+
+MySQL Connector/C++:
+  Licensed under the terms within COPYING.MYSQLCONN
+  This work is covered by the GPLv2 with exceptions
+
+GnuTLS:
+  Licensed under the terms within COPYING.GNUTLS
+  This work is partially covered under the LGPL
+
+GnuTLS-Extra:
+  Licensed under the terms within COPYING.GNUTLS-E
+  This work is partially covered under the GPL
+

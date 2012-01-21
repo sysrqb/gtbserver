@@ -1,3 +1,21 @@
+/*
+ * GUARD the Bridge
+ * Copyright (C) 2012  Matthew Finkel <Matthew.Finkel@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef gtbcommunication_h
 #define gtbcommunication_h
 
@@ -10,9 +28,10 @@
 #endif
 
 //Sets the priority string for an acceptable TLS handshake
-//#define GNUTLS_PRIORITY "NONE:+VERS-TLS1.2:+VERS-TLS1.1:+VERS-TLS-ALL:+DHE-DSS:"\
-    "+DHE-RSA:+KX-ALL:+AES-256-CBC:+AES-128-CBC:CIPHER-ALL:"\
-    "+SHA256:+SHA1:+MAC-ALL::%SAFE_RENEGOTIATION"
+/*#define GNUTLS_PRIORITY "+VERS-TLS1.2:+VERS-TLS1.1:+DHE-RSA:"\
+    "+DHE-DSS:+AES-256-CBC:+AES-128-CBC:"\
+    "+SHA256:+SHA128:+SHA1:+COMP-NULL:+NORMAL:%SAFE_RENEGOTIATION"
+*/
 #define GNUTLS_PRIORITY "NORMAL"
 
 //Number of bits to be used for the DHE
