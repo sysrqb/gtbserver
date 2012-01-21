@@ -13,5 +13,5 @@ message Patron {
 }
 
 message PatronList {
-  repeated Patron patron = 1;
+  repeated Patron patron = 1 [packed=true];
 }

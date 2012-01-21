@@ -137,6 +137,9 @@ GTBCommunication::initTLSSession ()
 int
 GTBCommunication::generateDHParams ()
 {
+  /*gnutls_pk_algorithm_t aPKAlgo = gnutls_pk_get_id (DH_PK_ALGO);
+  int bits = gnutls_sec_param_to_pk_bits (aPKAlgo, DH_BITS);
+  */
   gnutls_dh_params_init(m_pDHParams);
   gnutls_dh_params_generate2(*m_pDHParams, DH_BITS);
 
@@ -179,15 +182,29 @@ GTBCommunication::loadCertFiles ()
         << retval << endl;
   }
     
+  cout << "loadCertFiles: load key" << endl;
+  if (( retval = gnutls_certificate_set_x509_key_file (
+                   *m_pX509Cred,
+		   CERTFILE,
+		   KEYFILE,
+		   GNUTLS_X509_FMT_PEM)))
+      cerr << "loadCertFiles: gnutls_certificate_set_x509_key_file " << 
+          "error code: " << strerror(retval) << endl;
+  
+
   cout << "loadCertFiles: gen DH params" << endl;
   generateDHParams ();
   cout << "loadCertFiles: priority init" << endl;
   //Set gnutls priority string
-  if((retval = gnutls_priority_init (m_pPriorityCache, GNUTLS_PRIORITY, NULL)))
+  
+  const char * cErrLoc;
+  if((retval = gnutls_priority_init (m_pPriorityCache, GNUTLS_PRIORITY, &cErrLoc)))
   {
     //TODO
-    cerr << "loadCertFiles: gnutls_priority_init error code" << endl;
+    cerr << "loadCertFiles: gnutls_priority_init error code: &s" << *cErrLoc << endl;
   }
+
+  cout << "Set priority: " << GNUTLS_PRIORITY << endl;
 
   gnutls_certificate_set_dh_params (*m_pX509Cred, *m_pDHParams);
   
@@ -417,11 +434,44 @@ GTBCommunication::listeningForClient (int i_fdSock)
 
     cout << "Start TLS Session" << endl;
     gnutls_transport_set_ptr (m_aSession, (gnutls_transport_ptr_t) fdAccepted);
-    int nRetVal;
-    if ((nRetVal = gnutls_handshake (m_aSession)))
+    cout << "Performing handshake.." << endl;
+    int nRetVal, i=0;
+    do
     {
-      cerr << "Failed to perform handshake, error code : ";
+      i++;
+      nRetVal = gnutls_handshake (m_aSession);
+      cout << "Return value: " << nRetVal << endl;
+    } while (gnutls_error_is_fatal (nRetVal) == 0);
+    
+    if ( nRetVal < 0)
+    {
+      cerr << i << " Failed to perform handshake, error code : ";
       cerr << gnutls_strerror(nRetVal) << endl;;
+      cerr << "Closing connection..." << endl;
+      close(fdAccepted);
+      gnutls_deinit(m_aSession);
+      continue;
+    }
+
+    gnutls_cipher_algorithm_t aUsingCipher =
+        gnutls_cipher_get (m_aSession);
+    const char * sCipherName;
+    sCipherName = gnutls_cipher_get_name(aUsingCipher);
+    cout << "Using cipher: " << sCipherName << endl;
+
+    unsigned int nstatus;
+    if( gnutls_certificate_verify_peers2 (m_aSession, &nstatus) )
+    {
+      cerr << "Failed to verify client certificate, error code ";
+      cerr << "Closing connection..." << endl;
+      close(fdAccepted);
+      gnutls_deinit(m_aSession);
+      continue;
+    }
+
+    if (nstatus)
+    {
+      cerr << "Failed to verify client certificate, error code ";
       cerr << "Closing connection..." << endl;
       close(fdAccepted);
       gnutls_deinit(m_aSession);

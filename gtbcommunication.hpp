@@ -10,18 +10,20 @@
 #endif
 
 //Sets the priority string for an acceptable TLS handshake
-#define GNUTLS_PRIORITY "NONE:+VERS-TLS-1.2:+DHE_RSA:+AES-128-CBC:"\
-                           "+SHA256:SIGN-RSA-256:%SAFE_RENEGOTIATION"
-//#define GNUTLS_PRIORITY "NORMAL"
+//#define GNUTLS_PRIORITY "NONE:+VERS-TLS1.2:+VERS-TLS1.1:+VERS-TLS-ALL:+DHE-DSS:"\
+    "+DHE-RSA:+KX-ALL:+AES-256-CBC:+AES-128-CBC:CIPHER-ALL:"\
+    "+SHA256:+SHA1:+MAC-ALL::%SAFE_RENEGOTIATION"
+#define GNUTLS_PRIORITY "NORMAL"
 
 //Number of bits to be used for the DHE
 #define DH_BITS 1024
+#define DH_PK_ALGO "RSA"
 
 //CA, CERT, and CRL files
 #define KEYFILE "pem/key.pem"
 #define CAFILE "pem/cacrt.pem"
 #define CRLFILE "pem/cacrl.pem"
-#define CERTFILE "pem/crt.pem"
+#define CERTFILE "pem/ecrt.pem"
 
 ///Sets port number for server to listen on
 #define PORT "4680"
@@ -55,8 +57,6 @@ class GTBCommunication {
           operator new (sizeof (gnutls_priority_t));
       m_pX509Cred = (gnutls_certificate_credentials_t * ) 
           operator new (sizeof (gnutls_certificate_credentials_t));
-      m_pDHParams = (gnutls_dh_params_t * ) 
-          operator new (sizeof (gnutls_dh_params_t));
       m_MySQLConn = new MySQLConn();
     }
 
