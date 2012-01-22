@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-obj = gtbserver.o sqlconn.o gtbcommunication.o communication.pb.o patron.pb.o
+obj = gtbserver.o sqlconn.o gtbcommunication.o
 SRC=src/
 LIBS=./include/
 PLIBS=./protobuf/include/
@@ -40,4 +40,4 @@ patron.pb.cc :
 
 .Phony : clean
 clean :
-	rm gtbserver $(obj)
+	rm gtbserver $(obj) communication.pb.o patron.pb.o
