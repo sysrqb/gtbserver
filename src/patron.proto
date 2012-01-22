@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-message Patron {
+option java_package = "edu.uconn.guarddogs.guardthebridge";
+
+message PatronInfo {
   optional string name = 1;
   optional uint32 passangers = 2;
   optional string pickup = 3;
@@ -31,5 +33,5 @@ message Patron {
 }
 
 message PatronList {
-  repeated Patron patron = 1 [packed=true];
+  repeated PatronInfo patron = 1;
 }

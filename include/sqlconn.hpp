@@ -19,10 +19,10 @@
 #ifndef SQLINIT
 #define SQLINIT
 
-#ifndef gnutls_h
-#define gnutls_h
+//#ifndef gnutls_h
+//#define gnutls_h
 #include <gnutls/gnutls.h>
-#endif
+//#endif
 
 #include <netinet/in.h>
 #include <netdb.h>

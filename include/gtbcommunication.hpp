@@ -22,10 +22,10 @@
 #include "sqlconn.hpp"
 #include <errno.h>
 
-#ifndef gnutls_h
-#define gnutls_h
+//#ifndef gnutls_h
+//#define gnutls_h
 #include <gnutls/gnutls.h>
-#endif
+//#endif
 
 //Sets the priority string for an acceptable TLS handshake
 /*#define GNUTLS_PRIORITY "+VERS-TLS1.2:+VERS-TLS1.1:+DHE-RSA:"\

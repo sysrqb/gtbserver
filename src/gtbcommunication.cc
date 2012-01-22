@@ -20,7 +20,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "patron.pb-c.h"
+#include "patron.pb.h"
 #include <iostream>
 #include <string>
 

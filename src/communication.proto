@@ -17,12 +17,13 @@
  */
 
 import "patron.proto";
+option java_package = "edu.uconn.guarddogs.guardthebridge";
 
 message Request {
   required int32 nReqId = 1;
-  required string isReqType = 2;
+  required string sReqType = 2;
   optional int32 nCarId = 3;
-  repeated string sParams = 4 [packed=true];
+  repeated string sParams = 4;
   repeated int32 nParams = 5 [packed=true];
   optional PatronList plPatronList = 6;
 }  
@@ -30,7 +31,7 @@ message Request {
 message Response {
   required int32 nRespId = 1;
   required string sResValue = 2;
-  repeated string sResAdd = 3 [packed=true];
+  repeated string sResAdd = 3;
   repeated int32 nResAdd = 4 [packed=true];
   optional PatronList plPatronList = 5;
 }

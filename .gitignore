@@ -7,3 +7,5 @@ pem/
 proto/
 test*
 .*
+protobuf/
+src/edu
