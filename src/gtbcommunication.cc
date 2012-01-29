@@ -29,6 +29,35 @@
 
 using namespace std;
 
+int
+GTBCommunication::sendFailureResponse(int nerr)
+{
+  Response aPBRes;
+  switch (nerr)
+  {
+    case 1:
+    case 2:
+      aPBRes.set_nrespid(2);
+      aPBRes.set_sresvalue("Invalid Request Type");
+      break;
+    case 3:
+      aPBRes.set_nrespid(3);
+      aPBRes.set_sresvalue("Failed to perform handshake");
+      //Need to handle differently.
+      //TLS session has not been established yet,
+      //Can we send a plain-text packet?
+      return 0;
+    default:
+      aPBRes.set_nrespid(-1);
+      aPBRes.set_sresvalue("Unknown error");
+  }
+  string sResp;
+  aPBRes.SerializeToString(&sResp);
+  cout << "Sending Failure Response" << endl;
+  ssize_t nretval = gnutls_record_send(m_aSession, &sResp, sizeof(sResp));
+  return nretval;
+}
+
 int 
 GTBCommunication::sendAOK()
 {
@@ -58,23 +87,23 @@ GTBCommunication::sendNopes(int i_nRetVal)
 }
 
 int 
-GTBCommunication::sendNumberOfCars(Request i_aPBReq)
+GTBCommunication::sendNumberOfCars(Request * i_aPBReq)
 {
   char nNumOfCars = 7;
   int nNumBytes;
   const char * pReqBuf;
 
-  pReqBuf = i_aPBReq.sreqtype().c_str();
-  cout << "Function: numberOfCars" << endl;
+  pReqBuf = i_aPBReq->sreqtype().c_str();
+  cout << "C: Function: numberOfCars: " << i_aPBReq->sreqtype() << endl;
   if(0 != strncmp("CARS", pReqBuf, 5))
   {
-    cerr << "Not CARS" << endl;
+    cerr << "C: Not CARS" << endl;
     return -3;
   }
-  cout << "Sending packet" << endl;
+  cout << "C: Sending packet" << endl;
 
   Response aPBRes;
-  aPBRes.set_nrespid(0);
+  aPBRes.set_nrespid(0); //Successful parse
   aPBRes.set_sresvalue("CARS");
   aPBRes.add_nresadd(nNumOfCars);
   string sResponse;
@@ -84,9 +113,9 @@ GTBCommunication::sendNumberOfCars(Request i_aPBReq)
       m_aSession, 
       &sResponse, 
       sizeof sResponse)) == -1){
-    cerr << "Error on send for cars: " << strerror(errno) << endl;
+    cerr << "C: Error on send for cars: " << strerror(errno) << endl;
   }
-  cout << "Number of bytes sent: " << nNumBytes << endl;
+  cout << "C: Number of bytes sent: " << nNumBytes << endl;
   return nNumBytes;
 }
 
@@ -338,14 +367,27 @@ GTBCommunication::dealWithReq (Request i_aPBReq, int i_fdSock)
    * Case 1: AUTH
    * Case 2: CARS
    */
+
+  if (i_aPBReq.IsInitialized())
+  {
+    if (i_aPBReq.has_nreqid())
+      cout << "Request ID: " << i_aPBReq.nreqid() << endl;
+    else
+      cout << "ID not set" << endl;
+    if (i_aPBReq.has_sreqtype())
+      cout << "Request type: " << i_aPBReq.sreqtype() << endl;
+    else
+      cout << "Type not set" << endl;
+  }
+  int npid = 1;
   switch (i_aPBReq.nreqid())
   {
     case 1: //AUTH
       cout << "Type AUTH, forking..." << endl;
-      if(!fork ())
+      if(!(npid = fork ()))
       {
         int nAuthRet;
-        cout << "Forked, processing request" << endl;
+        cout << "C: Forked, processing request" << endl;
         if(!(nAuthRet = authRequest (i_aPBReq, i_fdSock)))
 	{
           sendAOK ();
@@ -359,22 +401,20 @@ GTBCommunication::dealWithReq (Request i_aPBReq, int i_fdSock)
       }
       break;
     case 2: //CARS
-      cout << "Type CAR, forking...." << endl;
-      if(!fork())
+      cout << "C: Type CAR, forking...." << endl;
+      if(!(npid = fork()))
       {
-        cout << "Forked, retreiving number of cars" << endl;
-        if(sendNumberOfCars (i_aPBReq))
-        {
-          sendNumberOfCars (i_aPBReq);
-        }
-        cout << "Done....returning to Listening state\n" << endl;
+        cout << "C: " << getpid() << " Forked, retrieving number of cars" << endl;
+        if(sendNumberOfCars (&i_aPBReq) != 0)
+	  return sendFailureResponse(2);
+        cout << "Done....exiting parent\n" << endl;
         return 0;
       }
       break;
   }
+  cout << "Child PID: " << npid << " " << getpid() << endl;
   return 0;
 }
-
 
 int 
 GTBCommunication::listeningForClient (int i_fdSock)
@@ -439,6 +479,8 @@ GTBCommunication::listeningForClient (int i_fdSock)
       i++;
       nRetVal = gnutls_handshake (m_aSession);
       cout << "Return value: " << nRetVal << endl;
+      if ( nRetVal == -59 || nRetVal == -10)
+        break;
     } while (gnutls_error_is_fatal (nRetVal) != GNUTLS_E_SUCCESS);
     
     if ( nRetVal < 0)
@@ -446,6 +488,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
       cerr << i << " Failed to perform handshake, error code : ";
       cerr << gnutls_strerror(nRetVal) << endl;;
       cerr << "Closing connection..." << endl;
+      sendFailureResponse(3);
       close(fdAccepted);
       gnutls_deinit(m_aSession);
       continue;
@@ -489,15 +532,20 @@ GTBCommunication::listeningForClient (int i_fdSock)
     }
 
     vReqBuf[nNumBytes] = '\0';
-    cout << "Received Transmission: " << vReqBuf << endl;
+    cout << "Received Transmission Size: " << nNumBytes << endl;
 
     Request aPBReq;
     aPBReq.ParseFromString(vReqBuf);
+    cout << "After parse: Reqtype = " << aPBReq.sreqtype() << endl;
 
     if(!dealWithReq(aPBReq, fdAccepted))
       continue;
-		
-
-    close(fdAccepted);
+    else
+    {
+      close(fdAccepted);
+      gnutls_deinit(m_aSession);
+      break;
+    }
   }
+  exit(0);
 }

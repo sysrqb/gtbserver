@@ -99,9 +99,10 @@ class GTBCommunication {
     gnutls_session_t * getSession() { return &m_aSession; }
 
     /*Communication with client*/
+    int sendFailureResponse(int errorcode);
     int sendAOK();
     int sendNopes(int i_nRetVal);
-    int sendNumberOfCars(Request i_aPBReq);
+    int sendNumberOfCars(Request * i_aPBReq);
     int moveKey();
     int authRequest (Request i_aPBReq, int i_fdSock);
     int dealWithReq (Request i_sPBReq, int i_fdSock);
