@@ -30,16 +30,6 @@
 using namespace std;
 
 int 
-GTBCommunication::DHKERequest(string i_sReqBuf)
-{
-  const char * pReqBuf;
-
-  pReqBuf = i_sReqBuf.c_str();
-  //TODO
-  return 0;
-}
-
-int 
 GTBCommunication::sendAOK()
 {
   char cOk = 0;
@@ -68,13 +58,13 @@ GTBCommunication::sendNopes(int i_nRetVal)
 }
 
 int 
-GTBCommunication::sendNumberOfCars(string i_sReqBuf)
+GTBCommunication::sendNumberOfCars(Request i_aPBReq)
 {
   char nNumOfCars = 7;
   int nNumBytes;
   const char * pReqBuf;
 
-  pReqBuf = i_sReqBuf.c_str();
+  pReqBuf = i_aPBReq.sreqtype().c_str();
   cout << "Function: numberOfCars" << endl;
   if(0 != strncmp("CARS", pReqBuf, 5))
   {
@@ -82,10 +72,18 @@ GTBCommunication::sendNumberOfCars(string i_sReqBuf)
     return -3;
   }
   cout << "Sending packet" << endl;
+
+  Response aPBRes;
+  aPBRes.set_nrespid(0);
+  aPBRes.set_sresvalue("CARS");
+  aPBRes.add_nresadd(nNumOfCars);
+  string sResponse;
+  aPBRes.SerializeToString(&sResponse);
+
   if ((nNumBytes = gnutls_record_send (
       m_aSession, 
-      &nNumOfCars, 
-      sizeof nNumOfCars)) == -1){
+      &sResponse, 
+      sizeof sResponse)) == -1){
     cerr << "Error on send for cars: " << strerror(errno) << endl;
   }
   cout << "Number of bytes sent: " << nNumBytes << endl;
@@ -100,12 +98,12 @@ GTBCommunication::moveKey()
 }
 
 int 
-GTBCommunication::authRequest (string i_sReqBuf, int i_fdSock)
+GTBCommunication::authRequest (Request i_aPBReq, int i_fdSock)
 {
   int retval;
   string sHash;
 	
-  if(0 != i_sReqBuf.compare("AUTH"))
+  if(0 != i_aPBReq.sreqtype().compare("AUTH"))
   {
     cerr << "Not AUTH" << endl;
     return -3;
@@ -333,32 +331,22 @@ GTBCommunication::getSocket()
 }
 
 int 
-GTBCommunication::dealWithReq (string i_sReqBuf, int i_fdSock)
+GTBCommunication::dealWithReq (Request i_aPBReq, int i_fdSock)
 {
-  if(!i_sReqBuf.compare("CARS"))
+  /*
+   * Case 0: Curr
+   * Case 1: AUTH
+   * Case 2: CARS
+   */
+  switch (i_aPBReq.nreqid())
   {
-    cout << "Type CAR, forking...." << endl;
-    if(!fork())
-    {
-      cout << "Forked, retreiving number of cars" << endl;
-      if(sendNumberOfCars (i_sReqBuf))
-      {
-        sendNumberOfCars (i_sReqBuf);
-      }
-      cout << "Done....returning to Listening state\n" << endl;
-      return 0;
-    }
-  }
-  else
-  {
-    if(!i_sReqBuf.compare ("AUTH"))
-    {
+    case 1: //AUTH
       cout << "Type AUTH, forking..." << endl;
       if(!fork ())
       {
         int nAuthRet;
         cout << "Forked, processing request" << endl;
-        if(!(nAuthRet = authRequest (i_sReqBuf, i_fdSock)))
+        if(!(nAuthRet = authRequest (i_aPBReq, i_fdSock)))
 	{
           sendAOK ();
           moveKey();
@@ -369,28 +357,20 @@ GTBCommunication::dealWithReq (string i_sReqBuf, int i_fdSock)
         }
         return 0;
       }
-    } 
-    else
-    {
-      if(!i_sReqBuf.compare ("DHKE"))
+      break;
+    case 2: //CARS
+      cout << "Type CAR, forking...." << endl;
+      if(!fork())
       {
-        cout << "Type DHKE, forking..." << endl;
-        if(!fork())
-	{
-          int nAuthRet;
-          cout << "Forked, processing request" << endl;
-          if(!(nAuthRet = DHKERequest (i_sReqBuf)))
-	  {
-            sendAOK();
-          }
-          else
-	  {
-            sendNopes(nAuthRet);
-          }
-          return 0;
+        cout << "Forked, retreiving number of cars" << endl;
+        if(sendNumberOfCars (i_aPBReq))
+        {
+          sendNumberOfCars (i_aPBReq);
         }
+        cout << "Done....returning to Listening state\n" << endl;
+        return 0;
       }
-    }
+      break;
   }
   return 0;
 }
@@ -418,7 +398,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
     cout << "Initialize TLS Session" << endl;
     initTLSSession();
     gnutls_certificate_server_set_request (m_aSession, 
-                         GNUTLS_CERT_REQUIRE); //Require client to provide cert
+                        GNUTLS_CERT_REQUIRE); //Require client to provide cert
     gnutls_certificate_send_x509_rdn_sequence  (
                  m_aSession, 
 		 1); //REMOVE IN ORDER TO COMPLETE CERT EXCHANGE
@@ -459,7 +439,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
       i++;
       nRetVal = gnutls_handshake (m_aSession);
       cout << "Return value: " << nRetVal << endl;
-    } while (gnutls_error_is_fatal (nRetVal) == 0);
+    } while (gnutls_error_is_fatal (nRetVal) != GNUTLS_E_SUCCESS);
     
     if ( nRetVal < 0)
     {
@@ -511,7 +491,10 @@ GTBCommunication::listeningForClient (int i_fdSock)
     vReqBuf[nNumBytes] = '\0';
     cout << "Received Transmission: " << vReqBuf << endl;
 
-    if(!dealWithReq(vReqBuf, fdAccepted))
+    Request aPBReq;
+    aPBReq.ParseFromString(vReqBuf);
+
+    if(!dealWithReq(aPBReq, fdAccepted))
       continue;
 		
 

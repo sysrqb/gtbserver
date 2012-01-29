@@ -22,6 +22,8 @@
 #include "sqlconn.hpp"
 #include <errno.h>
 
+#include "communication.pb.h"
+
 //#ifndef gnutls_h
 //#define gnutls_h
 #include <gnutls/gnutls.h>
@@ -39,10 +41,10 @@
 #define DH_PK_ALGO "RSA"
 
 //CA, CERT, and CRL files
-#define KEYFILE "pem/key.pem"
-#define CAFILE "pem/cacrt.pem"
+#define KEYFILE "pem/keys/gtbskey.pem"
+#define CAFILE "pem/certs/cacrt.pem"
 #define CRLFILE "pem/cacrl.pem"
-#define CERTFILE "pem/ecrt.pem"
+#define CERTFILE "pem/certs/gtbscrt.pem"
 
 ///Sets port number for server to listen on
 #define PORT "4680"
@@ -99,11 +101,10 @@ class GTBCommunication {
     /*Communication with client*/
     int sendAOK();
     int sendNopes(int i_nRetVal);
-    int DHKERequest(std::string i_sReqBuf);
-    int sendNumberOfCars(std::string i_sReqBuf);
+    int sendNumberOfCars(Request i_aPBReq);
     int moveKey();
-    int authRequest (std::string i_sReqBuf, int i_fdSock);
-    int dealWithReq (std::string i_sReqBuf, int i_fdSock);
+    int authRequest (Request i_aPBReq, int i_fdSock);
+    int dealWithReq (Request i_sPBReq, int i_fdSock);
     int listeningForClient (int i_sockfd);
 };
 #endif

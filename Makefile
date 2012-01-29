@@ -16,26 +16,24 @@
 
 obj = gtbserver.o sqlconn.o gtbcommunication.o
 SRC=src/
-LIBS=./include/
-PLIBS=./protobuf/include/
-MYSQLOPTS = -Wl,-lmysqlcppconn,-lpthread,-lgnutls
-PKG_CONFIG_PATH=$(HOME)/repos/gtbserver/protobuf/lib/pkgconfig
-PKGCOPTS = `pkg-config gnutls --cflags --libs `
-CC=clang++ -ggdb -I$(PLIBS) -I$(LIBS)
+INCLUDE=include/
+LINKEROPTS = -Wl,-lmysqlcppconn,-lpthread,-lgnutls
+PKGCOPTS = `pkg-config gnutls --cflags --libs protobuf`
+CC=clang++ -ggdb -I$(INCLUDE)
 
 gtb : $(obj)
-	$(CC) $(MYSQLOPTS) -o gtbserver $(obj) $(PKGCOPTS)
+	$(CC) $(LINKEROPTS) -o gtbserver $(obj) communication.pb.o patron.pb.o $(PKGCOPTS)
 
 gtbserver.o : $(SRC)gtbserver.c $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc communication.pb.cc 
 	$(CC) -c $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)gtbserver.c $(SRC)communication.pb.cc $(SRC)patron.pb.cc
 
 communication.pb.cc : patron.pb.cc
 	./protobuf/bin/protoc -I$(SRC) -Iinclude $(SRC)communication.proto --cpp_out=$(SRC) --java_out=$(SRC)
-	mv $(SRC)communication.pb.h $(LIBS)
+	mv $(SRC)communication.pb.h $(INCLUDE)
 
 patron.pb.cc : 
 	./protobuf/bin/protoc -I$(SRC) $(SRC)patron.proto --cpp_out=$(SRC) --java_out=$(SRC)
-	mv $(SRC)patron.pb.h $(LIBS)
+	mv $(SRC)patron.pb.h $(INCLUDE)
 
 
 .Phony : clean

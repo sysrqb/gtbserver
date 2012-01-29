@@ -4,6 +4,7 @@ DOC
 *.sh
 cred.h
 pem/
+der/
 proto/
 test*
 .*
