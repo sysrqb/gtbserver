@@ -53,7 +53,7 @@
 #define BACKLOG 1
 
 //Sets number of bytes each request should be, incomming from client
-#define REQSIZE 5
+#define REQSIZE 9
 
 //Sets number of bytes each login request should be from a client
 #define LOGINSIZE 18

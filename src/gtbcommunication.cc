@@ -53,8 +53,9 @@ GTBCommunication::sendFailureResponse(int nerr)
   }
   string sResp;
   aPBRes.SerializeToString(&sResp);
-  cout << "Sending Failure Response" << endl;
+  cout << "C: Sending Failure Response" << endl;
   ssize_t nretval = gnutls_record_send(m_aSession, &sResp, sizeof(sResp));
+  cout << "C: Bytes sent: " << sizeof(sResp) << " ?= " << nretval << endl;
   return nretval;
 }
 
@@ -106,15 +107,38 @@ GTBCommunication::sendNumberOfCars(Request * i_aPBReq)
   aPBRes.set_nrespid(0); //Successful parse
   aPBRes.set_sresvalue("CARS");
   aPBRes.add_nresadd(nNumOfCars);
+  if (!aPBRes.IsInitialized())
+    cerr << "C: Response not properly formatted!" << endl;
+
+
+  int npbsize = aPBRes.ByteSize();
+/*  if ((nNumBytes = gnutls_record_send(m_aSession, &npbsize, aPBRes.ByteSize())) < 0)
+    cerr << "C: Error on sending size of buf: " << strerror(errno) << endl;
+  cout << " C: " << aPBRes.ByteSize() << ":" << nNumBytes << " bytes written: Size of Response" << endl;
+
+  char vchars[12] = { 'a', ' ', 'f', 'e', 'w', ' ', 'b', 'y', 't', 'e', 's', '\0'};
+  if ((nNumBytes = gnutls_record_send(m_aSession, vchars, sizeof(vchars))) < 0)
+    cerr << "C: Error on sending size of buf: " << strerror(errno) << endl;
+  cout << " C: " << sizeof(vchars) << ":" << nNumBytes << " bytes written: A few bytes" << endl;
+
+  string vtest = "Test 1 2 3 4";
+  if ((nNumBytes = gnutls_record_send(m_aSession, vtest.c_str(), sizeof(vtest))) < 0)
+    cerr << "C: Error on sending size of buf: " << strerror(errno) << endl;
+  cout << " C: " << sizeof(vtest) << ":" << nNumBytes << " bytes written: Test 1 2 3 4" << endl;
+*/
   string sResponse;
   aPBRes.SerializeToString(&sResponse);
 
   if ((nNumBytes = gnutls_record_send (
       m_aSession, 
-      &sResponse, 
-      sizeof sResponse)) == -1){
+      sResponse.c_str(), 
+      npbsize)) == -1){
     cerr << "C: Error on send for cars: " << strerror(errno) << endl;
   }
+  cout << "C: " << npbsize << ":" << nNumBytes << " Send: ";
+  for (int i = 0; i<sResponse.length(); i++)
+    cout << (int)sResponse.at(i) << " ";
+  cout << endl;
   cout << "C: Number of bytes sent: " << nNumBytes << endl;
   return nNumBytes;
 }
@@ -368,17 +392,6 @@ GTBCommunication::dealWithReq (Request i_aPBReq, int i_fdSock)
    * Case 2: CARS
    */
 
-  if (i_aPBReq.IsInitialized())
-  {
-    if (i_aPBReq.has_nreqid())
-      cout << "Request ID: " << i_aPBReq.nreqid() << endl;
-    else
-      cout << "ID not set" << endl;
-    if (i_aPBReq.has_sreqtype())
-      cout << "Request type: " << i_aPBReq.sreqtype() << endl;
-    else
-      cout << "Type not set" << endl;
-  }
   int npid = 1;
   switch (i_aPBReq.nreqid())
   {
@@ -405,7 +418,7 @@ GTBCommunication::dealWithReq (Request i_aPBReq, int i_fdSock)
       if(!(npid = fork()))
       {
         cout << "C: " << getpid() << " Forked, retrieving number of cars" << endl;
-        if(sendNumberOfCars (&i_aPBReq) != 0)
+        if(sendNumberOfCars (&i_aPBReq) < 0)
 	  return sendFailureResponse(2);
         cout << "Done....exiting parent\n" << endl;
         return 0;
@@ -435,6 +448,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
   nSinSize = sizeof aClientAddr;
   while(1)
   {
+    cout << endl;
     cout << "Initialize TLS Session" << endl;
     initTLSSession();
     gnutls_certificate_server_set_request (m_aSession, 
@@ -536,7 +550,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
 
     Request aPBReq;
     aPBReq.ParseFromString(vReqBuf);
-    cout << "After parse: Reqtype = " << aPBReq.sreqtype() << endl;
+    aPBReq.PrintDebugString();
 
     if(!dealWithReq(aPBReq, fdAccepted))
       continue;
