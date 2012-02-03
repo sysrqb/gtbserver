@@ -22,6 +22,11 @@
 #include <pthread.h>
 #endif
 
+#define MAX_SESSION_ID_SIZE 32
+#define MAX_SESSION_DATA_SIZE 512
+#define TLS_SESSION_CACHE 10
+
+
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -85,6 +90,126 @@ void *initGNUTLS( void * ptr)
   aComm.loadCertFiles();
   return NULL;
 }
+
+/* Functions and other stuff needed for session resuming.
+ * This is done using a very simple list which holds session ids
+ * and session data.
+ *
+ * Stolen from GNUTLS documentation
+ */
+#if __cplusplus
+extern "C" {
+#endif
+typedef struct
+{
+  char session_id[MAX_SESSION_ID_SIZE];
+  size_t session_id_size;
+
+  char session_data[MAX_SESSION_DATA_SIZE];
+  size_t session_data_size;
+} CACHE;
+
+static CACHE *cache_db;
+static int cache_db_ptr = 0;
+
+static void
+wrap_db_init (void)
+{
+
+  /* allocate cache_db */
+  cache_db = (CACHE *)calloc (1, TLS_SESSION_CACHE * sizeof (CACHE));
+}
+
+static void
+wrap_db_deinit (void)
+{
+  free (cache_db);
+  cache_db = NULL;
+  return;
+}
+
+static int
+wrap_db_store (void *dbf, gnutls_datum_t key, gnutls_datum_t data)
+{
+
+  if (cache_db == NULL)
+    return -1;
+
+  if (key.size > MAX_SESSION_ID_SIZE)
+    return -1;
+  if (data.size > MAX_SESSION_DATA_SIZE)
+    return -1;
+
+  memcpy (cache_db[cache_db_ptr].session_id, key.data, key.size);
+  cache_db[cache_db_ptr].session_id_size = key.size;
+
+  memcpy (cache_db[cache_db_ptr].session_data, data.data, data.size);
+  cache_db[cache_db_ptr].session_data_size = data.size;
+
+  cache_db_ptr++;
+  cache_db_ptr %= TLS_SESSION_CACHE;
+
+  return 0;
+}
+
+static gnutls_datum_t
+wrap_db_fetch (void *dbf, gnutls_datum_t key)
+{
+  gnutls_datum_t res = { NULL, 0 };
+  int i;
+
+  if (cache_db == NULL)
+    return res;
+
+  for (i = 0; i < TLS_SESSION_CACHE; i++)
+    {
+      if (key.size == cache_db[i].session_id_size &&
+	  memcmp (key.data, cache_db[i].session_id, key.size) == 0)
+	{
+
+
+	  res.size = cache_db[i].session_data_size;
+
+	  res.data = (unsigned char *) gnutls_malloc (res.size);
+	  if (res.data == NULL)
+	    return res;
+
+	  memcpy (res.data, cache_db[i].session_data, res.size);
+
+	  return res;
+	}
+    }
+  return res;
+}
+
+static int
+wrap_db_delete (void *dbf, gnutls_datum_t key)
+{
+  int i;
+
+  if (cache_db == NULL)
+    return -1;
+
+  for (i = 0; i < TLS_SESSION_CACHE; i++)
+    {
+      if (key.size == cache_db[i].session_id_size &&
+	  memcmp (key.data, cache_db[i].session_id, key.size) == 0)
+	{
+
+	  cache_db[i].session_id_size = 0;
+	  cache_db[i].session_data_size = 0;
+
+	  return 0;
+	}
+    }
+
+  return -1;
+
+}
+
+#if __cplusplus
+}
+#endif
 
 int 
 main(int argc, char *arv[])
