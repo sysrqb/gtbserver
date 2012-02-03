@@ -201,6 +201,8 @@ GTBCommunication::initTLSSession ()
   }
 //Request client cert
   gnutls_certificate_server_set_request (m_aSession, GNUTLS_CERT_REQUEST);
+  gnutls_db_set_store_function (m_aSession, c_store_connection);
+  gnutls_db_set_retrieve_function (m_aSession, c_retrieve_connection);
 }
 
 int
@@ -534,7 +536,6 @@ GTBCommunication::listeningForClient (int i_fdSock)
     }
 
     cout << "Storing connection information" << endl;
-
 
     cout << "Receiving request" << endl;
 

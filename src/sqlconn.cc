@@ -20,6 +20,46 @@
 
 using namespace std;
 
+#if __cplusplus
+extern "C" {
+#endif
+int c_store_connection (
+    void * ptr,
+    gnutls_datum_t session_id, 
+    gnutls_datum_t session_data)
+{
+  return cpp_store_connection (ptr, session_id, session_data);
+}
+    
+int cpp_store_connection(
+    void * ptr,
+    gnutls_datum_t session_id, 
+    gnutls_datum_t session_data)
+{
+  MySQLConn mysqlconn;
+  return mysqlconn.storeConnection(ptr, session_id, session_data);
+}
+
+gnutls_datum_t c_retrieve_connection (
+    void * ptr,
+    gnutls_datum_t session_id)
+{
+  return cpp_retrieve_connection (ptr, session_id);
+}
+    
+gnutls_datum_t cpp_retrieve_connection(
+    void * ptr,
+    gnutls_datum_t session_id)
+{
+  MySQLConn mysqlconn;
+  return mysqlconn.getConnection(ptr, session_id);
+}
+
+#if __cplusplus
+}
+#endif
+  
+
 int MySQLConn::storeConnection (
     void * ptr,
     gnutls_datum_t session_id, 
@@ -56,7 +96,7 @@ int MySQLConn::storeConnection (
   return 0;
 }
 
-gnutls_datum_t * MySQLConn::getConnection (
+gnutls_datum_t MySQLConn::getConnection (
     void * ptr, 
     gnutls_datum_t session_id)
 {
@@ -98,5 +138,5 @@ gnutls_datum_t * MySQLConn::getConnection (
     cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
     delete prepStmt;
   }
-  return retval;
+  return *retval;
 }

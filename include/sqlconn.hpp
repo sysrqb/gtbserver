@@ -50,6 +50,32 @@
     " WHERE ptr=? AND sessiondata=?"
 #define GETHOST(proto, host, port) proto host ":" port
 
+#if __cplusplus
+extern "C" {
+#endif
+
+extern int c_store_connection (
+    void * param,
+    gnutls_datum_t session_id,
+    gnutls_datum_t session_data);
+
+extern int cpp_store_connection (
+    void * ptr,
+    gnutls_datum_t session_id, 
+    gnutls_datum_t session_data);
+
+extern gnutls_datum_t c_retrieve_connection (
+    void * , 
+    gnutls_datum_t);
+
+extern gnutls_datum_t cpp_retrieve_connection (
+    void * ptr,
+    gnutls_datum_t session_id);
+
+#if __cplusplus
+}
+#endif
+
 
 class MySQLConn {
     sql::Driver *driver;
@@ -70,7 +96,7 @@ class MySQLConn {
 	void * param, 
 	gnutls_datum_t session_id, 
 	gnutls_datum_t session_data);
-    gnutls_datum_t *getConnection (
+    gnutls_datum_t getConnection (
         void * ptr, 
         gnutls_datum_t session_id);
     int storeCarInfo(
