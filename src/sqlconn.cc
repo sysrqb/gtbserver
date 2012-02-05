@@ -140,3 +140,22 @@ gnutls_datum_t MySQLConn::getConnection (
   }
   return *retval;
 }
+
+int MySQLConn::checkAuth(std::string i_snetid, std::string i_sauth, std::string i_scarnum)
+{
+  int retval (0);
+  //TODO
+  cout << "NetID: " << i_snetid << endl;
+  cout << "AUTH: " << i_sauth << endl;
+  cout << "Car Number: " << i_scarnum << endl;
+
+  if (i_snetid.compare("") == 0)
+    retval = 1;
+  if (i_sauth.compare("") == 0)
+    retval = retval | 2;
+  if (i_scarnum.compare("") == 0)
+    retval = retval | 4;
+
+  return retval;
+
+}

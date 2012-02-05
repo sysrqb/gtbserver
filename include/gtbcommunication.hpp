@@ -59,7 +59,7 @@
 #define LOGINSIZE 18
 
 //Sets number of bytes each authentication request should be from a client
-#define AUTHSIZE 32
+#define AUTHSIZE 60
 
 
 class GTBCommunication {
@@ -104,8 +104,11 @@ class GTBCommunication {
     int sendNopes(int i_nRetVal);
     int sendNumberOfCars(Request * i_aPBReq);
     int moveKey();
-    int authRequest (Request i_aPBReq, int i_fdSock);
-    int dealWithReq (Request i_sPBReq, int i_fdSock);
+    int authRequest (Request * i_aPBReq);
+    int dealWithReq (Request i_sPBReq);
     int listeningForClient (int i_sockfd);
+
+  private:
+    int sendResponse(int i_nRetVal);
 };
 #endif

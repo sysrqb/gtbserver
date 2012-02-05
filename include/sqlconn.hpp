@@ -102,7 +102,7 @@ class MySQLConn {
     int storeCarInfo(
         std::string ipaddr, 
 	int car);
-    int checkHash(std::string ptr2hash);
+    int checkAuth(std::string i_snetid, std::string i_sauth, std::string i_scarnum);
     int execAuth(std::string hash);
 };
 #endif

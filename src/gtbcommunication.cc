@@ -58,18 +58,34 @@ GTBCommunication::sendFailureResponse(int nerr)
   string sResp;
   aPBRes.SerializeToString(&sResp);
   cout << "C: Sending Failure Response" << endl;
-  ssize_t nretval = gnutls_record_send(m_aSession, &sResp, sizeof(sResp));
+  ssize_t nretval = gnutls_record_send(m_aSession, sResp.c_str(), sizeof(sResp));
   cout << "C: Bytes sent: " << sizeof(sResp) << " ?= " << nretval << endl;
   return nretval;
 }
 
 int 
-GTBCommunication::sendAOK()
+GTBCommunication::sendResponse(int i_nRetVal)
 {
-  char cOk = 0;
-  int nNumBytes;
+  int nNumBytes (0);
+  Response aPBRes;
 
-  if((nNumBytes = gnutls_record_send (m_aSession, &cOk, sizeof cOk)) == -1)
+  if (i_nRetVal)
+  {
+    aPBRes.set_nrespid(i_nRetVal);
+    aPBRes.set_sresvalue("Error");
+  }
+  else
+  {
+    aPBRes.set_nrespid(0);
+    aPBRes.set_sresvalue("Successful");
+  }
+
+  cout << "C: Buffer Contents:" << endl;
+  aPBRes.PrintDebugString();
+
+  string sResp = "";
+  aPBRes.SerializeToString(&sResp);
+  if((nNumBytes = gnutls_record_send (m_aSession, sResp.c_str(), aPBRes.ByteSize())) == -1)
   {
     cerr << "Error on send for OK: " << strerror(errno) << endl;
   }
@@ -155,23 +171,34 @@ GTBCommunication::moveKey()
 }
 
 int 
-GTBCommunication::authRequest (Request i_aPBReq, int i_fdSock)
+GTBCommunication::authRequest (Request * i_aPBReq)
 {
   int retval;
   string sHash;
 	
-  if(0 != i_aPBReq.sreqtype().compare("AUTH"))
+  if(0 != i_aPBReq->sreqtype().compare("AUTH"))
   {
-    cerr << "Not AUTH" << endl;
+    cerr << "c: Not AUTH" << endl;
     return -3;
   }
-  getClientInfo(i_fdSock);
-	/*if((retval = checkhash(*hash)) < 1){
-		fprintf(stderr, "Authenication Failed\n");
-		return retval;
-	}*/
-	
 
+  if (i_aPBReq->sparams_size() == 3)
+  {
+    if((retval = m_MySQLConn->checkAuth(
+        i_aPBReq->sparams(0), 
+	i_aPBReq->sparams(1), 
+	i_aPBReq->sparams(2)))){
+      cerr << "C: Authenication Failed: " << retval << endl;;
+      return retval;
+    }
+  }
+  else
+  {
+    cerr << "C: Missing Paramters: Only " << i_aPBReq->sparams_size() 
+        << " provided!" << endl;
+    return -1;
+  }
+	
   return 0;
 }
 
@@ -294,8 +321,6 @@ wrap_db_delete (void *dbf, gnutls_datum_t key)
 #if __cplusplus
 }
 #endif
-
-
 
 
 void
@@ -423,23 +448,6 @@ void * GTBCommunication::getInAddr (struct sockaddr *i_sa)
   return &(((struct sockaddr_in6*)i_sa)->sin6_addr);
 }
 
-
-void GTBCommunication::getClientInfo(int i_fdSock)
-{
-  int numbytes;
-  char vHash[AUTHSIZE];
-  cout<<"Get hash"<<endl;
-  if((numbytes = recv(i_fdSock, vHash, AUTHSIZE-1, 0)) == -1)
-  {
-    std::cerr<<"getClientInfo: reqrecv"<<endl;
-    exit(1);
-  }
-
-  vHash[numbytes] = '\0';
-  m_sHash = string(vHash);
-  cout<<"Received Hash: " << m_sHash << endl;
-}
-
 int 
 GTBCommunication::getSocket()
 {
@@ -518,7 +526,7 @@ GTBCommunication::getSocket()
 }
 
 int 
-GTBCommunication::dealWithReq (Request i_aPBReq, int i_fdSock)
+GTBCommunication::dealWithReq (Request i_aPBReq)
 {
   /*
    * Case 0: Curr
@@ -535,14 +543,14 @@ GTBCommunication::dealWithReq (Request i_aPBReq, int i_fdSock)
       {
         int nAuthRet;
         cout << "C: Forked, processing request" << endl;
-        if(!(nAuthRet = authRequest (i_aPBReq, i_fdSock)))
+        if(!(nAuthRet = authRequest (&i_aPBReq)))
 	{
-          sendAOK ();
+          sendResponse(0);
           moveKey();
         }
         else
         {
-          sendNopes(nAuthRet);
+          sendResponse(nAuthRet);
         }
         return 0;
       }
@@ -574,7 +582,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
 //char: vAddr (stores the IP Addr of the incoming connection so it can be diplayed)
   char vAddr[INET6_ADDRSTRLEN] = "";
 //char: reqbuf (request key)
-  char vReqBuf[REQSIZE] = "";
+  char vReqBuf[AUTHSIZE] = "";
   char * ntopRetVal;
 //int: numbytes (received)
   int nNumBytes=0;
@@ -658,6 +666,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
     if( gnutls_certificate_verify_peers2 (m_aSession, &nstatus) )
     {
       cerr << "Failed to verify client certificate, error code ";
+      //Send Plaintext message
       cerr << "Closing connection..." << endl;
       close(fdAccepted);
       gnutls_deinit(m_aSession);
@@ -677,21 +686,27 @@ GTBCommunication::listeningForClient (int i_fdSock)
 
     cout << "Receiving request" << endl;
 
-    if((nNumBytes = gnutls_record_recv (m_aSession, &vReqBuf, REQSIZE-1)) < 0)
-    //if((numbytes = recv(new_fd, &reqbuf, REQSIZE-1, 0)) == -1)
+    int nsize = 0;
+    if((nNumBytes = gnutls_record_recv (m_aSession, &nsize, REQSIZE)) < 0){
+      cerr << "Code reqrecv " << strerror(errno) << endl;
+      continue;
+    }
+
+    cout << "Incoming size: " << nsize << endl;
+      
+    if((nNumBytes = gnutls_record_recv (m_aSession, &vReqBuf, nsize)) < 0)
     {
       cerr << "Code reqrecv " << strerror(errno) << endl;
       continue;
     }
 
-    vReqBuf[nNumBytes] = '\0';
     cout << "Received Transmission Size: " << nNumBytes << endl;
 
     Request aPBReq;
     aPBReq.ParseFromString(vReqBuf);
     aPBReq.PrintDebugString();
 
-    if(!dealWithReq(aPBReq, fdAccepted))
+    if(!dealWithReq(aPBReq))
       continue;
     else
     {
