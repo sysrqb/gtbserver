@@ -6,7 +6,7 @@ cred.h
 pem/
 der/
 proto/
-gtb-*
+./gtb-*
 .*
 protobuf/
 src/edu
