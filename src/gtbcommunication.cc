@@ -64,34 +64,64 @@ GTBCommunication::sendFailureResponse(int nerr)
 }
 
 int 
-GTBCommunication::sendResponse(int i_nRetVal)
+GTBCommunication::sendResponse(
+    int i_nRetVal, 
+    Request * i_pbReq,
+    Response * i_pbRes,
+    PatronList * i_pbPL)
 {
   int nNumBytes (0);
   Response aPBRes;
-
-  if (i_nRetVal)
+  cout << "c: Replying with RetVal: " << i_nRetVal << endl;
+  if (i_pbReq == NULL && i_pbRes == NULL && i_pbPL == NULL)
   {
-    aPBRes.set_nrespid(i_nRetVal);
-    aPBRes.set_sresvalue("Error");
+
+
+    if (i_nRetVal)
+    {
+      aPBRes.set_nrespid(i_nRetVal);
+      aPBRes.set_sresvalue("Error");
+    }
+    else
+    {
+      aPBRes.set_nrespid(0);
+      aPBRes.set_sresvalue("Successful");
+    }
+
+    cout << "C: Buffer Contents:" << endl;
+    aPBRes.PrintDebugString();
+
+    string sResp = "";
+    aPBRes.SerializeToString(&sResp);
+    if((nNumBytes = gnutls_record_send (m_aSession, sResp.c_str(), aPBRes.ByteSize())) == -1)
+    {
+      cerr << "ERROR: C: Error on send for OK: " << strerror(errno) << endl;
+    }
+    cout << "C: Number of bytes sent: " << nNumBytes << endl;
+	
+    return nNumBytes;
   }
   else
-  {
-    aPBRes.set_nrespid(0);
-    aPBRes.set_sresvalue("Successful");
-  }
+    if (i_pbRes)
+    {
+      cout << "C: Buffer Contents: " << endl;
+      i_pbRes->PrintDebugString();
+      i_pbRes->set_nrespid(i_nRetVal);
+      i_pbRes->set_sresvalue("CURR");
+      i_pbRes->CheckInitialized();
+      string spbRes = "";
+      i_pbRes->SerializeToString(&spbRes);
 
-  cout << "C: Buffer Contents:" << endl;
-  aPBRes.PrintDebugString();
-
-  string sResp = "";
-  aPBRes.SerializeToString(&sResp);
-  if((nNumBytes = gnutls_record_send (m_aSession, sResp.c_str(), aPBRes.ByteSize())) == -1)
-  {
-    cerr << "Error on send for OK: " << strerror(errno) << endl;
-  }
-  cout << "Number of bytes sent: " << nNumBytes << endl;
+      if((nNumBytes = gnutls_record_send (m_aSession, spbRes.c_str(), aPBRes.ByteSize())) == -1)
+      {
+        cerr << "ERROR: C: Error on send for OK: " << strerror(errno) << endl;
+      }
+      cout << "C: Number of bytes sent: " << nNumBytes << endl;
 	
-  return nNumBytes;
+      return nNumBytes;
+    }
+  cerr << "ERROR: C: Failed to send response!" << endl;
+  return -1;
 }
 
 int 
@@ -118,7 +148,7 @@ GTBCommunication::sendNumberOfCars(Request * i_aPBReq)
   cout << "C: Function: numberOfCars: " << i_aPBReq->sreqtype() << endl;
   if(0 != strncmp("CARS", pReqBuf, 5))
   {
-    cerr << "C: Not CARS" << endl;
+    cerr << "ERROR: C: Not CARS" << endl;
     return -3;
   }
   cout << "C: Sending packet" << endl;
@@ -128,7 +158,7 @@ GTBCommunication::sendNumberOfCars(Request * i_aPBReq)
   aPBRes.set_sresvalue("CARS");
   aPBRes.add_nresadd(nNumOfCars);
   if (!aPBRes.IsInitialized())
-    cerr << "C: Response not properly formatted!" << endl;
+    cerr << "ERROR: C: Response not properly formatted!" << endl;
 
 
   int npbsize = aPBRes.ByteSize();
@@ -153,7 +183,7 @@ GTBCommunication::sendNumberOfCars(Request * i_aPBReq)
       m_aSession, 
       sResponse.c_str(), 
       npbsize)) == -1){
-    cerr << "C: Error on send for cars: " << strerror(errno) << endl;
+    cerr << "ERROR: C: Error on send for cars: " << strerror(errno) << endl;
   }
   cout << "C: " << npbsize << ":" << nNumBytes << " Send: ";
   for (int i = 0; i<sResponse.length(); i++)
@@ -178,7 +208,7 @@ GTBCommunication::authRequest (Request * i_aPBReq)
 	
   if(0 != i_aPBReq->sreqtype().compare("AUTH"))
   {
-    cerr << "c: Not AUTH" << endl;
+    cerr << "ERROR: C: Not AUTH" << endl;
     return -3;
   }
 
@@ -188,19 +218,47 @@ GTBCommunication::authRequest (Request * i_aPBReq)
         i_aPBReq->sparams(0), 
 	i_aPBReq->sparams(1), 
 	i_aPBReq->sparams(2)))){
-      cerr << "C: Authenication Failed: " << retval << endl;;
+      cerr << "ERROR: C: Authenication Failed: " << retval << endl;;
       return retval;
     }
   }
   else
   {
-    cerr << "C: Missing Paramters: Only " << i_aPBReq->sparams_size() 
+    cerr << "ERROR: C: Missing Paramters: Only " << i_aPBReq->sparams_size() 
         << " provided!" << endl;
     return -1;
   }
+
+  //TODO Store IP Address, car num, etc for checking later
 	
   return 0;
 }
+
+int 
+GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
+{
+  int retval;
+
+  /*string sRequest = "";
+  i_aPBReq->SerializeToString(&sRequest);
+  for (int i = 0; i<sRequest.length(); i++)
+    cout << (int)sRequest.at(i) << " ";
+  cout << endl;
+*/
+  if(0 != i_aPBReq->sreqtype().compare("CURR"))
+  {
+    cerr << "ERROR: C: Not CURR: " << i_aPBReq->sreqtype()  << endl;
+    i_pbRes->set_nrespid(-1);
+    i_pbRes->set_sresvalue("Not CURR");
+    return -2;
+  }
+  cout << "C: Getting Current Rides" << endl;
+  PatronList * apbPL = i_pbRes->mutable_plpatronlist();
+  apbPL = new PatronList();
+  m_MySQLConn->getCurr(5, apbPL);
+  return 0;
+}
+
 
 /* Functions and other stuff needed for session resuming.
  * This is done using a very simple list which holds session ids
@@ -332,13 +390,13 @@ GTBCommunication::initTLSSession ()
  //Initialize session
   if ((retval = gnutls_init (&m_aSession, GNUTLS_SERVER)))
   {
-    cerr << "initTLSSession: gnutls_init error code: %d" << retval << endl;
+    cerr << "ERROR: initTLSSession: gnutls_init error code: %d" << retval << endl;
     exit(1);
   }
   //Sets priority of session, i.e. specifies which crypto algos to use
   if ((retval = gnutls_priority_set (m_aSession, *m_pPriorityCache))) 
   {
-    cerr << "initTLSSession: gnutls_priority_set error code: %d" << retval << endl;
+    cerr << "ERROR: initTLSSession: gnutls_priority_set error code: %d" << retval << endl;
     exit(1);
   }
  //Sets the needed credentials for the specified type; an x509 cert, in this case
@@ -347,7 +405,7 @@ GTBCommunication::initTLSSession ()
       GNUTLS_CRD_CERTIFICATE,
       *m_pX509Cred))) 
   {
-    cerr << "initTLSSession: gnutls_credentials_set error code:  %d" 
+    cerr << "ERROR: initTLSSession: gnutls_credentials_set error code:  %d" 
         << retval << endl;
     exit (1);
   }
@@ -398,7 +456,7 @@ GTBCommunication::loadCertFiles ()
       cout << "loadCertFiles: gnutls_certificate_set_x509_trust_file: " << 
           "certs loaded: " << retval << endl;
     else
-      cerr << "loadCertFiles: gnutls_certificate_set_x509_trust_file " << 
+      cerr << "ERROR: loadCertFiles: gnutls_certificate_set_x509_trust_file " << 
           "error code: " << strerror(retval) << endl;
   }
   cout << "loadCertFiles: load CSL" << endl;
@@ -406,7 +464,7 @@ GTBCommunication::loadCertFiles ()
                                         GNUTLS_X509_FMT_PEM)) < 1)
   {
     //TODO
-    cerr << "loadCertFiles: gnutls_certificate_set_x509_crl_file error code: %d"
+    cerr << "ERROR: loadCertFiles: gnutls_certificate_set_x509_crl_file error code: %d"
         << retval << endl;
   }
     
@@ -416,7 +474,7 @@ GTBCommunication::loadCertFiles ()
 		   CERTFILE,
 		   KEYFILE,
 		   GNUTLS_X509_FMT_PEM)))
-      cerr << "loadCertFiles: gnutls_certificate_set_x509_key_file " << 
+      cerr << "ERROR: loadCertFiles: gnutls_certificate_set_x509_key_file " << 
           "error code: " << strerror(retval) << endl;
   
 
@@ -429,7 +487,7 @@ GTBCommunication::loadCertFiles ()
   if((retval = gnutls_priority_init (m_pPriorityCache, GNUTLS_PRIORITY, &cErrLoc)))
   {
     //TODO
-    cerr << "loadCertFiles: gnutls_priority_init error code: &s" << *cErrLoc << endl;
+    cerr << "ERROR: loadCertFiles: gnutls_priority_init error code: &s" << *cErrLoc << endl;
   }
 
   cout << "Set priority: " << GNUTLS_PRIORITY << endl;
@@ -476,7 +534,7 @@ GTBCommunication::getSocket()
 //Retrieve addr and socket
   if((nRV = getaddrinfo(NULL, PORT, &aHints, &pServinfo)) != 0)
   {
-    cerr << "getaddrinfo: " << gai_strerror(nRV) << endl;
+    cerr << "ERROR: getaddrinfo: " << gai_strerror(nRV) << endl;
     return 1;
   }
 
@@ -488,7 +546,7 @@ GTBCommunication::getSocket()
     if ((fdSock= socket(pIterator->ai_family, pIterator->ai_socktype, 
       pIterator->ai_protocol)) == -1) 
     { //endpoint, e.g. filedescriptor, then it returns -1,
-      cerr << "server: socket" << endl; //so continue to the next addr
+      cerr << "ERROR: server: socket" << endl; //so continue to the next addr
       continue;
     }
 
@@ -498,14 +556,14 @@ GTBCommunication::getSocket()
 		  &nYes, //If unsuccessful in setting socket options
 		  sizeof nYes) == -1)
     { //exit on error
-      cerr << "setsockopt" << endl;
+      cerr << "ERROR: setsockopt" << endl;
       exit(1);
     }
 
     if(bind(fdSock, pIterator->ai_addr, pIterator->ai_addrlen) == -1)
     { //Assign a name to an addr
       close(fdSock);	//If unsuccessful, print error and check next
-      cerr << "server: bind" << endl;
+      cerr << "ERROR: server: bind" << endl;
       continue;
     }
 
@@ -514,7 +572,7 @@ GTBCommunication::getSocket()
 
   if(pIterator == NULL)
   {
-    cerr << "server: Failed to bind for unknown reason" << "\n" <<
+    cerr << "ERROR: server: Failed to bind for unknown reason" << "\n" <<
         " Iterated through loop" << i << " times" << endl;
     freeaddrinfo(pServinfo); //no longer need this struct
     return 2;
@@ -529,15 +587,35 @@ int
 GTBCommunication::dealWithReq (Request i_aPBReq)
 {
   /*
-   * Case 0: Curr
-   * Case 1: AUTH
-   * Case 2: CARS
+   * Case 1: Curr
+   * Case 2: AUTH
+   * Case 3: CARS
    */
 
   int npid = 1;
   switch (i_aPBReq.nreqid())
   {
-    case 1: //AUTH
+    case 1: //CURRent Rides
+      cout << "Type CURR, forking..." << endl;
+      if(!(npid = fork ()))
+      {
+        int nCurrRet;
+        cout << "C: Forked, processing request" << endl;
+	Response * apbRes;
+        if(!(nCurrRet = currRequest (&i_aPBReq, apbRes)))
+	{
+	  cout << "C: Sending Response for CURR" << endl;
+          sendResponse(0, NULL, apbRes, NULL);
+        }
+        else
+        {
+	  cerr << "ERROR: C: Sending ERROR Response for CURR" << endl;
+          sendResponse(nCurrRet, NULL, apbRes, NULL);
+	}
+	return 0;
+      }
+      break;
+    case 2: //AUTH
       cout << "Type AUTH, forking..." << endl;
       if(!(npid = fork ()))
       {
@@ -545,17 +623,17 @@ GTBCommunication::dealWithReq (Request i_aPBReq)
         cout << "C: Forked, processing request" << endl;
         if(!(nAuthRet = authRequest (&i_aPBReq)))
 	{
-          sendResponse(0);
+          sendResponse(0, NULL, NULL, NULL);
           moveKey();
         }
         else
         {
-          sendResponse(nAuthRet);
+          sendResponse(nAuthRet, NULL, NULL, NULL);
         }
         return 0;
       }
       break;
-    case 2: //CARS
+    case 3: //CARS
       cout << "C: Type CAR, forking...." << endl;
       if(!(npid = fork()))
       {
@@ -610,7 +688,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
     cout << "accept fdAccepted:" << fdAccepted << endl;
     if (fdAccepted == -1)
     {
-      cerr << "Error at accept!" << endl;
+      cerr << "ERROR: Error at accept!" << endl;
       continue;
     }
 
@@ -620,9 +698,9 @@ GTBCommunication::listeningForClient (int i_fdSock)
 
     if ( vAddr == NULL ) 
     {
-      cerr << "Failed to convert the client IP Address!";
+      cerr << "ERROR: Failed to convert the client IP Address!";
       cerr << " Error: " << strerror(errno) << endl;
-      cerr << "Closing connection..." << endl;
+      cerr << "ERROR: Closing connection..." << endl;
       close(fdAccepted);
       continue;
     }
@@ -647,7 +725,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
     
     if ( nRetVal < 0)
     {
-      cerr << i << " Failed to perform handshake, error code : ";
+      cerr << "ERROR " << i << ": Failed to perform handshake, error code : ";
       cerr << gnutls_strerror(nRetVal) << endl;;
       cerr << "Closing connection..." << endl;
       sendFailureResponse(3);
@@ -665,7 +743,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
     unsigned int nstatus;
     if( gnutls_certificate_verify_peers2 (m_aSession, &nstatus) )
     {
-      cerr << "Failed to verify client certificate, error code ";
+      cerr << "ERROR: Failed to verify client certificate, error code ";
       //Send Plaintext message
       cerr << "Closing connection..." << endl;
       close(fdAccepted);
@@ -675,7 +753,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
 
     if (nstatus)
     {
-      cerr << "Failed to verify client certificate, error code ";
+      cerr << "ERROR: Failed to verify client certificate, error code ";
       cerr << "Closing connection..." << endl;
       close(fdAccepted);
       gnutls_deinit(m_aSession);
@@ -688,7 +766,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
 
     int nsize = 0;
     if((nNumBytes = gnutls_record_recv (m_aSession, &nsize, REQSIZE)) < 0){
-      cerr << "Code reqrecv " << strerror(errno) << endl;
+      cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
       continue;
     }
 
@@ -696,7 +774,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
       
     if((nNumBytes = gnutls_record_recv (m_aSession, &vReqBuf, nsize)) < 0)
     {
-      cerr << "Code reqrecv " << strerror(errno) << endl;
+      cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
       continue;
     }
 
@@ -704,8 +782,16 @@ GTBCommunication::listeningForClient (int i_fdSock)
 
     Request aPBReq;
     aPBReq.ParseFromString(vReqBuf);
+
+    cout << "Request: " << endl;
+    for (int i = 0; i<nsize; i++)
+      cout << (int)vReqBuf[i] << " ";
+    cout << endl;
+
+    cout << "Print Debug String: " << endl;
     aPBReq.PrintDebugString();
 
+    cout << "\nHandle Request" << endl;
     if(!dealWithReq(aPBReq))
       continue;
     else

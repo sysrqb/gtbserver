@@ -23,6 +23,10 @@
 #include <errno.h>
 
 #include "communication.pb.h"
+#ifndef patronpb
+#define patronpb
+#include "patron.pb.h"
+#endif
 
 //#ifndef gnutls_h
 //#define gnutls_h
@@ -105,10 +109,14 @@ class GTBCommunication {
     int sendNumberOfCars(Request * i_aPBReq);
     int moveKey();
     int authRequest (Request * i_aPBReq);
+    int currRequest (Request * i_aPBReq, Response * i_apbRes);
     int dealWithReq (Request i_sPBReq);
     int listeningForClient (int i_sockfd);
 
   private:
-    int sendResponse(int i_nRetVal);
+    int sendResponse(int i_nRetVal, 
+        Request * i_pbReq, 
+	Response * i_pbRes, 
+	PatronList * i_pbPL);
 };
 #endif

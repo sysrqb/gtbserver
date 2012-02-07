@@ -159,3 +159,17 @@ int MySQLConn::checkAuth(std::string i_snetid, std::string i_sauth, std::string 
   return retval;
 
 }
+
+int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl)
+{
+  PatronInfo * apbPI;
+  apbPI = i_apbPatl->add_patron();
+  //i_apbPatl->add_patron();
+  cout << "Getting Current Rides" << endl;
+  apbPI->set_name("Test Name 1");
+  apbPI->set_passangers(5);
+  apbPI->set_status("Waiting");
+  apbPI->set_pid(1);
+
+  return 0;
+}

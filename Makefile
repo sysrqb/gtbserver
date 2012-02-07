@@ -16,10 +16,12 @@
 
 obj = gtbserver.o sqlconn.o gtbcommunication.o
 SRC=src/
+TEST=test/
 INCLUDE=include/
 LINKEROPTS = -Wl,-lmysqlcppconn,-lpthread,-lgnutls
 PKGCOPTS = `pkg-config gnutls --cflags --libs protobuf`
 CC=clang++ -ggdb -I$(INCLUDE)
+GTEST=../gtest
 
 gtb : $(obj)
 	$(CC) $(LINKEROPTS) -o gtbserver $(obj) communication.pb.o patron.pb.o $(PKGCOPTS)
@@ -35,6 +37,24 @@ patron.pb.cc :
 	./protobuf/bin/protoc -I$(SRC) $(SRC)patron.proto --cpp_out=$(SRC) --java_out=$(SRC)
 	mv $(SRC)patron.pb.h $(INCLUDE)
 
+
+##############
+## TESTING ###
+##############
+
+test : gtest-all.cc
+	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-curr $(TEST)gtb-test-curr.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
+
+gtest-all.cc : gtest_main.o
+	$(CC) -I$(GTEST)/include -I$(GTEST) -c $(GTEST)/src/gtest-all.cc
+	ar -rv libgtest.a gtest-all.o gtest_main.o
+
+gtest_main.o : 
+	$(CC) -I$(GTEST)/include -I$(GTEST) -c $(GTEST)/src/gtest_main.cc
+	
+
+cleantest:
+	rm gtb-test-*
 
 .Phony : clean
 clean :

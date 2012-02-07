@@ -41,6 +41,11 @@
 #include "cred.h"
 #include <stdlib.h>
 
+#ifndef patronpb
+#define patronpb
+#include "patron.pb.h"
+#endif
+
 #define HASHSTMT  "SELECT car FROM activeusers WHERE nightlyhash = ?"
 //#define STMT	"SELECT nightlyhash FROM activeusers"
 #define DEBUG 1
@@ -76,7 +81,6 @@ extern gnutls_datum_t cpp_retrieve_connection (
 }
 #endif
 
-
 class MySQLConn {
     sql::Driver *driver;
     sql::Connection *con;
@@ -104,6 +108,7 @@ class MySQLConn {
 	int car);
     int checkAuth(std::string i_snetid, std::string i_sauth, std::string i_scarnum);
     int execAuth(std::string hash);
+    int getCurr(int carnum, PatronList * i_apbpatl);
 };
 #endif
 
