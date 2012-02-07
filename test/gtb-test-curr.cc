@@ -21,30 +21,26 @@
 #include "gtest/gtest.h"
 #include "patron.pb.h"
 #include "communication.pb.h"
-#include <iostream>
 
 TEST(GETCURRENT, CallsgetCurr)
 {
   MySQLConn * aMySQLConn;
-  Response * apbRes;
+  Response apbRes;
 
-  PatronList * apbPL = apbRes->mutable_plpatronlist();
-  apbPL = new PatronList();
+  PatronList * apbPL = apbRes.mutable_plpatronlist();
   long npladdr = (long)apbPL;
-  std::cout << "Address = " << npladdr << std::endl;
 
   EXPECT_NE(0, npladdr);
-  EXPECT_TRUE(apbRes->has_plpatronlist());
+  EXPECT_TRUE(apbRes.has_plpatronlist());
   EXPECT_EQ(0, aMySQLConn->getCurr(5, apbPL));
 }
 
 TEST(GETCURRENT, GetNewPatron)
 {
-  Response * apbRes;
+  Response apbRes;
 
-  PatronList * apbPL = apbRes->mutable_plpatronlist();
-  EXPECT_NE(0, apbPL->patron_size());
-  apbPL = new PatronList();
+  PatronList * apbPL = apbRes.mutable_plpatronlist();
+  EXPECT_EQ(0, apbPL->patron_size());
   apbPL->clear_patron();
   EXPECT_EQ(0, apbPL->patron_size());
   PatronInfo * apbPI = apbPL->add_patron();
@@ -55,10 +51,9 @@ TEST(GETCURRENT, SendResponse)
 {
   MySQLConn * aMySQLConn;
   GTBCommunication * aGtBComm;
-  Response * apbRes;
+  Response apbRes;
 
-  PatronList * apbPL = apbRes->mutable_plpatronlist();
-  apbPL = new PatronList();
+  PatronList * apbPL = apbRes.mutable_plpatronlist();
   EXPECT_EQ(0, aMySQLConn->getCurr(5, apbPL));
 
   Response apbRes2;
@@ -67,10 +62,9 @@ TEST(GETCURRENT, SendResponse)
   apbRes2.PrintDebugString();
   apbRes2.CheckInitialized();
 
-  apbRes->set_sresvalue("CURR");
-  apbRes->set_nrespid(12345);
-  apbRes->PrintDebugString();
-  apbRes->CheckInitialized();
+  apbRes.set_sresvalue("CURR");
+  apbRes.set_nrespid(12345);
+  apbRes.CheckInitialized();
   std::string spbRes = "";
-  EXPECT_TRUE(apbRes->SerializeToString(&spbRes));
+  EXPECT_TRUE(apbRes.SerializeToString(&spbRes));
 }

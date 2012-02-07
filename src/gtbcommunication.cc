@@ -601,16 +601,16 @@ GTBCommunication::dealWithReq (Request i_aPBReq)
       {
         int nCurrRet;
         cout << "C: Forked, processing request" << endl;
-	Response * apbRes;
-        if(!(nCurrRet = currRequest (&i_aPBReq, apbRes)))
+	Response apbRes;
+        if(!(nCurrRet = currRequest (&i_aPBReq, &apbRes)))
 	{
 	  cout << "C: Sending Response for CURR" << endl;
-          sendResponse(0, NULL, apbRes, NULL);
+          sendResponse(0, NULL, &apbRes, NULL);
         }
         else
         {
 	  cerr << "ERROR: C: Sending ERROR Response for CURR" << endl;
-          sendResponse(nCurrRet, NULL, apbRes, NULL);
+          sendResponse(nCurrRet, NULL, &apbRes, NULL);
 	}
 	return 0;
       }
