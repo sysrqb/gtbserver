@@ -105,14 +105,23 @@ GTBCommunication::sendResponse(
     if (i_pbRes)
     {
       cout << "C: Buffer Contents: " << endl;
-      i_pbRes->PrintDebugString();
       i_pbRes->set_nrespid(i_nRetVal);
       i_pbRes->set_sresvalue("CURR");
       i_pbRes->CheckInitialized();
+      i_pbRes->PrintDebugString();
       string spbRes = "";
       i_pbRes->SerializeToString(&spbRes);
+      for (int i =0; i<spbRes.length(); i++)
+        cout << (int)spbRes.at(i) << " ";
+      cout << endl;
+      int nsize = i_pbRes->ByteSize();
 
-      if((nNumBytes = gnutls_record_send (m_aSession, spbRes.c_str(), aPBRes.ByteSize())) == -1)
+      if((nNumBytes = gnutls_record_send (m_aSession, &nsize, 1)) == -1)
+      {
+        cerr << "ERROR: C: Error on send for OK: " << strerror(errno) << endl;
+      }
+
+      if((nNumBytes = gnutls_record_send (m_aSession, spbRes.c_str(), nsize)) == -1)
       {
         cerr << "ERROR: C: Error on send for OK: " << strerror(errno) << endl;
       }
