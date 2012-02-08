@@ -262,9 +262,7 @@ GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
     return -2;
   }
   cout << "C: Getting Current Rides" << endl;
-  PatronList * apbPL = i_pbRes->mutable_plpatronlist();
-  apbPL = new PatronList();
-  m_MySQLConn->getCurr(5, apbPL);
+  m_MySQLConn->getCurr(5, i_pbRes->mutable_plpatronlist());
   return 0;
 }
 
@@ -621,6 +619,7 @@ GTBCommunication::dealWithReq (Request i_aPBReq)
 	  cerr << "ERROR: C: Sending ERROR Response for CURR" << endl;
           sendResponse(nCurrRet, NULL, &apbRes, NULL);
 	}
+	exit(0);
 	return 0;
       }
       break;
@@ -639,6 +638,7 @@ GTBCommunication::dealWithReq (Request i_aPBReq)
         {
           sendResponse(nAuthRet, NULL, NULL, NULL);
         }
+	exit(0);
         return 0;
       }
       break;
@@ -650,6 +650,7 @@ GTBCommunication::dealWithReq (Request i_aPBReq)
         if(sendNumberOfCars (&i_aPBReq) < 0)
 	  return sendFailureResponse(2);
         cout << "Done....exiting parent\n" << endl;
+	exit(0);
         return 0;
       }
       break;

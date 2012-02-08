@@ -170,6 +170,7 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl)
   apbPI->set_passangers(5);
   apbPI->set_status("Waiting");
   apbPI->set_pid(1);
+  apbPI->PrintDebugString();
 
   return 0;
 }
