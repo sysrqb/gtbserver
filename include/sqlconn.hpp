@@ -53,6 +53,8 @@
     "(ptr, sessionkey, sessiondata) values (?, ?, ?)"
 #define GETSESSSTMT "SELECT sessionkey FROM sessionconnection"\
     " WHERE ptr=? AND sessiondata=?"
+#define GETCURRRIDES "SELECT * FROM saferide.rides WHERE ridedate=? and status=? " \
+    "ORDER BY car ASC"
 #define GETHOST(proto, host, port) proto host ":" port
 
 #if __cplusplus

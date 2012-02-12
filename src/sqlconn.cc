@@ -175,5 +175,42 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, int old[])
   apbPI->set_pid(1);
   apbPI->PrintDebugString();
 
+  
+  sql::PreparedStatement *prepStmt;
+  sql::ResultSet *res;
+
+  try
+  {
+    prepStmt = con->prepareStatement(GETCURRRIDES);
+    prepStmt->setString(1, "2012-02-11");
+    prepStmt->setString(2, "riding");
+
+    cout << "Retrieving Rides" << endl;
+
+    res = prepStmt->executeQuery();
+    delete prepStmt;
+  
+    while ( res->next() ) {
+      apbPI = i_apbPatl->add_patron();
+      apbPI->set_name(res->getString("name"));
+      apbPI->set_passangers(res->getInt("riders"));
+      apbPI->set_status(res->getString("status"));
+      apbPI->set_pickup(res->getString("pickup"));
+      apbPI->set_dropoff(res->getString("dropoff"));
+      apbPI->set_timetaken(res->getString("timetaken"));
+      apbPI->set_pid(res->getInt("num"));
+    }
+    
+    delete res;
+  }
+  catch (sql::SQLException &e)
+  {
+    cerr << "ERROR: SQLException in " << __FILE__;
+    cerr << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+    cerr << "ERROR: " << e.what();
+    cerr << " (MySQL error code: " << e.getErrorCode();
+    cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
+    delete prepStmt;
+  }
   return 0;
 }
