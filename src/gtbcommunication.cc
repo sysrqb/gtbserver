@@ -111,9 +111,6 @@ GTBCommunication::sendResponse(
       i_pbRes->PrintDebugString();
       string spbRes = "";
       i_pbRes->SerializeToString(&spbRes);
-      for (int i =0; i<spbRes.length(); i++)
-        cout << (int)spbRes.at(i) << " ";
-      cout << endl;
       int nsize = i_pbRes->ByteSize();
 
       Response aTmpResp;
@@ -122,10 +119,20 @@ GTBCommunication::sendResponse(
       string sTmpResp = "";
       aTmpResp.SerializeToString(&sTmpResp);
 
-      if((nNumBytes = gnutls_record_send (m_aSession, sTmpResp.c_str(), aTmpResp.ByteSize())) == -1)
+      cout << "Size of pre-payload: " << sTmpResp.length() << " content: " << endl;
+      for (int i =0; i<sTmpResp.length(); i++)
+        cout << (int)sTmpResp.at(i) << " ";
+      cout << endl;
+
+      if((nNumBytes = gnutls_record_send (m_aSession, sTmpResp.c_str(), sTmpResp.length())) == -1)
       {
         cerr << "ERROR: C: Error on send for OK: " << strerror(errno) << endl;
       }
+
+      cout << "Size of payload: " << sTmpResp.length() << " content: " << endl;
+      for (int i =0; i<spbRes.length(); i++)
+        cout << (int)spbRes.at(i) << " ";
+      cout << endl;
 
       if((nNumBytes = gnutls_record_send (m_aSession, spbRes.c_str(), nsize)) == -1)
       {
