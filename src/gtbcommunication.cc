@@ -129,7 +129,7 @@ GTBCommunication::sendResponse(
         cerr << "ERROR: C: Error on send for OK: " << strerror(errno) << endl;
       }
 
-      cout << "Size of payload: " << sTmpResp.length() << " content: " << endl;
+      cout << "Size of payload: " << spbRes.length() << " content: " << endl;
       for (int i =0; i<spbRes.length(); i++)
         cout << (int)spbRes.at(i) << " ";
       cout << endl;
