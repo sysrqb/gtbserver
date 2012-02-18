@@ -116,7 +116,13 @@ GTBCommunication::sendResponse(
       cout << endl;
       int nsize = i_pbRes->ByteSize();
 
-      if((nNumBytes = gnutls_record_send (m_aSession, &nsize, 1)) == -1)
+      Response aTmpResp;
+      aTmpResp.set_nrespid(nsize);
+      aTmpResp.set_sresvalue("SIZE");
+      string sTmpResp = NULL;
+      aTmpResp.SerializeToString(&sTmpResp);
+
+      if((nNumBytes = gnutls_record_send (m_aSession, sTmpResp.c_str(), aTmpResp.ByteSize())) == -1)
       {
         cerr << "ERROR: C: Error on send for OK: " << strerror(errno) << endl;
       }
