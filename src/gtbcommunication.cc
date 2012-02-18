@@ -119,7 +119,7 @@ GTBCommunication::sendResponse(
       Response aTmpResp;
       aTmpResp.set_nrespid(nsize);
       aTmpResp.set_sresvalue("SIZE");
-      string sTmpResp = NULL;
+      string sTmpResp = "";
       aTmpResp.SerializeToString(&sTmpResp);
 
       if((nNumBytes = gnutls_record_send (m_aSession, sTmpResp.c_str(), aTmpResp.ByteSize())) == -1)
