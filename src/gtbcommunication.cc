@@ -716,6 +716,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
     if (fdAccepted == -1)
     {
       cerr << "ERROR: Error at accept!" << endl;
+      fdAccepted = 0;
       continue;
     }
 
