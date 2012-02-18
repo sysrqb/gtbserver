@@ -1,0 +1,26 @@
+diff --git a/Makefile b/Makefile
+index af9bffe..49e1e10 100755
+--- a/Makefile
++++ b/Makefile
+@@ -20,7 +20,8 @@ TEST=test/
+ INCLUDE=include/
+ LINKEROPTS = -Wl,-lmysqlcppconn,-lpthread,-lgnutls
+ PKGCOPTS = `pkg-config gnutls --cflags --libs protobuf`
+-CC=clang++ -ggdb -I$(INCLUDE)
++//CC=../clang/bin/clang++ -ggdb -I$(INCLUDE)
++CC=g++ -ggdb -I$(INCLUDE)
+ GTEST=../gtest
+ 
+ gtb : $(obj)
+@@ -30,11 +31,11 @@ gtbserver.o : $(SRC)gtbserver.c $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc commu
+        $(CC) -c $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)gtbserver.c $(SRC)communication.pb.cc $(SRC)patron.pb.cc
+ 
+ communication.pb.cc : patron.pb.cc
+-       ./protobuf/bin/protoc -I$(SRC) -Iinclude $(SRC)communication.proto --cpp_out=$(SRC) --java_out=$(SRC)
++       protoc -I$(SRC) -Iinclude $(SRC)communication.proto --cpp_out=$(SRC) --java_out=$(SRC)
+        mv $(SRC)communication.pb.h $(INCLUDE)
+ 
+ patron.pb.cc : 
+-       ./protobuf/bin/protoc -I$(SRC) $(SRC)patron.proto --cpp_out=$(SRC) --java_out=$(SRC)
++       protoc -I$(SRC) $(SRC)patron.proto --cpp_out=$(SRC) --java_out=$(SRC)
+        mv $(SRC)patron.pb.h $(INCLUDE)
