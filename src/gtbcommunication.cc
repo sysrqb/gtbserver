@@ -821,7 +821,10 @@ GTBCommunication::listeningForClient (int i_fdSock)
 
     cout << "\nHandle Request" << endl;
     if(!dealWithReq(aPBReq))
+    {
+      close(fdAccepted);
       continue;
+    }
     else
     {
       close(fdAccepted);
