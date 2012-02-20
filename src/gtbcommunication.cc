@@ -259,7 +259,7 @@ GTBCommunication::authRequest (Request * i_aPBReq)
 int 
 GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
 {
-  int retval;
+  int nRetVal;
 
   /*string sRequest = "";
   i_aPBReq->SerializeToString(&sRequest);
@@ -279,7 +279,10 @@ GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
     vrides[i] = i_aPBReq->nparams(i);
 
   cout << "C: Getting Current Rides" << endl;
-  return m_MySQLConn->getCurr(i_aPBReq->ncarid(), i_pbRes->mutable_plpatronlist(), vrides);
+  nRetVal = m_MySQLConn->getCurr(i_aPBReq->ncarid(), i_pbRes->mutable_plpatronlist(), vrides);
+  if (nRetVal == -1)
+    i_pbRes->clear_plpatronlist();
+  return 0;
 }
 
 
@@ -782,7 +785,8 @@ GTBCommunication::listeningForClient (int i_fdSock)
       continue;
     }
 
-    if (!fork())
+    int childpid = 0;
+    if (!(childpid = fork()))
     {
       cout << "Incoming size: " << nsize << endl;
       
@@ -818,6 +822,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
     }
     else
     {
+      cout << "Child pid: " << childpid << endl;
       continue;
     }
   }
