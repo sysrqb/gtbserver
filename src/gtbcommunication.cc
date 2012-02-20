@@ -279,8 +279,7 @@ GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
     vrides[i] = i_aPBReq->nparams(0);
 
   cout << "C: Getting Current Rides" << endl;
-  m_MySQLConn->getCurr(5, i_pbRes->mutable_plpatronlist(), vrides);
-  return 0;
+  return m_MySQLConn->getCurr(5, i_pbRes->mutable_plpatronlist(), vrides);
 }
 
 
@@ -607,8 +606,7 @@ GTBCommunication::getSocket()
   return fdSock;
 }
 
-int 
-GTBCommunication::dealWithReq (Request i_aPBReq)
+int GTBCommunication::dealWithReq (Request i_aPBReq) 
 {
   /*
    * Case 1: Curr
@@ -616,63 +614,49 @@ GTBCommunication::dealWithReq (Request i_aPBReq)
    * Case 3: CARS
    */
 
-  int npid = 1;
+  Response apbRes;
   switch (i_aPBReq.nreqid())
   {
     case 1: //CURRent Rides
-      cout << "Type CURR, forking..." << endl;
-      if(!(npid = fork ()))
+      int nCurrRet;
+      cout << "Type CURR" << endl;
+      cout << "C: Forked, processing request" << endl;
+      if(!(nCurrRet = currRequest (&i_aPBReq, &apbRes)))
       {
-        int nCurrRet;
-        cout << "C: Forked, processing request" << endl;
-	Response apbRes;
-        if(!(nCurrRet = currRequest (&i_aPBReq, &apbRes)))
-	{
-	  cout << "C: Sending Response for CURR" << endl;
-          sendResponse(0, NULL, &apbRes, NULL);
-        }
-        else
-        {
-	  cerr << "ERROR: C: Sending ERROR Response for CURR" << endl;
-          sendResponse(nCurrRet, NULL, &apbRes, NULL);
-	}
-	exit(0);
-	return 0;
+        cout << "C: Sending Response for CURR" << endl;
+        sendResponse(0, NULL, &apbRes, NULL);
+      }
+      else
+      {
+        cerr << "ERROR: C: Sending ERROR Response for CURR" << endl;
+        sendResponse(nCurrRet, NULL, &apbRes, NULL);
       }
       break;
     case 2: //AUTH
-      cout << "Type AUTH, forking..." << endl;
-      if(!(npid = fork ()))
+      int nAuthRet;
+      cout << "Type AUTH" << endl;
+      cout << "C: Forked, processing request" << endl;
+      if(!(nAuthRet = authRequest (&i_aPBReq)))
       {
-        int nAuthRet;
-        cout << "C: Forked, processing request" << endl;
-        if(!(nAuthRet = authRequest (&i_aPBReq)))
-	{
-          sendResponse(0, NULL, NULL, NULL);
-          moveKey();
-        }
-        else
-        {
-          sendResponse(nAuthRet, NULL, NULL, NULL);
-        }
-	exit(0);
-        return 0;
+        sendResponse(0, NULL, NULL, NULL);
+        moveKey();
+      }
+      else
+      {
+        sendResponse(nAuthRet, NULL, NULL, NULL);
       }
       break;
     case 3: //CARS
       cout << "C: Type CAR, forking...." << endl;
-      if(!(npid = fork()))
-      {
-        cout << "C: " << getpid() << " Forked, retrieving number of cars" << endl;
-        if(sendNumberOfCars (&i_aPBReq) < 0)
-	  return sendFailureResponse(2);
-        cout << "Done....exiting parent\n" << endl;
-	exit(0);
-        return 0;
-      }
+      if(sendNumberOfCars (&i_aPBReq) < 0)
+        return sendFailureResponse(2);
+      cout << "Done....exiting parent\n" << endl;
+      break;
+    default:
       break;
   }
-  cout << "Child PID: " << npid << " " << getpid() << endl;
+  cout << "Child PID: " << getpid();
+  cout << " Parent PID: " << getppid() << endl;
   return 0;
 }
 
@@ -798,38 +782,43 @@ GTBCommunication::listeningForClient (int i_fdSock)
       continue;
     }
 
-    cout << "Incoming size: " << nsize << endl;
+    if (!fork())
+    {
+      cout << "Incoming size: " << nsize << endl;
       
-    if((nNumBytes = gnutls_record_recv (m_aSession, &vReqBuf, nsize)) < 0)
-    {
-      cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
-      continue;
-    }
+      if((nNumBytes = gnutls_record_recv (m_aSession, &vReqBuf, nsize)) < 0)
+      {
+        cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
+        continue;
+      }
 
-    cout << "Received Transmission Size: " << nNumBytes << endl;
+      cout << "Received Transmission Size: " << nNumBytes << endl;
 
-    Request aPBReq;
-    aPBReq.ParseFromString(vReqBuf);
+      Request aPBReq;
+      aPBReq.ParseFromString(vReqBuf);
 
-    cout << "Request: " << endl;
-    for (int i = 0; i<nsize; i++)
-      cout << (int)vReqBuf[i] << " ";
-    cout << endl;
+      cout << "Request: " << endl;
+      for (int i = 0; i<nsize; i++)
+        cout << (int)vReqBuf[i] << " ";
+      cout << endl;
 
-    cout << "Print Debug String: " << endl;
-    aPBReq.PrintDebugString();
+      cout << "Print Debug String: " << endl;
+      aPBReq.PrintDebugString();
 
-    cout << "\nHandle Request" << endl;
-    if(!dealWithReq(aPBReq))
-    {
-      close(fdAccepted);
-      continue;
-    }
-    else
-    {
+      cout << "\nHandle Request" << endl;
+      int handledreqerr = 0;
+      if((handledreqerr = dealWithReq(aPBReq)))
+      {
+        cerr << "ERROR: dealWithReq returned with value: " << handledreqerr
+	    << endl;
+      }
       close(fdAccepted);
       gnutls_deinit(m_aSession);
       break;
+    }
+    else
+    {
+      continue;
     }
   }
   exit(0);
