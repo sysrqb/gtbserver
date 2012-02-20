@@ -276,10 +276,10 @@ GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
   }
   int i = 0, vrides[i_aPBReq->nparams_size()];
   for(; i<i_aPBReq->nparams_size(); i++)
-    vrides[i] = i_aPBReq->nparams(0);
+    vrides[i] = i_aPBReq->nparams(i);
 
   cout << "C: Getting Current Rides" << endl;
-  return m_MySQLConn->getCurr(5, i_pbRes->mutable_plpatronlist(), vrides);
+  return m_MySQLConn->getCurr(i_aPBReq->ncarid(), i_pbRes->mutable_plpatronlist(), vrides);
 }
 
 

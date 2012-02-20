@@ -211,7 +211,6 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, int old[])
     cerr << " (MySQL error code: " << e.getErrorCode();
     cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
     delete prepStmt;
-    return -1;
   }
   return 0;
 }
