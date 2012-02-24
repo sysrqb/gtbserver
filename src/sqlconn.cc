@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <time.h>
 #include "sqlconn.hpp"
 
 using namespace std;
@@ -162,6 +163,14 @@ int MySQLConn::checkAuth(std::string i_snetid, std::string i_sauth, std::string 
 
 int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, int old[])
 {
+  time_t atime;
+  struct tm * gtm;
+  char date[10];
+
+  atime = time (NULL);
+  gtm = gmtime (&atime);
+  strftime (date, 10, "%Y-%m-%d", gtm);
+
   PatronInfo * apbPI;
   apbPI = i_apbPatl->add_patron();
   //i_apbPatl->add_patron();
@@ -182,7 +191,7 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, int old[])
   try
   {
     prepStmt = con->prepareStatement(GETCURRRIDES);
-    prepStmt->setString(1, "2012-02-11");
+    prepStmt->setString(1, date);
     prepStmt->setString(2, "riding");
 
     cout << "Retrieving Rides" << endl;
