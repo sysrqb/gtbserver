@@ -726,69 +726,70 @@ GTBCommunication::listeningForClient (int i_fdSock)
     //the time to convert them
     strncpy(m_vIPAddr, vAddr, INET6_ADDRSTRLEN);
 
-    cout << "Start TLS Session" << endl;
-    gnutls_transport_set_ptr (m_aSession, (gnutls_transport_ptr_t) fdAccepted);
-    cout << "Performing handshake.." << endl;
-    int nRetVal, i=0;
-    do
-    {
-      i++;
-      nRetVal = gnutls_handshake (m_aSession);
-      cout << "Return value: " << nRetVal << endl;
-      if ( nRetVal == -59 || nRetVal == -10)
-        break;
-    } while (gnutls_error_is_fatal (nRetVal) != GNUTLS_E_SUCCESS);
-    
-    if ( nRetVal < 0)
-    {
-      cerr << "ERROR " << i << ": Failed to perform handshake, error code : ";
-      cerr << gnutls_strerror(nRetVal) << endl;;
-      cerr << "Closing connection..." << endl;
-      sendFailureResponse(3);
-      close(fdAccepted);
-      gnutls_deinit(m_aSession);
-      continue;
-    }
-
-    gnutls_cipher_algorithm_t aUsingCipher =
-        gnutls_cipher_get (m_aSession);
-    const char * sCipherName;
-    sCipherName = gnutls_cipher_get_name(aUsingCipher);
-    cout << "Using cipher: " << sCipherName << endl;
-
-    unsigned int nstatus;
-    if( gnutls_certificate_verify_peers2 (m_aSession, &nstatus) )
-    {
-      cerr << "ERROR: Failed to verify client certificate, error code ";
-      //TODO: Send Plaintext message
-      cerr << "Closing connection..." << endl;
-      close(fdAccepted);
-      gnutls_deinit(m_aSession);
-      continue;
-    }
-
-    if (nstatus)
-    {
-      cerr << "ERROR: Failed to verify client certificate, error code ";
-      cerr << "Closing connection..." << endl;
-      close(fdAccepted);
-      gnutls_deinit(m_aSession);
-      continue;
-    }
-
-    cout << "Storing connection information" << endl;
-
-    cout << "Receiving request" << endl;
-
-    int nsize = 0;
-    if((nNumBytes = gnutls_record_recv (m_aSession, &nsize, REQSIZE)) < 0){
-      cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
-      continue;
-    }
-
     int childpid = 0;
     if (!(childpid = fork()))
     {
+      cout << "Start TLS Session" << endl;
+      gnutls_transport_set_ptr (m_aSession, (gnutls_transport_ptr_t) fdAccepted);
+      cout << "Performing handshake.." << endl;
+      int nRetVal, i=0;
+      do
+      {
+        i++;
+        nRetVal = gnutls_handshake (m_aSession);
+        cout << "Return value: " << nRetVal << endl;
+        if ( nRetVal == -59 || nRetVal == -10)
+          break;
+      } while (gnutls_error_is_fatal (nRetVal) != GNUTLS_E_SUCCESS);
+    
+      if ( nRetVal < 0)
+      {
+        cerr << "ERROR " << i << ": Failed to perform handshake, error code : ";
+        cerr << gnutls_strerror(nRetVal) << endl;;
+        cerr << "Closing connection..." << endl;
+        sendFailureResponse(3);
+        close(fdAccepted);
+        gnutls_deinit(m_aSession);
+        continue;
+      }
+
+      gnutls_cipher_algorithm_t aUsingCipher =
+          gnutls_cipher_get (m_aSession);
+      const char * sCipherName;
+      sCipherName = gnutls_cipher_get_name(aUsingCipher);
+      cout << "Using cipher: " << sCipherName << endl;
+
+      unsigned int nstatus;
+      if( gnutls_certificate_verify_peers2 (m_aSession, &nstatus) )
+      {
+         cerr << "ERROR: Failed to verify client certificate, error code ";
+        //TODO: Send Plaintext message
+        cerr << "Closing connection..." << endl;
+        close(fdAccepted);
+        gnutls_deinit(m_aSession);
+        continue;
+      }
+
+      if (nstatus)
+      {
+        cerr << "ERROR: Failed to verify client certificate, error code ";
+        cerr << "Closing connection..." << endl;
+        close(fdAccepted);
+        gnutls_deinit(m_aSession);
+        continue;
+      }
+
+      //TODO
+      cout << "Storing connection information" << endl;
+
+      cout << "Receiving request" << endl;
+
+      int nsize = 0;
+      if((nNumBytes = gnutls_record_recv (m_aSession, &nsize, REQSIZE)) < 0){
+        cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
+        continue;
+      }
+
       cout << "Incoming size: " << nsize << endl;
       
       if((nNumBytes = gnutls_record_recv (m_aSession, &vReqBuf, nsize)) < 0)
