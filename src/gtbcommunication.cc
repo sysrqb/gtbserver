@@ -444,6 +444,12 @@ GTBCommunication::initTLSSession ()
     gnutls_db_set_store_function (m_aSession, wrap_db_store);
     gnutls_db_set_ptr (m_aSession, NULL);
   }
+
+  gnutls_certificate_server_set_request (m_aSession, 
+              GNUTLS_CERT_REQUIRE); //Require client to provide cert
+  gnutls_certificate_send_x509_rdn_sequence  (
+              m_aSession, 
+              1); //REMOVE IN ORDER TO COMPLETE CERT EXCHANGE
 }
 
 int
@@ -691,11 +697,6 @@ GTBCommunication::listeningForClient (int i_fdSock)
     cout << endl;
     cout << "Initialize TLS Session" << endl;
     initTLSSession();
-    gnutls_certificate_server_set_request (m_aSession, 
-                        GNUTLS_CERT_REQUIRE); //Require client to provide cert
-    gnutls_certificate_send_x509_rdn_sequence  (
-                 m_aSession, 
-		 1); //REMOVE IN ORDER TO COMPLETE CERT EXCHANGE
 
     cout << "Accepting Connection" << endl;
     fdAccepted = accept(i_fdSock, (struct sockaddr *)&aClientAddr, &nSinSize);
@@ -759,7 +760,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
     if( gnutls_certificate_verify_peers2 (m_aSession, &nstatus) )
     {
       cerr << "ERROR: Failed to verify client certificate, error code ";
-      //Send Plaintext message
+      //TODO: Send Plaintext message
       cerr << "Closing connection..." << endl;
       close(fdAccepted);
       gnutls_deinit(m_aSession);
