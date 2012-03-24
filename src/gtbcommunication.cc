@@ -286,6 +286,35 @@ GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
 }
 
 
+int 
+GTBCommunication::updtRequest (Request * i_aPBReq, Response * i_pbRes)
+{
+  int nRetVal;
+
+  /*string sRequest = "";
+  i_aPBReq->SerializeToString(&sRequest);
+  for (int i = 0; i<sRequest.length(); i++)
+    cout << (int)sRequest.at(i) << " ";
+  cout << endl;
+*/
+  if(0 != i_aPBReq->sreqtype().compare("UPDT"))
+  {
+    cerr << "ERROR: C: Not UPDT: " << i_aPBReq->sreqtype()  << endl;
+    i_pbRes->set_nrespid(-1);
+    i_pbRes->set_sresvalue("Not UPDT");
+    return -2;
+  }
+  int i = 0, vrides[i_aPBReq->nparams_size()];
+  for(; i<i_aPBReq->nparams_size(); i++)
+    vrides[i] = i_aPBReq->nparams(i);
+
+  cout << "C: Setting Ride Updates" << endl;
+  nRetVal = m_MySQLConn->setUpdt(i_aPBReq->ncarid(), i_pbRes->mutable_plpatronlist(), vrides);
+  if (nRetVal == -1)
+    i_pbRes->clear_plpatronlist();
+  return 0;
+}
+
 /* Functions and other stuff needed for session resuming.
  * This is done using a very simple list which holds session ids
  * and session data.
@@ -618,9 +647,10 @@ GTBCommunication::getSocket()
 int GTBCommunication::dealWithReq (Request i_aPBReq) 
 {
   /*
-   * Case 1: Curr
+   * Case 1: CURR
    * Case 2: AUTH
    * Case 3: CARS
+   * Case 4: UPDT
    */
 
   Response apbRes;
@@ -656,10 +686,25 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
       }
       break;
     case 3: //CARS
-      cout << "C: Type CAR, forking...." << endl;
+      cout << "C: Type CARS, forking...." << endl;
       if(sendNumberOfCars (&i_aPBReq) < 0)
         return sendFailureResponse(2);
       cout << "Done....exiting parent\n" << endl;
+      break;
+    case 4:  // UPDT
+      int nUpdtRet 
+      cout << "Type UPDT" << endl;
+      cout << "C: Forked, processing request" << endl;
+      if(!(nUpdtRet = updtRequest (&i_aPBReq, &apbRes)))
+      {
+        cout << "C: Sending Response for UPDT" << endl;
+        sendResponse(0, NULL, &apbRes, NULL);
+      }
+      else
+      {
+        cerr << "ERROR: C: Sending ERROR Response for UPDT" << endl;
+        sendResponse(nUpdtRet, NULL, &apbRes, NULL);
+      }
       break;
     default:
       break;

@@ -110,6 +110,7 @@ class GTBCommunication {
     int moveKey();
     int authRequest (Request * i_aPBReq);
     int currRequest (Request * i_aPBReq, Response * i_apbRes);
+    int updtRequest (Request * i_aPBReq, Response * i_apbRes);
     int dealWithReq (Request i_sPBReq);
     int listeningForClient (int i_sockfd);
 
