@@ -289,7 +289,7 @@ GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
 int 
 GTBCommunication::updtRequest (Request * i_aPBReq, Response * i_pbRes)
 {
-  int nRetVal;
+  int * vRetVal;
 
   /*string sRequest = "";
   i_aPBReq->SerializeToString(&sRequest);
@@ -304,14 +304,17 @@ GTBCommunication::updtRequest (Request * i_aPBReq, Response * i_pbRes)
     i_pbRes->set_sresvalue("Not UPDT");
     return -2;
   }
-  int i = 0, vrides[i_aPBReq->nparams_size()];
-  for(; i<i_aPBReq->nparams_size(); i++)
-    vrides[i] = i_aPBReq->nparams(i);
-
+  int i = 0;
   cout << "C: Setting Ride Updates" << endl;
-  nRetVal = m_MySQLConn->setUpdt(i_aPBReq->ncarid(), i_pbRes->mutable_plpatronlist(), vrides);
-  if (nRetVal == -1)
-    i_pbRes->clear_plpatronlist();
+  vRetVal = m_MySQLConn->setUpdt(i_aPBReq->ncarid(), i_pbRes->mutable_plpatronlist(), i_aPBReq);
+  for(i=0; i<i_aPBReq->plpatronlist().patron_size(); i++)
+  {
+    if (vRetVal[i] == -1)
+      //TODO
+      //  Handle unsuccessful updates, per pid
+      i = i;
+  }
+  free(vRetVal);
   return 0;
 }
 
@@ -692,7 +695,7 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
       cout << "Done....exiting parent\n" << endl;
       break;
     case 4:  // UPDT
-      int nUpdtRet 
+      int nUpdtRet;
       cout << "Type UPDT" << endl;
       cout << "C: Forked, processing request" << endl;
       if(!(nUpdtRet = updtRequest (&i_aPBReq, &apbRes)))

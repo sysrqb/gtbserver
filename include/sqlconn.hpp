@@ -46,6 +46,11 @@
 #include "patron.pb.h"
 #endif
 
+#ifndef commpb
+#define commnpb
+#include "communication.pb.h"
+#endif
+
 #define HASHSTMT  "SELECT car FROM activeusers WHERE nightlyhash = ?"
 //#define STMT	"SELECT nightlyhash FROM activeusers"
 #define DEBUG 1
@@ -55,6 +60,8 @@
     " WHERE ptr=? AND sessiondata=?"
 #define GETCURRRIDES "SELECT * FROM saferide.rides WHERE ridedate=? and status=? " \
     "ORDER BY car ASC"
+#define SETUPDTRIDES "UPDATE saferide.rides SET name=?, phone=?, riders=?, status=?, " \
+    "pickup=? dropoff=?, timetaken=?, timedone=? WHERE num=? AND car=?"
 #define GETHOST(proto, host, port) proto host ":" port
 
 #if __cplusplus
@@ -111,6 +118,7 @@ class MySQLConn {
     int checkAuth(std::string i_snetid, std::string i_sauth, std::string i_scarnum);
     int execAuth(std::string hash);
     int getCurr(int carnum, PatronList * i_apbpatl, int[]);
+    int* setUpdt(int carnum, PatronList * i_apbpatl, Request *);
 };
 #endif
 

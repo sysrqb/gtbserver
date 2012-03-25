@@ -202,6 +202,7 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, int old[])
     while ( res->next() ) {
       apbPI = i_apbPatl->add_patron();
       apbPI->set_name(res->getString("name"));
+      apbPI->set_phone(res->getString("phone"));
       apbPI->set_passangers(res->getInt("riders"));
       apbPI->set_status(res->getString("status"));
       apbPI->set_pickup(res->getString("pickup"));
@@ -222,4 +223,48 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, int old[])
     return -1;
   }
   return 0;
+}
+
+int* MySQLConn::setUpdt(int carnum, PatronList * i_apbPatl, Request * i_aPBReq)
+{
+  PatronInfo * apbPI;
+  apbPI = i_apbPatl->add_patron();
+  cout << "Setting Updates" << endl;
+ 
+  sql::PreparedStatement *prepStmt;
+  
+  int i = 0;
+  int * nRetVal;
+  nRetVal = (int *) malloc( (sizeof (int)*i_aPBReq->plpatronlist().patron_size()) );
+
+  for (; i<i_aPBReq->plpatronlist().patron_size(); i++)
+  {
+    try
+    {
+      prepStmt = con->prepareStatement(SETUPDTRIDES);
+      prepStmt->setString(1, i_aPBReq->plpatronlist().patron(i).name());
+      prepStmt->setString(2, i_aPBReq->plpatronlist().patron(i).phone());
+      prepStmt->setInt(3, i_aPBReq->plpatronlist().patron(i).passangers());
+      prepStmt->setString(4, i_aPBReq->plpatronlist().patron(i).status());
+      prepStmt->setString(5, i_aPBReq->plpatronlist().patron(i).pickup());
+      prepStmt->setString(6, i_aPBReq->plpatronlist().patron(i).dropoff());
+      prepStmt->setString(7, i_aPBReq->plpatronlist().patron(i).timetaken());
+      prepStmt->setString(8, i_aPBReq->plpatronlist().patron(i).timedone());
+      prepStmt->setInt(9, i_aPBReq->plpatronlist().patron(i).pid());
+      prepStmt->setInt(10, carnum);
+      prepStmt->executeQuery();
+    }
+    catch (sql::SQLException &e)
+    {
+      cerr << "ERROR: SQLException in " << __FILE__;
+      cerr << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+      cerr << "ERROR: " << e.what();
+      cerr << " (MySQL error code: " << e.getErrorCode();
+      cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
+      nRetVal[i] = i_aPBReq->plpatronlist().patron(i).pid(); 
+    }
+    cout << "Updated Rides" << endl;
+  }
+  delete prepStmt;
+  return nRetVal;
 }
