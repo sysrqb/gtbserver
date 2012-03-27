@@ -289,7 +289,9 @@ GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
 int 
 GTBCommunication::updtRequest (Request * i_aPBReq, Response * i_pbRes)
 {
-  int * vRetVal;
+  map<int, string> vRetVal;
+  map<int, string>::iterator vrvIt;
+  int i = 0;
 
   /*string sRequest = "";
   i_aPBReq->SerializeToString(&sRequest);
@@ -304,17 +306,14 @@ GTBCommunication::updtRequest (Request * i_aPBReq, Response * i_pbRes)
     i_pbRes->set_sresvalue("Not UPDT");
     return -2;
   }
-  int i = 0;
   cout << "C: Setting Ride Updates" << endl;
   vRetVal = m_MySQLConn->setUpdt(i_aPBReq->ncarid(), i_pbRes->mutable_plpatronlist(), i_aPBReq);
-  for(i=0; i<i_aPBReq->plpatronlist().patron_size(); i++)
+  
+  for(vrvIt = vRetVal.begin(); vrvIt != vRetVal.end(); vrvIt++)
   {
-    if (vRetVal[i] == -1)
-      //TODO
-      //  Handle unsuccessful updates, per pid
-      i = i;
+    string sOutput = vrvIt->first + ": " + vrvIt->second;
+    i_pbRes->add_sresadd(sOutput);
   }
-  free(vRetVal);
   return 0;
 }
 
