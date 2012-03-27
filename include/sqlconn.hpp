@@ -59,7 +59,7 @@
 #define GETSESSSTMT "SELECT sessionkey FROM sessionconnection"\
     " WHERE ptr=? AND sessiondata=?"
 #define GETCURRRIDES "SELECT * FROM saferide.rides WHERE ridedate=? and status=? " \
-    "ORDER BY car ASC"
+    "and car=? ORDER BY car ASC"
 #define GETPATRONINFO "SELECT * FROM saferide.rides WHERE num=?"
 
 #define SETUPDTRIDES "UPDATE saferide.rides SET name=?, phone=?, riders=?, status=?, " \

@@ -195,6 +195,7 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, int old[])
     prepStmt = con->prepareStatement(GETCURRRIDES);
     prepStmt->setString(1, date);
     prepStmt->setString(2, "riding");
+    prepStmt->setInt(3, carnum);
 
     cout << "Retrieving Rides" << endl;
 
