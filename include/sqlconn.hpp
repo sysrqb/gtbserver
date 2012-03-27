@@ -60,6 +60,8 @@
     " WHERE ptr=? AND sessiondata=?"
 #define GETCURRRIDES "SELECT * FROM saferide.rides WHERE ridedate=? and status=? " \
     "ORDER BY car ASC"
+#define GETPATRONINFO "SELECT * FROM saferide.rides WHERE num=?"
+
 #define SETUPDTRIDES "UPDATE saferide.rides SET name=?, phone=?, riders=?, status=?, " \
     "pickup=? dropoff=?, timetaken=?, timedone=? WHERE num=? AND car=?"
 #define GETHOST(proto, host, port) proto host ":" port
@@ -118,7 +120,8 @@ class MySQLConn {
     int checkAuth(std::string i_snetid, std::string i_sauth, std::string i_scarnum);
     int execAuth(std::string hash);
     int getCurr(int carnum, PatronList * i_apbpatl, int[]);
-    int* setUpdt(int carnum, PatronList * i_apbpatl, Request *);
+    std::map<int, std::string> setUpdt(int carnum, PatronList * i_apbpatl, Request *);
+    int getPatronInfo(int, PatronList *);
 };
 #endif
 

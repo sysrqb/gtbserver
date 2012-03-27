@@ -18,6 +18,8 @@
 
 #include <time.h>
 #include "sqlconn.hpp"
+#include "gtbexceptions.hpp"
+#include <map>
 
 using namespace std;
 
@@ -225,17 +227,16 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, int old[])
   return 0;
 }
 
-int* MySQLConn::setUpdt(int carnum, PatronList * i_apbPatl, Request * i_aPBReq)
+map<int, string> MySQLConn::setUpdt(int carnum, PatronList * i_apbPatl, Request * i_aPBReq)
 {
   PatronInfo * apbPI;
   apbPI = i_apbPatl->add_patron();
-  cout << "Setting Updates" << endl;
- 
   sql::PreparedStatement *prepStmt;
+  cout << "Setting Updates" << endl;
   
+  map<int, string> patronErrors;
   int i = 0;
-  int * nRetVal;
-  nRetVal = (int *) malloc( (sizeof (int)*i_aPBReq->plpatronlist().patron_size()) );
+  int nRows;
 
   for (; i<i_aPBReq->plpatronlist().patron_size(); i++)
   {
@@ -252,7 +253,17 @@ int* MySQLConn::setUpdt(int carnum, PatronList * i_apbPatl, Request * i_aPBReq)
       prepStmt->setString(8, i_aPBReq->plpatronlist().patron(i).timedone());
       prepStmt->setInt(9, i_aPBReq->plpatronlist().patron(i).pid());
       prepStmt->setInt(10, carnum);
-      prepStmt->executeQuery();
+      nRows = prepStmt->executeUpdate();
+      if ( nRows == 0 )  // If entry was not updated
+      {
+	try
+	{
+          getPatronInfo(i_aPBReq->plpatronlist().patron(i).pid(), i_apbPatl);  // Add current patron info to response buf
+	} catch (PatronException &e)
+	{
+	  patronErrors.insert( pair<int, string> (i_aPBReq->plpatronlist().patron(i).pid(), e.what()) );
+	}
+      }
     }
     catch (sql::SQLException &e)
     {
@@ -261,10 +272,54 @@ int* MySQLConn::setUpdt(int carnum, PatronList * i_apbPatl, Request * i_aPBReq)
       cerr << "ERROR: " << e.what();
       cerr << " (MySQL error code: " << e.getErrorCode();
       cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
-      nRetVal[i] = i_aPBReq->plpatronlist().patron(i).pid(); 
     }
     cout << "Updated Rides" << endl;
   }
   delete prepStmt;
-  return nRetVal;
+  return patronErrors;;
+}
+
+int MySQLConn::getPatronInfo(int pid, PatronList * i_apbPatl)
+{
+  PatronInfo * apbPI;
+  sql::PreparedStatement *prepStmt;
+  sql::ResultSet *res;
+
+  try
+  {
+    prepStmt = con->prepareStatement(GETPATRONINFO);
+    prepStmt->setInt(1, pid);
+
+    cout << "Retrieving Patron" << endl;
+
+    res = prepStmt->executeQuery();
+    delete prepStmt;
+  
+    while ( res->next() ) {
+      apbPI = i_apbPatl->add_patron();
+      apbPI->set_name(res->getString("name"));
+      apbPI->set_phone(res->getString("phone"));
+      apbPI->set_passangers(res->getInt("riders"));
+      apbPI->set_status(res->getString("status"));
+      apbPI->set_pickup(res->getString("pickup"));
+      apbPI->set_dropoff(res->getString("dropoff"));
+      apbPI->set_timetaken(res->getString("timetaken"));
+      apbPI->set_pid(res->getInt("num"));
+    }
+    if (!(res->rowsCount()))
+    {
+      throw PatronException("Patron not found!");
+    }
+    delete res;
+  }
+  catch (sql::SQLException &e)
+  {
+    cerr << "ERROR: SQLException in " << __FILE__;
+    cerr << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+    cerr << "ERROR: " << e.what();
+    cerr << " (MySQL error code: " << e.getErrorCode();
+    cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
+    throw PatronException();
+  }
+  return 0;
 }
