@@ -311,8 +311,8 @@ GTBCommunication::updtRequest (Request * i_aPBReq, Response * i_pbRes)
   
   for(vrvIt = vRetVal.begin(); vrvIt != vRetVal.end(); vrvIt++)
   {
-    string sOutput = vrvIt->first + ": " + vrvIt->second;
-    i_pbRes->add_sresadd(sOutput);
+    i_pbRes->add_nresadd(vrvIt->first);
+    i_pbRes->add_sresadd(vrvIt->second);
   }
   return 0;
 }
