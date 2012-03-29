@@ -62,8 +62,8 @@
     "and car=? ORDER BY car ASC"
 #define GETPATRONINFO "SELECT * FROM saferide.rides WHERE num=?"
 
-#define SETUPDTRIDES "UPDATE saferide.rides SET name=?, phone=?, riders=?, status=?, " \
-    "pickup=? dropoff=?, timetaken=?, timedone=? WHERE num=? AND car=?"
+#define SETUPDTRIDES "UPDATE saferide.rides SET name=?, cell=?, riders=?, status=?, " \
+    "pickup=?, dropoff=?, timetaken=?, timedone=? WHERE num=? AND car=?"
 #define GETHOST(proto, host, port) proto host ":" port
 
 #if __cplusplus
