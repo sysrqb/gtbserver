@@ -274,7 +274,8 @@ GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
     i_pbRes->set_sresvalue("Not CURR");
     return -2;
   }
-  int i = 0, vrides[i_aPBReq->nparams_size()];
+  int i = 0;
+  int * vrides = new int[i_aPBReq->nparams_size()];
   for(; i<i_aPBReq->nparams_size(); i++)
     vrides[i] = i_aPBReq->nparams(i);
 
@@ -282,6 +283,7 @@ GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
   nRetVal = m_MySQLConn->getCurr(i_aPBReq->ncarid(), i_pbRes->mutable_plpatronlist(), vrides);
   if (nRetVal == -1)
     i_pbRes->clear_plpatronlist();
+  delete[] vrides;
   return 0;
 }
 
