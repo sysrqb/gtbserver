@@ -119,7 +119,7 @@ class MySQLConn {
 	int car);
     int checkAuth(std::string i_snetid, std::string i_sauth, std::string i_scarnum);
     int execAuth(std::string hash);
-    int getCurr(int carnum, PatronList * i_apbpatl, int[]);
+    int getCurr(int carnum, PatronList * i_apbpatl, std::vector<int>);
     std::map<int, std::string> setUpdt(int carnum, PatronList * i_apbpatl, Request *);
     int getPatronInfo(int, PatronList *);
 };

@@ -163,7 +163,7 @@ int MySQLConn::checkAuth(std::string i_snetid, std::string i_sauth, std::string 
 
 }
 
-int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, int old[])
+int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, std::vector<int> old)
 {
   time_t atime;
   struct tm * gtm;
@@ -191,6 +191,12 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, int old[])
     delete prepStmt;
   
     while ( res->next() ) {
+      int nCarNum = res->getInt("num"), i = 0;
+      for (; i < old.size(); i++)
+      {
+        if (old.at(i) == nCarNum)
+	  continue;
+      }
       apbPI = i_apbPatl->add_patron();
       apbPI->set_name(res->getString("name"));
       apbPI->set_phone(res->getString("cell"));
