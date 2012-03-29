@@ -171,7 +171,7 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, int old[])
 
   atime = time (NULL);
   gtm = gmtime (&atime);
-  strftime (date, 10, "%Y-%m-%d", gtm);
+  strftime (date, 11, "%Y-%m-%d", gtm);
 
   PatronInfo * apbPI;
   apbPI = i_apbPatl->add_patron();
@@ -193,8 +193,8 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, int old[])
   try
   {
     prepStmt = con->prepareStatement(GETCURRRIDES);
-    prepStmt->setString(1, date);
-    prepStmt->setString(2, "riding");
+    prepStmt->setDateTime(1, date);
+    prepStmt->setString(2, "waiting");
     prepStmt->setInt(3, carnum);
 
     cout << "Retrieving Rides" << endl;
