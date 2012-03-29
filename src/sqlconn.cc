@@ -193,7 +193,7 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, int old[])
     while ( res->next() ) {
       apbPI = i_apbPatl->add_patron();
       apbPI->set_name(res->getString("name"));
-      apbPI->set_phone(res->getString("phone"));
+      apbPI->set_phone(res->getString("cell"));
       apbPI->set_passangers(res->getInt("riders"));
       apbPI->set_status(res->getString("status"));
       apbPI->set_pickup(res->getString("pickup"));
