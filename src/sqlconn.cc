@@ -174,19 +174,7 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, int old[])
   strftime (date, 11, "%Y-%m-%d", gtm);
 
   PatronInfo * apbPI;
-  apbPI = i_apbPatl->add_patron();
-  //i_apbPatl->add_patron();
   cout << "Getting Current Rides" << endl;
-  apbPI->set_name("Test Name 1");
-  apbPI->set_passangers(5);
-  apbPI->set_status("Waiting");
-  apbPI->set_pickup("East");
-  apbPI->set_dropoff("Whitney");
-  apbPI->set_timetaken("2012-02-9 00:00:00");
-  apbPI->set_pid(1);
-  apbPI->PrintDebugString();
-
-  
   sql::PreparedStatement *prepStmt;
   sql::ResultSet *res;
 
