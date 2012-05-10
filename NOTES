@@ -11,3 +11,53 @@ PAST
 On successful AUTH, update user's position to Ride-along, store IP Addr in DB
 On successful DHKE, store key in DB
 
+
+Flow:
+
+Listen for incoming connection
+  - If incoming connection is invalid
+    - Throw BadConnection Exception
+    - Send plaintext response
+    - Kill thread
+  - Else
+    - Return instance of Client class
+Assuming the above, on received request:
+If invalid request
+  - Send InvalidRequest response
+  - Delete Client instance
+If valid AUTH:
+  - Create DB Connection
+    - Store:
+      - IP Address
+      - AUTH code
+      - Car Number
+      - Both NetIDs
+      - Certificate sent
+    - Check if cert matches car number??
+      - If mismatch
+        - Send CarMismatch response
+	- Throw CarMismatch Exception
+	  - Delete Client instance
+	  - Close connection
+	  - Kill thread
+If valid CURR:
+  - Check:
+    - IP Address?
+    - Car Number
+    - Cert
+  - If match
+    - Send new/updated rides
+  - Else
+    - Throw InvalidRequestor Exception
+    - Delete client and kill thread
+If valid UPDT:
+  - Check
+    - IP Address?
+    - Car Number
+    - Cert
+  - If match
+    - For each modified field, if no conflict then update
+      - If a conflict exists, push to Dispatch Conflicts page
+        - Merge everything else
+If valid CARS:
+  - Send response
