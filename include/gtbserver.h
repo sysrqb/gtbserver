@@ -16,15 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define THREADS 0
-
 extern "C" {
 
-  void sigchld_handler (int s);
-  void *initIncomingCon(void * i_pfdSock);
+  void sigchld_handler (int);
+  void initIncomingCon(int);
 }
-
-void *initGNUTLS( void * ptr);
 
 /*Return Values:
 -4: Error MySQL query prep

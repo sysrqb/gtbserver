@@ -26,8 +26,8 @@ GTEST=../gtest
 gtb : $(obj)
 	$(CC) $(LINKEROPTS) -o gtbserver $(obj) communication.pb.o patron.pb.o $(PKGCOPTS)
 
-gtbserver.o : $(SRC)gtbserver.c $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc communication.pb.cc 
-	$(CC) -c $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)gtbserver.c $(SRC)communication.pb.cc $(SRC)patron.pb.cc
+gtbserver.o : $(SRC)gtbserver.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc communication.pb.cc 
+	$(CC) -c $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)gtbserver.cc $(SRC)communication.pb.cc $(SRC)patron.pb.cc
 
 communication.pb.cc : patron.pb.cc
 	./protobuf/bin/protoc -I$(SRC) -Iinclude $(SRC)communication.proto --cpp_out=$(SRC) --java_out=$(SRC)
