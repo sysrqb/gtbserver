@@ -25,14 +25,16 @@
 TEST(GETCURRENT, CallsgetCurr)
 {
   MySQLConn * aMySQLConn;
+  aMySQLConn = new MySQLConn();
   Response apbRes;
 
   PatronList * apbPL = apbRes.mutable_plpatronlist();
   long npladdr = (long)apbPL;
+  std::vector<int> old;
 
   EXPECT_NE(0, npladdr);
   EXPECT_TRUE(apbRes.has_plpatronlist());
-  EXPECT_EQ(0, aMySQLConn->getCurr(5, apbPL));
+  EXPECT_EQ(0, aMySQLConn->getCurr(5, apbPL, old));
 }
 
 TEST(GETCURRENT, GetNewPatron)
@@ -50,11 +52,12 @@ TEST(GETCURRENT, GetNewPatron)
 TEST(GETCURRENT, SendResponse)
 {
   MySQLConn * aMySQLConn;
-  GTBCommunication * aGtBComm;
+  aMySQLConn = new MySQLConn();
   Response apbRes;
+  std::vector<int> old;
 
   PatronList * apbPL = apbRes.mutable_plpatronlist();
-  EXPECT_EQ(0, aMySQLConn->getCurr(5, apbPL));
+  EXPECT_EQ(0, aMySQLConn->getCurr(5, apbPL, old));
 
   Response apbRes2;
   apbRes2.set_sresvalue("CURR");
