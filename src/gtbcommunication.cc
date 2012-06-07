@@ -28,6 +28,7 @@
 #include <string>
 
 #include "gtbcommunication.hpp"
+#include "gtbexceptions.hpp"
 #include "sqlconn.hpp"
 
 #define MAX_SESSION_ID_SIZE 32
@@ -733,6 +734,40 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
   return 0;
 }
 
+void GTBCommunication::receiveRequest(Request * aPBReq)
+{
+  int nNumBytes = 0;
+  char vReqBuf[AUTHSIZE] = "";
+  //cout << "Receiving request" << endl;
+  if(aPBReq == NULL)
+    throw new PatronException("NULL Pointer at receiveRequest\n");
+  int nsize = 0;
+  if((nNumBytes = gnutls_record_recv (m_aSession, &nsize, REQSIZE)) < 0)
+  {
+    cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
+    throw BadConnectionException(strerror(errno));
+  }
+
+  //cout << "Incoming size: " << nsize << endl;
+      
+  if((nNumBytes = gnutls_record_recv (m_aSession, &vReqBuf, nsize)) < 0)
+  {
+    cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
+    throw BadConnectionException(strerror(errno));
+  }
+
+  //cout << "Received Transmission Size: " << nNumBytes << endl;
+
+  aPBReq->ParseFromString(vReqBuf);
+
+  /*cout << "Request: " << endl;
+  for (int i = 0; i<nsize; i++)
+      cout << (int)vReqBuf[i] << " ";
+  cout << endl;
+  */
+  //cout << "Print Debug String: " << endl;
+  //aPBReq.PrintDebugString();
+}
 
 int GTBCommunication::handleConnection(int fdAccepted, int sockfd)
 {
@@ -813,47 +848,7 @@ int GTBCommunication::handleConnection(int fdAccepted, int sockfd)
   //TODO
   //cout << "Storing connection information" << endl;
   return 0;
-/*
-  cout << "Receiving request" << endl;
 
-  int nsize = 0;
-  if((nNumBytes = gnutls_record_recv (m_aSession, &nsize, REQSIZE)) < 0)
-  {
-    cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
-    throw BadConnectionException(strerror(errno));
-  }
-
-  cout << "Incoming size: " << nsize << endl;
-      
-  if((nNumBytes = gnutls_record_recv (m_aSession, &vReqBuf, nsize)) < 0)
-  {
-    cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
-    throw BadConnectionException(strerror(errno));
-  }
-
-  cout << "Received Transmission Size: " << nNumBytes << endl;
-
-  Request aPBReq;
-  aPBReq.ParseFromString(vReqBuf);
-
-  cout << "Request: " << endl;
-  for (int i = 0; i<nsize; i++)
-      cout << (int)vReqBuf[i] << " ";
-  cout << endl;
-
-  cout << "Print Debug String: " << endl;
-  aPBReq.PrintDebugString();
-
-  cout << "\nHandle Request" << endl;
-  int handledreqerr = 0;
-  if((handledreqerr = dealWithReq(aPBReq)))
-  {
-    cerr << "ERROR: dealWithReq returned with value: " << handledreqerr
-      << endl;
-  }
-  close(fdAccepted);
-  gnutls_deinit(m_aSession);
-*/
 }
   
 
