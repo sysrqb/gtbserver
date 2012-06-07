@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef gtbexceptions_h
+#define gtbexceptions_h
 #include <exception>
 
 class PatronException : public std::exception
@@ -28,3 +30,23 @@ class PatronException : public std::exception
   private:
     std::string msg;
 };
+
+class BadConnectionException: public std::exception
+{
+  private:
+    std::string m_where;
+  public:
+    BadConnectionException(std::string where)
+    {
+      m_where = where;
+    }
+    ~BadConnectionException() throw() {}
+    virtual const char* what() const throw()
+    {
+      std::string what = "BadConnectionException at " + m_where;
+      return what.c_str();
+    }
+};
+
+
+#endif //gtbexceptions_h
