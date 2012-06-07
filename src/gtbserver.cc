@@ -50,7 +50,7 @@ sigchld_handler (int s)
 void initIncomingCon(int * pfdSock)
 {
   int fdSock;
-  struct sigaction sa, * pSa;
+  struct sigaction sa;
 
   fdSock = *pfdSock;
 
