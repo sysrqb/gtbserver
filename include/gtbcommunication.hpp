@@ -23,7 +23,7 @@
 #include "sqlconn.hpp"
 #include "communication.pb.h"
 #include "patron.pb.h"
-#include <gnutls/gnutls.h>
+#include <gnutls/gnutlsxx.h>
 #include "gtbexceptions.hpp"
 
 //Sets the priority string for an acceptable TLS handshake
@@ -38,10 +38,10 @@
 #define DH_PK_ALGO "RSA"
 
 //CA, CERT, and CRL files
-#define KEYFILE "pem/keys/gtbskey.pem"
+#define SKEYFILE "pem/tmpl/vdev/gtbskey.pem"
 #define CAFILE "pem/certs/cacrt.pem"
 #define CRLFILE "pem/cacrl.pem"
-#define CERTFILE "pem/certs/gtbscrt.pem"
+#define CERTFILE "pem/tmpl/vdev/gtbsvdevcrt.pem"
 
 ///Sets port number for server to listen on
 #define PORT "4680"
@@ -67,9 +67,12 @@ class GTBCommunication {
     char m_vIPAddr[INET6_ADDRSTRLEN];
     std::string m_sHash;
     MySQLConn * m_MySQLConn;
+    int debug;
 
   public:
-    GTBCommunication() {
+    GTBCommunication(int indebug = 0)
+    {
+      debug = indebug;
       m_pPriorityCache = (gnutls_priority_t *) 
           operator new (sizeof (gnutls_priority_t));
       m_pX509Cred = (gnutls_certificate_credentials_t * ) 
@@ -77,7 +80,8 @@ class GTBCommunication {
       m_MySQLConn = new MySQLConn();
       m_pDHParams = (gnutls_dh_params_t *) operator new (sizeof (gnutls_dh_params_t));
     }
-    ~GTBCommunication(){
+    ~GTBCommunication()
+    {
       delete m_pDHParams;
       delete m_MySQLConn;
       delete m_pX509Cred;
@@ -86,6 +90,7 @@ class GTBCommunication {
 
     /*GNUTLS related methods*/
     void initGNUTLS(); 
+    void deinitGNUTLS(); 
     void initTLSSession ();
     int generateDHParams ();
     void loadCertFiles ();

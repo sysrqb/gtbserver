@@ -500,6 +500,11 @@ void GTBCommunication::initGNUTLS()
   loadCertFiles();
 }
 
+void GTBCommunication::deinitGNUTLS()
+{
+  gnutls_deinit(m_aSession);
+}
+
 int
 GTBCommunication::generateDHParams ()
 {
