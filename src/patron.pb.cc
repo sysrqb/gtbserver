@@ -32,17 +32,21 @@ void protobuf_AssignDesc_patron_2eproto() {
       "patron.proto");
   GOOGLE_CHECK(file != NULL);
   PatronInfo_descriptor_ = file->message_type(0);
-  static const int PatronInfo_offsets_[11] = {
+  static const int PatronInfo_offsets_[15] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, passangers_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, pickup_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, dropoff_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, phone_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, status_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, car_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, notes_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, timetaken_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, timeassigned_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, timedone_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, ridecreated_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, rideassigned_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, timepickedup_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, timecomplete_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, imecancelled_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, modified_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PatronInfo, pid_),
   };
   PatronInfo_reflection_ =
@@ -105,14 +109,16 @@ void protobuf_AddDesc_patron_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\014patron.proto\"\305\001\n\nPatronInfo\022\014\n\004name\030\001 "
+    "\n\014patron.proto\"\226\002\n\nPatronInfo\022\014\n\004name\030\001 "
     "\001(\t\022\022\n\npassangers\030\002 \001(\r\022\016\n\006pickup\030\003 \001(\t\022"
     "\017\n\007dropoff\030\004 \001(\t\022\r\n\005phone\030\005 \001(\t\022\016\n\006statu"
-    "s\030\006 \001(\t\022\r\n\005notes\030\007 \001(\t\022\021\n\ttimetaken\030\010 \001("
-    "\t\022\024\n\014timeassigned\030\t \001(\t\022\020\n\010timedone\030\n \001("
-    "\t\022\013\n\003pid\030\013 \001(\005\")\n\nPatronList\022\033\n\006patron\030\001"
-    " \003(\0132\013.PatronInfoB$\n\"edu.uconn.guarddogs"
-    ".guardthebridge", 295);
+    "s\030\006 \001(\t\022\013\n\003car\030\007 \001(\005\022\r\n\005notes\030\010 \001(\t\022\023\n\013r"
+    "idecreated\030\t \001(\t\022\024\n\014rideassigned\030\n \001(\t\022\024"
+    "\n\014timepickedup\030\013 \001(\t\022\024\n\014timecomplete\030\014 \001"
+    "(\t\022\024\n\014imecancelled\030\r \001(\t\022\020\n\010modified\030\016 \001"
+    "(\005\022\013\n\003pid\030\017 \001(\005\")\n\nPatronList\022\033\n\006patron\030"
+    "\001 \003(\0132\013.PatronInfoB$\n\"edu.uconn.guarddog"
+    "s.guardthebridge", 376);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "patron.proto", &protobuf_RegisterTypes);
   PatronInfo::default_instance_ = new PatronInfo();
@@ -139,10 +145,14 @@ const int PatronInfo::kPickupFieldNumber;
 const int PatronInfo::kDropoffFieldNumber;
 const int PatronInfo::kPhoneFieldNumber;
 const int PatronInfo::kStatusFieldNumber;
+const int PatronInfo::kCarFieldNumber;
 const int PatronInfo::kNotesFieldNumber;
-const int PatronInfo::kTimetakenFieldNumber;
-const int PatronInfo::kTimeassignedFieldNumber;
-const int PatronInfo::kTimedoneFieldNumber;
+const int PatronInfo::kRidecreatedFieldNumber;
+const int PatronInfo::kRideassignedFieldNumber;
+const int PatronInfo::kTimepickedupFieldNumber;
+const int PatronInfo::kTimecompleteFieldNumber;
+const int PatronInfo::kImecancelledFieldNumber;
+const int PatronInfo::kModifiedFieldNumber;
 const int PatronInfo::kPidFieldNumber;
 #endif  // !_MSC_VER
 
@@ -168,10 +178,14 @@ void PatronInfo::SharedCtor() {
   dropoff_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   phone_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   status_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  car_ = 0;
   notes_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  timetaken_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  timeassigned_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  timedone_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  ridecreated_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  rideassigned_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  timepickedup_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  timecomplete_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  imecancelled_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  modified_ = 0;
   pid_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -199,14 +213,20 @@ void PatronInfo::SharedDtor() {
   if (notes_ != &::google::protobuf::internal::kEmptyString) {
     delete notes_;
   }
-  if (timetaken_ != &::google::protobuf::internal::kEmptyString) {
-    delete timetaken_;
+  if (ridecreated_ != &::google::protobuf::internal::kEmptyString) {
+    delete ridecreated_;
   }
-  if (timeassigned_ != &::google::protobuf::internal::kEmptyString) {
-    delete timeassigned_;
+  if (rideassigned_ != &::google::protobuf::internal::kEmptyString) {
+    delete rideassigned_;
   }
-  if (timedone_ != &::google::protobuf::internal::kEmptyString) {
-    delete timedone_;
+  if (timepickedup_ != &::google::protobuf::internal::kEmptyString) {
+    delete timepickedup_;
+  }
+  if (timecomplete_ != &::google::protobuf::internal::kEmptyString) {
+    delete timecomplete_;
+  }
+  if (imecancelled_ != &::google::protobuf::internal::kEmptyString) {
+    delete imecancelled_;
   }
   if (this != default_instance_) {
   }
@@ -260,28 +280,40 @@ void PatronInfo::Clear() {
         status_->clear();
       }
     }
+    car_ = 0;
     if (has_notes()) {
       if (notes_ != &::google::protobuf::internal::kEmptyString) {
         notes_->clear();
       }
     }
-    if (has_timetaken()) {
-      if (timetaken_ != &::google::protobuf::internal::kEmptyString) {
-        timetaken_->clear();
-      }
-    }
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
-    if (has_timeassigned()) {
-      if (timeassigned_ != &::google::protobuf::internal::kEmptyString) {
-        timeassigned_->clear();
+    if (has_ridecreated()) {
+      if (ridecreated_ != &::google::protobuf::internal::kEmptyString) {
+        ridecreated_->clear();
       }
     }
-    if (has_timedone()) {
-      if (timedone_ != &::google::protobuf::internal::kEmptyString) {
-        timedone_->clear();
+    if (has_rideassigned()) {
+      if (rideassigned_ != &::google::protobuf::internal::kEmptyString) {
+        rideassigned_->clear();
       }
     }
+    if (has_timepickedup()) {
+      if (timepickedup_ != &::google::protobuf::internal::kEmptyString) {
+        timepickedup_->clear();
+      }
+    }
+    if (has_timecomplete()) {
+      if (timecomplete_ != &::google::protobuf::internal::kEmptyString) {
+        timecomplete_->clear();
+      }
+    }
+    if (has_imecancelled()) {
+      if (imecancelled_ != &::google::protobuf::internal::kEmptyString) {
+        imecancelled_->clear();
+      }
+    }
+    modified_ = 0;
     pid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -390,12 +422,28 @@ bool PatronInfo::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(58)) goto parse_notes;
+        if (input->ExpectTag(56)) goto parse_car;
         break;
       }
       
-      // optional string notes = 7;
+      // optional int32 car = 7;
       case 7: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_car:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &car_)));
+          set_has_car();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(66)) goto parse_notes;
+        break;
+      }
+      
+      // optional string notes = 8;
+      case 8: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_notes:
@@ -407,63 +455,113 @@ bool PatronInfo::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(66)) goto parse_timetaken;
+        if (input->ExpectTag(74)) goto parse_ridecreated;
         break;
       }
       
-      // optional string timetaken = 8;
-      case 8: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_timetaken:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_timetaken()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->timetaken().data(), this->timetaken().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(74)) goto parse_timeassigned;
-        break;
-      }
-      
-      // optional string timeassigned = 9;
+      // optional string ridecreated = 9;
       case 9: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_timeassigned:
+         parse_ridecreated:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_timeassigned()));
+                input, this->mutable_ridecreated()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->timeassigned().data(), this->timeassigned().length(),
+            this->ridecreated().data(), this->ridecreated().length(),
             ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(82)) goto parse_timedone;
+        if (input->ExpectTag(82)) goto parse_rideassigned;
         break;
       }
       
-      // optional string timedone = 10;
+      // optional string rideassigned = 10;
       case 10: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_timedone:
+         parse_rideassigned:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_timedone()));
+                input, this->mutable_rideassigned()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->timedone().data(), this->timedone().length(),
+            this->rideassigned().data(), this->rideassigned().length(),
             ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(88)) goto parse_pid;
+        if (input->ExpectTag(90)) goto parse_timepickedup;
         break;
       }
       
-      // optional int32 pid = 11;
+      // optional string timepickedup = 11;
       case 11: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_timepickedup:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_timepickedup()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->timepickedup().data(), this->timepickedup().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(98)) goto parse_timecomplete;
+        break;
+      }
+      
+      // optional string timecomplete = 12;
+      case 12: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_timecomplete:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_timecomplete()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->timecomplete().data(), this->timecomplete().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(106)) goto parse_imecancelled;
+        break;
+      }
+      
+      // optional string imecancelled = 13;
+      case 13: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_imecancelled:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_imecancelled()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->imecancelled().data(), this->imecancelled().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(112)) goto parse_modified;
+        break;
+      }
+      
+      // optional int32 modified = 14;
+      case 14: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_modified:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &modified_)));
+          set_has_modified();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(120)) goto parse_pid;
+        break;
+      }
+      
+      // optional int32 pid = 15;
+      case 15: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_pid:
@@ -546,45 +644,73 @@ void PatronInfo::SerializeWithCachedSizes(
       6, this->status(), output);
   }
   
-  // optional string notes = 7;
+  // optional int32 car = 7;
+  if (has_car()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(7, this->car(), output);
+  }
+  
+  // optional string notes = 8;
   if (has_notes()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->notes().data(), this->notes().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      7, this->notes(), output);
+      8, this->notes(), output);
   }
   
-  // optional string timetaken = 8;
-  if (has_timetaken()) {
+  // optional string ridecreated = 9;
+  if (has_ridecreated()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->timetaken().data(), this->timetaken().length(),
+      this->ridecreated().data(), this->ridecreated().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      8, this->timetaken(), output);
+      9, this->ridecreated(), output);
   }
   
-  // optional string timeassigned = 9;
-  if (has_timeassigned()) {
+  // optional string rideassigned = 10;
+  if (has_rideassigned()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->timeassigned().data(), this->timeassigned().length(),
+      this->rideassigned().data(), this->rideassigned().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      9, this->timeassigned(), output);
+      10, this->rideassigned(), output);
   }
   
-  // optional string timedone = 10;
-  if (has_timedone()) {
+  // optional string timepickedup = 11;
+  if (has_timepickedup()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->timedone().data(), this->timedone().length(),
+      this->timepickedup().data(), this->timepickedup().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      10, this->timedone(), output);
+      11, this->timepickedup(), output);
   }
   
-  // optional int32 pid = 11;
+  // optional string timecomplete = 12;
+  if (has_timecomplete()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->timecomplete().data(), this->timecomplete().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      12, this->timecomplete(), output);
+  }
+  
+  // optional string imecancelled = 13;
+  if (has_imecancelled()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->imecancelled().data(), this->imecancelled().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      13, this->imecancelled(), output);
+  }
+  
+  // optional int32 modified = 14;
+  if (has_modified()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(14, this->modified(), output);
+  }
+  
+  // optional int32 pid = 15;
   if (has_pid()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(11, this->pid(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(15, this->pid(), output);
   }
   
   if (!unknown_fields().empty()) {
@@ -650,49 +776,79 @@ void PatronInfo::SerializeWithCachedSizes(
         6, this->status(), target);
   }
   
-  // optional string notes = 7;
+  // optional int32 car = 7;
+  if (has_car()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(7, this->car(), target);
+  }
+  
+  // optional string notes = 8;
   if (has_notes()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->notes().data(), this->notes().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        7, this->notes(), target);
+        8, this->notes(), target);
   }
   
-  // optional string timetaken = 8;
-  if (has_timetaken()) {
+  // optional string ridecreated = 9;
+  if (has_ridecreated()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->timetaken().data(), this->timetaken().length(),
+      this->ridecreated().data(), this->ridecreated().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        8, this->timetaken(), target);
+        9, this->ridecreated(), target);
   }
   
-  // optional string timeassigned = 9;
-  if (has_timeassigned()) {
+  // optional string rideassigned = 10;
+  if (has_rideassigned()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->timeassigned().data(), this->timeassigned().length(),
+      this->rideassigned().data(), this->rideassigned().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        9, this->timeassigned(), target);
+        10, this->rideassigned(), target);
   }
   
-  // optional string timedone = 10;
-  if (has_timedone()) {
+  // optional string timepickedup = 11;
+  if (has_timepickedup()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->timedone().data(), this->timedone().length(),
+      this->timepickedup().data(), this->timepickedup().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        10, this->timedone(), target);
+        11, this->timepickedup(), target);
   }
   
-  // optional int32 pid = 11;
+  // optional string timecomplete = 12;
+  if (has_timecomplete()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->timecomplete().data(), this->timecomplete().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        12, this->timecomplete(), target);
+  }
+  
+  // optional string imecancelled = 13;
+  if (has_imecancelled()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->imecancelled().data(), this->imecancelled().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        13, this->imecancelled(), target);
+  }
+  
+  // optional int32 modified = 14;
+  if (has_modified()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(14, this->modified(), target);
+  }
+  
+  // optional int32 pid = 15;
   if (has_pid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(11, this->pid(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(15, this->pid(), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -748,37 +904,65 @@ int PatronInfo::ByteSize() const {
           this->status());
     }
     
-    // optional string notes = 7;
+    // optional int32 car = 7;
+    if (has_car()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->car());
+    }
+    
+    // optional string notes = 8;
     if (has_notes()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->notes());
     }
     
-    // optional string timetaken = 8;
-    if (has_timetaken()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->timetaken());
-    }
-    
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
-    // optional string timeassigned = 9;
-    if (has_timeassigned()) {
+    // optional string ridecreated = 9;
+    if (has_ridecreated()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->timeassigned());
+          this->ridecreated());
     }
     
-    // optional string timedone = 10;
-    if (has_timedone()) {
+    // optional string rideassigned = 10;
+    if (has_rideassigned()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->timedone());
+          this->rideassigned());
     }
     
-    // optional int32 pid = 11;
+    // optional string timepickedup = 11;
+    if (has_timepickedup()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->timepickedup());
+    }
+    
+    // optional string timecomplete = 12;
+    if (has_timecomplete()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->timecomplete());
+    }
+    
+    // optional string imecancelled = 13;
+    if (has_imecancelled()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->imecancelled());
+    }
+    
+    // optional int32 modified = 14;
+    if (has_modified()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->modified());
+    }
+    
+    // optional int32 pid = 15;
     if (has_pid()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
@@ -830,19 +1014,31 @@ void PatronInfo::MergeFrom(const PatronInfo& from) {
     if (from.has_status()) {
       set_status(from.status());
     }
+    if (from.has_car()) {
+      set_car(from.car());
+    }
     if (from.has_notes()) {
       set_notes(from.notes());
     }
-    if (from.has_timetaken()) {
-      set_timetaken(from.timetaken());
-    }
   }
   if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
-    if (from.has_timeassigned()) {
-      set_timeassigned(from.timeassigned());
+    if (from.has_ridecreated()) {
+      set_ridecreated(from.ridecreated());
     }
-    if (from.has_timedone()) {
-      set_timedone(from.timedone());
+    if (from.has_rideassigned()) {
+      set_rideassigned(from.rideassigned());
+    }
+    if (from.has_timepickedup()) {
+      set_timepickedup(from.timepickedup());
+    }
+    if (from.has_timecomplete()) {
+      set_timecomplete(from.timecomplete());
+    }
+    if (from.has_imecancelled()) {
+      set_imecancelled(from.imecancelled());
+    }
+    if (from.has_modified()) {
+      set_modified(from.modified());
     }
     if (from.has_pid()) {
       set_pid(from.pid());
@@ -876,10 +1072,14 @@ void PatronInfo::Swap(PatronInfo* other) {
     std::swap(dropoff_, other->dropoff_);
     std::swap(phone_, other->phone_);
     std::swap(status_, other->status_);
+    std::swap(car_, other->car_);
     std::swap(notes_, other->notes_);
-    std::swap(timetaken_, other->timetaken_);
-    std::swap(timeassigned_, other->timeassigned_);
-    std::swap(timedone_, other->timedone_);
+    std::swap(ridecreated_, other->ridecreated_);
+    std::swap(rideassigned_, other->rideassigned_);
+    std::swap(timepickedup_, other->timepickedup_);
+    std::swap(timecomplete_, other->timecomplete_);
+    std::swap(imecancelled_, other->imecancelled_);
+    std::swap(modified_, other->modified_);
     std::swap(pid_, other->pid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);

@@ -151,10 +151,17 @@ class PatronInfo : public ::google::protobuf::Message {
   inline ::std::string* mutable_status();
   inline ::std::string* release_status();
   
-  // optional string notes = 7;
+  // optional int32 car = 7;
+  inline bool has_car() const;
+  inline void clear_car();
+  static const int kCarFieldNumber = 7;
+  inline ::google::protobuf::int32 car() const;
+  inline void set_car(::google::protobuf::int32 value);
+  
+  // optional string notes = 8;
   inline bool has_notes() const;
   inline void clear_notes();
-  static const int kNotesFieldNumber = 7;
+  static const int kNotesFieldNumber = 8;
   inline const ::std::string& notes() const;
   inline void set_notes(const ::std::string& value);
   inline void set_notes(const char* value);
@@ -162,43 +169,72 @@ class PatronInfo : public ::google::protobuf::Message {
   inline ::std::string* mutable_notes();
   inline ::std::string* release_notes();
   
-  // optional string timetaken = 8;
-  inline bool has_timetaken() const;
-  inline void clear_timetaken();
-  static const int kTimetakenFieldNumber = 8;
-  inline const ::std::string& timetaken() const;
-  inline void set_timetaken(const ::std::string& value);
-  inline void set_timetaken(const char* value);
-  inline void set_timetaken(const char* value, size_t size);
-  inline ::std::string* mutable_timetaken();
-  inline ::std::string* release_timetaken();
+  // optional string ridecreated = 9;
+  inline bool has_ridecreated() const;
+  inline void clear_ridecreated();
+  static const int kRidecreatedFieldNumber = 9;
+  inline const ::std::string& ridecreated() const;
+  inline void set_ridecreated(const ::std::string& value);
+  inline void set_ridecreated(const char* value);
+  inline void set_ridecreated(const char* value, size_t size);
+  inline ::std::string* mutable_ridecreated();
+  inline ::std::string* release_ridecreated();
   
-  // optional string timeassigned = 9;
-  inline bool has_timeassigned() const;
-  inline void clear_timeassigned();
-  static const int kTimeassignedFieldNumber = 9;
-  inline const ::std::string& timeassigned() const;
-  inline void set_timeassigned(const ::std::string& value);
-  inline void set_timeassigned(const char* value);
-  inline void set_timeassigned(const char* value, size_t size);
-  inline ::std::string* mutable_timeassigned();
-  inline ::std::string* release_timeassigned();
+  // optional string rideassigned = 10;
+  inline bool has_rideassigned() const;
+  inline void clear_rideassigned();
+  static const int kRideassignedFieldNumber = 10;
+  inline const ::std::string& rideassigned() const;
+  inline void set_rideassigned(const ::std::string& value);
+  inline void set_rideassigned(const char* value);
+  inline void set_rideassigned(const char* value, size_t size);
+  inline ::std::string* mutable_rideassigned();
+  inline ::std::string* release_rideassigned();
   
-  // optional string timedone = 10;
-  inline bool has_timedone() const;
-  inline void clear_timedone();
-  static const int kTimedoneFieldNumber = 10;
-  inline const ::std::string& timedone() const;
-  inline void set_timedone(const ::std::string& value);
-  inline void set_timedone(const char* value);
-  inline void set_timedone(const char* value, size_t size);
-  inline ::std::string* mutable_timedone();
-  inline ::std::string* release_timedone();
+  // optional string timepickedup = 11;
+  inline bool has_timepickedup() const;
+  inline void clear_timepickedup();
+  static const int kTimepickedupFieldNumber = 11;
+  inline const ::std::string& timepickedup() const;
+  inline void set_timepickedup(const ::std::string& value);
+  inline void set_timepickedup(const char* value);
+  inline void set_timepickedup(const char* value, size_t size);
+  inline ::std::string* mutable_timepickedup();
+  inline ::std::string* release_timepickedup();
   
-  // optional int32 pid = 11;
+  // optional string timecomplete = 12;
+  inline bool has_timecomplete() const;
+  inline void clear_timecomplete();
+  static const int kTimecompleteFieldNumber = 12;
+  inline const ::std::string& timecomplete() const;
+  inline void set_timecomplete(const ::std::string& value);
+  inline void set_timecomplete(const char* value);
+  inline void set_timecomplete(const char* value, size_t size);
+  inline ::std::string* mutable_timecomplete();
+  inline ::std::string* release_timecomplete();
+  
+  // optional string imecancelled = 13;
+  inline bool has_imecancelled() const;
+  inline void clear_imecancelled();
+  static const int kImecancelledFieldNumber = 13;
+  inline const ::std::string& imecancelled() const;
+  inline void set_imecancelled(const ::std::string& value);
+  inline void set_imecancelled(const char* value);
+  inline void set_imecancelled(const char* value, size_t size);
+  inline ::std::string* mutable_imecancelled();
+  inline ::std::string* release_imecancelled();
+  
+  // optional int32 modified = 14;
+  inline bool has_modified() const;
+  inline void clear_modified();
+  static const int kModifiedFieldNumber = 14;
+  inline ::google::protobuf::int32 modified() const;
+  inline void set_modified(::google::protobuf::int32 value);
+  
+  // optional int32 pid = 15;
   inline bool has_pid() const;
   inline void clear_pid();
-  static const int kPidFieldNumber = 11;
+  static const int kPidFieldNumber = 15;
   inline ::google::protobuf::int32 pid() const;
   inline void set_pid(::google::protobuf::int32 value);
   
@@ -216,14 +252,22 @@ class PatronInfo : public ::google::protobuf::Message {
   inline void clear_has_phone();
   inline void set_has_status();
   inline void clear_has_status();
+  inline void set_has_car();
+  inline void clear_has_car();
   inline void set_has_notes();
   inline void clear_has_notes();
-  inline void set_has_timetaken();
-  inline void clear_has_timetaken();
-  inline void set_has_timeassigned();
-  inline void clear_has_timeassigned();
-  inline void set_has_timedone();
-  inline void clear_has_timedone();
+  inline void set_has_ridecreated();
+  inline void clear_has_ridecreated();
+  inline void set_has_rideassigned();
+  inline void clear_has_rideassigned();
+  inline void set_has_timepickedup();
+  inline void clear_has_timepickedup();
+  inline void set_has_timecomplete();
+  inline void clear_has_timecomplete();
+  inline void set_has_imecancelled();
+  inline void clear_has_imecancelled();
+  inline void set_has_modified();
+  inline void clear_has_modified();
   inline void set_has_pid();
   inline void clear_has_pid();
   
@@ -232,17 +276,21 @@ class PatronInfo : public ::google::protobuf::Message {
   ::std::string* name_;
   ::std::string* pickup_;
   ::std::string* dropoff_;
+  ::google::protobuf::uint32 passangers_;
+  ::google::protobuf::int32 car_;
   ::std::string* phone_;
   ::std::string* status_;
-  ::google::protobuf::uint32 passangers_;
-  ::google::protobuf::int32 pid_;
   ::std::string* notes_;
-  ::std::string* timetaken_;
-  ::std::string* timeassigned_;
-  ::std::string* timedone_;
+  ::std::string* ridecreated_;
+  ::std::string* rideassigned_;
+  ::std::string* timepickedup_;
+  ::std::string* timecomplete_;
+  ::std::string* imecancelled_;
+  ::google::protobuf::int32 modified_;
+  ::google::protobuf::int32 pid_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(11 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
   
   friend void  protobuf_AddDesc_patron_2eproto();
   friend void protobuf_AssignDesc_patron_2eproto();
@@ -655,15 +703,37 @@ inline ::std::string* PatronInfo::release_status() {
   }
 }
 
-// optional string notes = 7;
-inline bool PatronInfo::has_notes() const {
+// optional int32 car = 7;
+inline bool PatronInfo::has_car() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
-inline void PatronInfo::set_has_notes() {
+inline void PatronInfo::set_has_car() {
   _has_bits_[0] |= 0x00000040u;
 }
-inline void PatronInfo::clear_has_notes() {
+inline void PatronInfo::clear_has_car() {
   _has_bits_[0] &= ~0x00000040u;
+}
+inline void PatronInfo::clear_car() {
+  car_ = 0;
+  clear_has_car();
+}
+inline ::google::protobuf::int32 PatronInfo::car() const {
+  return car_;
+}
+inline void PatronInfo::set_car(::google::protobuf::int32 value) {
+  set_has_car();
+  car_ = value;
+}
+
+// optional string notes = 8;
+inline bool PatronInfo::has_notes() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void PatronInfo::set_has_notes() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void PatronInfo::clear_has_notes() {
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void PatronInfo::clear_notes() {
   if (notes_ != &::google::protobuf::internal::kEmptyString) {
@@ -713,189 +783,327 @@ inline ::std::string* PatronInfo::release_notes() {
   }
 }
 
-// optional string timetaken = 8;
-inline bool PatronInfo::has_timetaken() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
-}
-inline void PatronInfo::set_has_timetaken() {
-  _has_bits_[0] |= 0x00000080u;
-}
-inline void PatronInfo::clear_has_timetaken() {
-  _has_bits_[0] &= ~0x00000080u;
-}
-inline void PatronInfo::clear_timetaken() {
-  if (timetaken_ != &::google::protobuf::internal::kEmptyString) {
-    timetaken_->clear();
-  }
-  clear_has_timetaken();
-}
-inline const ::std::string& PatronInfo::timetaken() const {
-  return *timetaken_;
-}
-inline void PatronInfo::set_timetaken(const ::std::string& value) {
-  set_has_timetaken();
-  if (timetaken_ == &::google::protobuf::internal::kEmptyString) {
-    timetaken_ = new ::std::string;
-  }
-  timetaken_->assign(value);
-}
-inline void PatronInfo::set_timetaken(const char* value) {
-  set_has_timetaken();
-  if (timetaken_ == &::google::protobuf::internal::kEmptyString) {
-    timetaken_ = new ::std::string;
-  }
-  timetaken_->assign(value);
-}
-inline void PatronInfo::set_timetaken(const char* value, size_t size) {
-  set_has_timetaken();
-  if (timetaken_ == &::google::protobuf::internal::kEmptyString) {
-    timetaken_ = new ::std::string;
-  }
-  timetaken_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* PatronInfo::mutable_timetaken() {
-  set_has_timetaken();
-  if (timetaken_ == &::google::protobuf::internal::kEmptyString) {
-    timetaken_ = new ::std::string;
-  }
-  return timetaken_;
-}
-inline ::std::string* PatronInfo::release_timetaken() {
-  clear_has_timetaken();
-  if (timetaken_ == &::google::protobuf::internal::kEmptyString) {
-    return NULL;
-  } else {
-    ::std::string* temp = timetaken_;
-    timetaken_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-    return temp;
-  }
-}
-
-// optional string timeassigned = 9;
-inline bool PatronInfo::has_timeassigned() const {
+// optional string ridecreated = 9;
+inline bool PatronInfo::has_ridecreated() const {
   return (_has_bits_[0] & 0x00000100u) != 0;
 }
-inline void PatronInfo::set_has_timeassigned() {
+inline void PatronInfo::set_has_ridecreated() {
   _has_bits_[0] |= 0x00000100u;
 }
-inline void PatronInfo::clear_has_timeassigned() {
+inline void PatronInfo::clear_has_ridecreated() {
   _has_bits_[0] &= ~0x00000100u;
 }
-inline void PatronInfo::clear_timeassigned() {
-  if (timeassigned_ != &::google::protobuf::internal::kEmptyString) {
-    timeassigned_->clear();
+inline void PatronInfo::clear_ridecreated() {
+  if (ridecreated_ != &::google::protobuf::internal::kEmptyString) {
+    ridecreated_->clear();
   }
-  clear_has_timeassigned();
+  clear_has_ridecreated();
 }
-inline const ::std::string& PatronInfo::timeassigned() const {
-  return *timeassigned_;
+inline const ::std::string& PatronInfo::ridecreated() const {
+  return *ridecreated_;
 }
-inline void PatronInfo::set_timeassigned(const ::std::string& value) {
-  set_has_timeassigned();
-  if (timeassigned_ == &::google::protobuf::internal::kEmptyString) {
-    timeassigned_ = new ::std::string;
+inline void PatronInfo::set_ridecreated(const ::std::string& value) {
+  set_has_ridecreated();
+  if (ridecreated_ == &::google::protobuf::internal::kEmptyString) {
+    ridecreated_ = new ::std::string;
   }
-  timeassigned_->assign(value);
+  ridecreated_->assign(value);
 }
-inline void PatronInfo::set_timeassigned(const char* value) {
-  set_has_timeassigned();
-  if (timeassigned_ == &::google::protobuf::internal::kEmptyString) {
-    timeassigned_ = new ::std::string;
+inline void PatronInfo::set_ridecreated(const char* value) {
+  set_has_ridecreated();
+  if (ridecreated_ == &::google::protobuf::internal::kEmptyString) {
+    ridecreated_ = new ::std::string;
   }
-  timeassigned_->assign(value);
+  ridecreated_->assign(value);
 }
-inline void PatronInfo::set_timeassigned(const char* value, size_t size) {
-  set_has_timeassigned();
-  if (timeassigned_ == &::google::protobuf::internal::kEmptyString) {
-    timeassigned_ = new ::std::string;
+inline void PatronInfo::set_ridecreated(const char* value, size_t size) {
+  set_has_ridecreated();
+  if (ridecreated_ == &::google::protobuf::internal::kEmptyString) {
+    ridecreated_ = new ::std::string;
   }
-  timeassigned_->assign(reinterpret_cast<const char*>(value), size);
+  ridecreated_->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* PatronInfo::mutable_timeassigned() {
-  set_has_timeassigned();
-  if (timeassigned_ == &::google::protobuf::internal::kEmptyString) {
-    timeassigned_ = new ::std::string;
+inline ::std::string* PatronInfo::mutable_ridecreated() {
+  set_has_ridecreated();
+  if (ridecreated_ == &::google::protobuf::internal::kEmptyString) {
+    ridecreated_ = new ::std::string;
   }
-  return timeassigned_;
+  return ridecreated_;
 }
-inline ::std::string* PatronInfo::release_timeassigned() {
-  clear_has_timeassigned();
-  if (timeassigned_ == &::google::protobuf::internal::kEmptyString) {
+inline ::std::string* PatronInfo::release_ridecreated() {
+  clear_has_ridecreated();
+  if (ridecreated_ == &::google::protobuf::internal::kEmptyString) {
     return NULL;
   } else {
-    ::std::string* temp = timeassigned_;
-    timeassigned_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    ::std::string* temp = ridecreated_;
+    ridecreated_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
     return temp;
   }
 }
 
-// optional string timedone = 10;
-inline bool PatronInfo::has_timedone() const {
+// optional string rideassigned = 10;
+inline bool PatronInfo::has_rideassigned() const {
   return (_has_bits_[0] & 0x00000200u) != 0;
 }
-inline void PatronInfo::set_has_timedone() {
+inline void PatronInfo::set_has_rideassigned() {
   _has_bits_[0] |= 0x00000200u;
 }
-inline void PatronInfo::clear_has_timedone() {
+inline void PatronInfo::clear_has_rideassigned() {
   _has_bits_[0] &= ~0x00000200u;
 }
-inline void PatronInfo::clear_timedone() {
-  if (timedone_ != &::google::protobuf::internal::kEmptyString) {
-    timedone_->clear();
+inline void PatronInfo::clear_rideassigned() {
+  if (rideassigned_ != &::google::protobuf::internal::kEmptyString) {
+    rideassigned_->clear();
   }
-  clear_has_timedone();
+  clear_has_rideassigned();
 }
-inline const ::std::string& PatronInfo::timedone() const {
-  return *timedone_;
+inline const ::std::string& PatronInfo::rideassigned() const {
+  return *rideassigned_;
 }
-inline void PatronInfo::set_timedone(const ::std::string& value) {
-  set_has_timedone();
-  if (timedone_ == &::google::protobuf::internal::kEmptyString) {
-    timedone_ = new ::std::string;
+inline void PatronInfo::set_rideassigned(const ::std::string& value) {
+  set_has_rideassigned();
+  if (rideassigned_ == &::google::protobuf::internal::kEmptyString) {
+    rideassigned_ = new ::std::string;
   }
-  timedone_->assign(value);
+  rideassigned_->assign(value);
 }
-inline void PatronInfo::set_timedone(const char* value) {
-  set_has_timedone();
-  if (timedone_ == &::google::protobuf::internal::kEmptyString) {
-    timedone_ = new ::std::string;
+inline void PatronInfo::set_rideassigned(const char* value) {
+  set_has_rideassigned();
+  if (rideassigned_ == &::google::protobuf::internal::kEmptyString) {
+    rideassigned_ = new ::std::string;
   }
-  timedone_->assign(value);
+  rideassigned_->assign(value);
 }
-inline void PatronInfo::set_timedone(const char* value, size_t size) {
-  set_has_timedone();
-  if (timedone_ == &::google::protobuf::internal::kEmptyString) {
-    timedone_ = new ::std::string;
+inline void PatronInfo::set_rideassigned(const char* value, size_t size) {
+  set_has_rideassigned();
+  if (rideassigned_ == &::google::protobuf::internal::kEmptyString) {
+    rideassigned_ = new ::std::string;
   }
-  timedone_->assign(reinterpret_cast<const char*>(value), size);
+  rideassigned_->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* PatronInfo::mutable_timedone() {
-  set_has_timedone();
-  if (timedone_ == &::google::protobuf::internal::kEmptyString) {
-    timedone_ = new ::std::string;
+inline ::std::string* PatronInfo::mutable_rideassigned() {
+  set_has_rideassigned();
+  if (rideassigned_ == &::google::protobuf::internal::kEmptyString) {
+    rideassigned_ = new ::std::string;
   }
-  return timedone_;
+  return rideassigned_;
 }
-inline ::std::string* PatronInfo::release_timedone() {
-  clear_has_timedone();
-  if (timedone_ == &::google::protobuf::internal::kEmptyString) {
+inline ::std::string* PatronInfo::release_rideassigned() {
+  clear_has_rideassigned();
+  if (rideassigned_ == &::google::protobuf::internal::kEmptyString) {
     return NULL;
   } else {
-    ::std::string* temp = timedone_;
-    timedone_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    ::std::string* temp = rideassigned_;
+    rideassigned_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
     return temp;
   }
 }
 
-// optional int32 pid = 11;
-inline bool PatronInfo::has_pid() const {
+// optional string timepickedup = 11;
+inline bool PatronInfo::has_timepickedup() const {
   return (_has_bits_[0] & 0x00000400u) != 0;
 }
-inline void PatronInfo::set_has_pid() {
+inline void PatronInfo::set_has_timepickedup() {
   _has_bits_[0] |= 0x00000400u;
 }
-inline void PatronInfo::clear_has_pid() {
+inline void PatronInfo::clear_has_timepickedup() {
   _has_bits_[0] &= ~0x00000400u;
+}
+inline void PatronInfo::clear_timepickedup() {
+  if (timepickedup_ != &::google::protobuf::internal::kEmptyString) {
+    timepickedup_->clear();
+  }
+  clear_has_timepickedup();
+}
+inline const ::std::string& PatronInfo::timepickedup() const {
+  return *timepickedup_;
+}
+inline void PatronInfo::set_timepickedup(const ::std::string& value) {
+  set_has_timepickedup();
+  if (timepickedup_ == &::google::protobuf::internal::kEmptyString) {
+    timepickedup_ = new ::std::string;
+  }
+  timepickedup_->assign(value);
+}
+inline void PatronInfo::set_timepickedup(const char* value) {
+  set_has_timepickedup();
+  if (timepickedup_ == &::google::protobuf::internal::kEmptyString) {
+    timepickedup_ = new ::std::string;
+  }
+  timepickedup_->assign(value);
+}
+inline void PatronInfo::set_timepickedup(const char* value, size_t size) {
+  set_has_timepickedup();
+  if (timepickedup_ == &::google::protobuf::internal::kEmptyString) {
+    timepickedup_ = new ::std::string;
+  }
+  timepickedup_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* PatronInfo::mutable_timepickedup() {
+  set_has_timepickedup();
+  if (timepickedup_ == &::google::protobuf::internal::kEmptyString) {
+    timepickedup_ = new ::std::string;
+  }
+  return timepickedup_;
+}
+inline ::std::string* PatronInfo::release_timepickedup() {
+  clear_has_timepickedup();
+  if (timepickedup_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = timepickedup_;
+    timepickedup_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional string timecomplete = 12;
+inline bool PatronInfo::has_timecomplete() const {
+  return (_has_bits_[0] & 0x00000800u) != 0;
+}
+inline void PatronInfo::set_has_timecomplete() {
+  _has_bits_[0] |= 0x00000800u;
+}
+inline void PatronInfo::clear_has_timecomplete() {
+  _has_bits_[0] &= ~0x00000800u;
+}
+inline void PatronInfo::clear_timecomplete() {
+  if (timecomplete_ != &::google::protobuf::internal::kEmptyString) {
+    timecomplete_->clear();
+  }
+  clear_has_timecomplete();
+}
+inline const ::std::string& PatronInfo::timecomplete() const {
+  return *timecomplete_;
+}
+inline void PatronInfo::set_timecomplete(const ::std::string& value) {
+  set_has_timecomplete();
+  if (timecomplete_ == &::google::protobuf::internal::kEmptyString) {
+    timecomplete_ = new ::std::string;
+  }
+  timecomplete_->assign(value);
+}
+inline void PatronInfo::set_timecomplete(const char* value) {
+  set_has_timecomplete();
+  if (timecomplete_ == &::google::protobuf::internal::kEmptyString) {
+    timecomplete_ = new ::std::string;
+  }
+  timecomplete_->assign(value);
+}
+inline void PatronInfo::set_timecomplete(const char* value, size_t size) {
+  set_has_timecomplete();
+  if (timecomplete_ == &::google::protobuf::internal::kEmptyString) {
+    timecomplete_ = new ::std::string;
+  }
+  timecomplete_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* PatronInfo::mutable_timecomplete() {
+  set_has_timecomplete();
+  if (timecomplete_ == &::google::protobuf::internal::kEmptyString) {
+    timecomplete_ = new ::std::string;
+  }
+  return timecomplete_;
+}
+inline ::std::string* PatronInfo::release_timecomplete() {
+  clear_has_timecomplete();
+  if (timecomplete_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = timecomplete_;
+    timecomplete_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional string imecancelled = 13;
+inline bool PatronInfo::has_imecancelled() const {
+  return (_has_bits_[0] & 0x00001000u) != 0;
+}
+inline void PatronInfo::set_has_imecancelled() {
+  _has_bits_[0] |= 0x00001000u;
+}
+inline void PatronInfo::clear_has_imecancelled() {
+  _has_bits_[0] &= ~0x00001000u;
+}
+inline void PatronInfo::clear_imecancelled() {
+  if (imecancelled_ != &::google::protobuf::internal::kEmptyString) {
+    imecancelled_->clear();
+  }
+  clear_has_imecancelled();
+}
+inline const ::std::string& PatronInfo::imecancelled() const {
+  return *imecancelled_;
+}
+inline void PatronInfo::set_imecancelled(const ::std::string& value) {
+  set_has_imecancelled();
+  if (imecancelled_ == &::google::protobuf::internal::kEmptyString) {
+    imecancelled_ = new ::std::string;
+  }
+  imecancelled_->assign(value);
+}
+inline void PatronInfo::set_imecancelled(const char* value) {
+  set_has_imecancelled();
+  if (imecancelled_ == &::google::protobuf::internal::kEmptyString) {
+    imecancelled_ = new ::std::string;
+  }
+  imecancelled_->assign(value);
+}
+inline void PatronInfo::set_imecancelled(const char* value, size_t size) {
+  set_has_imecancelled();
+  if (imecancelled_ == &::google::protobuf::internal::kEmptyString) {
+    imecancelled_ = new ::std::string;
+  }
+  imecancelled_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* PatronInfo::mutable_imecancelled() {
+  set_has_imecancelled();
+  if (imecancelled_ == &::google::protobuf::internal::kEmptyString) {
+    imecancelled_ = new ::std::string;
+  }
+  return imecancelled_;
+}
+inline ::std::string* PatronInfo::release_imecancelled() {
+  clear_has_imecancelled();
+  if (imecancelled_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = imecancelled_;
+    imecancelled_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional int32 modified = 14;
+inline bool PatronInfo::has_modified() const {
+  return (_has_bits_[0] & 0x00002000u) != 0;
+}
+inline void PatronInfo::set_has_modified() {
+  _has_bits_[0] |= 0x00002000u;
+}
+inline void PatronInfo::clear_has_modified() {
+  _has_bits_[0] &= ~0x00002000u;
+}
+inline void PatronInfo::clear_modified() {
+  modified_ = 0;
+  clear_has_modified();
+}
+inline ::google::protobuf::int32 PatronInfo::modified() const {
+  return modified_;
+}
+inline void PatronInfo::set_modified(::google::protobuf::int32 value) {
+  set_has_modified();
+  modified_ = value;
+}
+
+// optional int32 pid = 15;
+inline bool PatronInfo::has_pid() const {
+  return (_has_bits_[0] & 0x00004000u) != 0;
+}
+inline void PatronInfo::set_has_pid() {
+  _has_bits_[0] |= 0x00004000u;
+}
+inline void PatronInfo::clear_has_pid() {
+  _has_bits_[0] &= ~0x00004000u;
 }
 inline void PatronInfo::clear_pid() {
   pid_ = 0;

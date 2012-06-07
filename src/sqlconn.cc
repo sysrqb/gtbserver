@@ -198,6 +198,7 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, std::vector<int> old)
         if (old.at(i) == nCarNum)
 	  continue;
       }
+      apbPI = i_apbPatl->add_patron();
       apbPI->set_name(res->getString("name"));
       apbPI->set_phone(res->getString("cell"));
       apbPI->set_passangers(res->getInt("riders"));
@@ -247,8 +248,8 @@ map<int, string> MySQLConn::setUpdt(int carnum, PatronList * i_apbPatl, Request 
       prepStmt->setString(4, i_aPBReq->plpatronlist().patron(i).status());
       prepStmt->setString(5, i_aPBReq->plpatronlist().patron(i).pickup());
       prepStmt->setString(6, i_aPBReq->plpatronlist().patron(i).dropoff());
-      prepStmt->setString(7, i_aPBReq->plpatronlist().patron(i).timetaken());
-      prepStmt->setString(8, i_aPBReq->plpatronlist().patron(i).timedone());
+      prepStmt->setString(7, i_aPBReq->plpatronlist().patron(i).ridecreated());
+      prepStmt->setString(8, i_aPBReq->plpatronlist().patron(i).timecomplete());
       prepStmt->setInt(9, i_aPBReq->plpatronlist().patron(i).pid());
       prepStmt->setInt(10, carnum);
       nRows = prepStmt->executeUpdate();
@@ -447,8 +448,8 @@ map<int, string> MySQLConn::addPatron(int carnum, PatronList * i_apbPatl, Reques
       prepStmt->setString(4, i_aPBReq->plpatronlist().patron(i).status());
       prepStmt->setString(5, i_aPBReq->plpatronlist().patron(i).pickup());
       prepStmt->setString(6, i_aPBReq->plpatronlist().patron(i).dropoff());
-      prepStmt->setString(7, i_aPBReq->plpatronlist().patron(i).timetaken());
-      prepStmt->setString(8, i_aPBReq->plpatronlist().patron(i).timedone());
+      prepStmt->setString(7, i_aPBReq->plpatronlist().patron(i).ridecreated());
+      prepStmt->setString(8, i_aPBReq->plpatronlist().patron(i).timecomplete());
       nRows = prepStmt->execute();
       if ( nRows == 0 )  // If entry was not updated
       {
@@ -478,7 +479,7 @@ map<int, string> MySQLConn::addPatron(int carnum, PatronList * i_apbPatl, Reques
 /*
  * size: unsigned = long long int64_t (assuming on amd64)
  */
-string getSHA256Hash(string sdata, int size)
+string MySQLConn::getSHA256Hash(string sdata, int size)
 {
   struct sha256_ctx ctx;
   uint8_t unhash, data;

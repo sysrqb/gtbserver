@@ -25,11 +25,15 @@ message PatronInfo {
   optional string dropoff = 4;
   optional string phone = 5;
   optional string status = 6;
-  optional string notes = 7;
-  optional string timetaken = 8;
-  optional string timeassigned = 9;
-  optional string timedone = 10;
-  optional int32 pid = 11;
+  optional int32 car = 7;
+  optional string notes = 8;
+  optional string ridecreated = 9;
+  optional string rideassigned = 10;
+  optional string timepickedup = 11;
+  optional string timecomplete = 12;
+  optional string imecancelled = 13;
+  optional int32 modified = 14;
+  optional int32 pid = 15;
 }
 
 message PatronList {
