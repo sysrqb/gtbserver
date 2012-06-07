@@ -18,16 +18,16 @@ obj = gtbserver.o sqlconn.o gtbcommunication.o
 SRC=src/
 TEST=test/
 INCLUDE=include/
-LINKEROPTS = -Wl,-lmysqlcppconn,-lpthread,-lgnutls
+LINKEROPTS = -Wl,-lmysqlcppconn,-lpthread,-lgnutls,-lgnutlsxx,-lboost_thread-mt-1_47,-lnettle
 PKGCOPTS = `pkg-config gnutls --cflags --libs protobuf`
-CC=clang++ -ggdb -I$(INCLUDE)
+CC=clang++ -ggdb -Wall -I$(INCLUDE)
 GTEST=../gtest
 
 gtb : $(obj)
 	$(CC) $(LINKEROPTS) -o gtbserver $(obj) communication.pb.o patron.pb.o $(PKGCOPTS)
 
 gtbserver.o : $(SRC)gtbserver.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc communication.pb.cc 
-	$(CC) -c $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)gtbserver.cc $(SRC)communication.pb.cc $(SRC)patron.pb.cc
+	$(CC) -c $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)gtbserver.cc $(SRC)communication.pb.cc $(SRC)patron.pb.cc $(SRC)main.cc
 
 communication.pb.cc : patron.pb.cc
 	./protobuf/bin/protoc -I$(SRC) -Iinclude $(SRC)communication.proto --cpp_out=$(SRC) --java_out=$(SRC)
@@ -43,7 +43,10 @@ patron.pb.cc :
 ##############
 
 test : gtest-all.cc
-	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-curr $(TEST)gtb-test-curr.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
+	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-all $(TEST)gtb-test-curr.cc $(TEST)gtb-test-comm.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)gtbserver.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
+
+testcomm : gtest-all.cc
+	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-comm $(TEST)gtb-test-comm.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)gtbserver.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
 
 gtest-all.cc : gtest_main.o
 	$(CC) -I$(GTEST)/include -I$(GTEST) -c $(GTEST)/src/gtest-all.cc
@@ -51,6 +54,9 @@ gtest-all.cc : gtest_main.o
 
 gtest_main.o : 
 	$(CC) -I$(GTEST)/include -I$(GTEST) -c $(GTEST)/src/gtest_main.cc
+
+verify: verifyingcert.c
+	gcc -ggdb -Wall $(LINKEROPTS) -o verify verifyingcert.c
 	
 
 cleantest:
