@@ -25,7 +25,7 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 
-#include "gtbserver.h"
+#include "gtbserver.hpp"
 #include "gtbcommunication.hpp"
 
 using namespace std;
@@ -72,33 +72,3 @@ void initIncomingCon(int * pfdSock)
   }
 } 
 
-inline void initGNUTLS(GTBCommunication * aComm)
-{
-  cout << "Initialize gnutls" << endl;
-  if( gnutls_global_init() ) cout << "gnutls_global_init: Failed to intialize" << endl;
-  aComm->loadCertFiles();
-}
-
-int 
-main(int argc, char *arv[])
-{
-//FileDescriptors: sockfd (listen), new_fd (new connections)
-  int sockfd;
-//
-//sigaction: sa (used to make sys call to change action taken on receipt of a certain sig)
-  struct sigaction sa;
-
-  GTBCommunication aComm;
-
-  sockfd = aComm.getSocket();
-
-  cout << "Establish Incoming Connections" << endl;;
-  initIncomingCon (&sockfd);
-  cout << "Continuing..." << endl;
-
-  //Initialize gnutls
-  initGNUTLS (&aComm);
-
-  cout << "server: waiting for connection" << endl;
-  return aComm.listeningForClient (sockfd);
-}
