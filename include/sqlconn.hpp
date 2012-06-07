@@ -54,16 +54,31 @@
 #define HASHSTMT  "SELECT car FROM activeusers WHERE nightlyhash = ?"
 //#define STMT	"SELECT nightlyhash FROM activeusers"
 #define DEBUG 1
-#define SETSESSSTMT "INSERT INTO sessionconnection"\
+#define PS_SETSESSSTMT "INSERT INTO sessionconnection"\
     "(ptr, sessionkey, sessiondata) values (?, ?, ?)"
-#define GETSESSSTMT "SELECT sessionkey FROM sessionconnection"\
+#define PS_GETSESSSTMT "SELECT sessionkey FROM sessionconnection"\
     " WHERE ptr=? AND sessiondata=?"
-#define GETCURRRIDES "SELECT * FROM saferide.rides WHERE ridedate=? and status=? " \
-    "and car=? ORDER BY car ASC"
-#define GETPATRONINFO "SELECT * FROM saferide.rides WHERE num=?"
+#define PS_GETCURRRIDES "SELECT * FROM saferide.rides, saferide.ridetimes " \
+    "WHERE LEFT(ridetimes.ridecreate, 10) = ? AND status=? AND " \
+    " ridetimes.pid = patron.pid AND car=? ORDER BY car ASC"
+#define PS_GETPATRONINFO "SELECT * FROM saferide.patron, saferide.riderimes " \
+    "WHERE num = ? AND ridetimes.pid = patron.pid"
 
-#define SETUPDTRIDES "UPDATE saferide.rides SET name=?, cell=?, riders=?, status=?, " \
-    "pickup=?, dropoff=?, timetaken=?, timedone=? WHERE num=? AND car=?"
+#define PS_GETLOCATIONID "SELECT lid FROM locations WHERE value = ?" \
+    " OR name = ?"
+
+#define PS_SETUPDTRIDES "UPDATE saferide.rides SET name=?, cell=?, riders=?,"  \
+    " status=?, pickup=?, dropoff=?, timetaken=?, timedone=? WHERE num=? AND " \
+    " car=?"
+#define PS_RIDEADDPATRON "INSERT INTO patron (name,cell,riders,pickup,dropoff," \
+    "clothes,notes,status) VALUES (?,?,?,?,?,?,?,?)"
+
+#define PS_ADDLOCATION "INSERT INTO locations (name, value) VALUES (?, ?)"
+
+#define PS_RIDEADDTIME "INSERT INTO ridetimes (ridecreated, pid) VALUES (?, ?)"
+
+#define PS_GETLASTINSERTID "SELECT LAST_INSERT_ID()"
+
 #define GETHOST(proto, host, port) proto host ":" port
 
 #if __cplusplus
@@ -99,12 +114,12 @@ class MySQLConn {
   public:
     MySQLConn() {
       driver = get_driver_instance();
-      con = driver->connect( HOST, USER, PASS);
+      //con = driver->connect( GTBHOST, GTBUSER, GTBPASS);
     }
 
     ~MySQLConn() {
-      delete con;
-      free(driver); //deconstructor is protected
+      //delete con;
+      //free(driver); //deconstructor is protected
     }
 
     int storeConnection (
@@ -120,8 +135,13 @@ class MySQLConn {
     int checkAuth(std::string i_snetid, std::string i_sauth, std::string i_scarnum);
     int execAuth(std::string hash);
     int getCurr(int carnum, PatronList * i_apbpatl, std::vector<int>);
-    std::map<int, std::string> setUpdt(int carnum, PatronList * i_apbpatl, Request *);
+    std::map<int, std::string> setUpdt(int, PatronList * i_apbpatl, Request *);
+    std::map<int, std::string> addPatron(int, PatronList *, Request *);
+    int addLocation(std::string);
     int getPatronInfo(int, PatronList *);
+    int getLocationID(std::string);
+    std::string getSHA256Hash(std::string, int);
+    int getLastInsertId();
 };
 #endif
 

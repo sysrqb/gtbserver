@@ -19,6 +19,7 @@
 #include <time.h>
 #include "sqlconn.hpp"
 #include "gtbexceptions.hpp"
+#include <nettle/sha.h>
 #include <map>
 
 using namespace std;
@@ -61,7 +62,7 @@ gnutls_datum_t cpp_retrieve_connection(
 #if __cplusplus
 }
 #endif
-  
+
 
 int MySQLConn::storeConnection (
     void * ptr,
@@ -73,7 +74,7 @@ int MySQLConn::storeConnection (
 
   try
   {
-    prepStmt = con->prepareStatement(SETSESSSTMT);
+    prepStmt = con->prepareStatement(PS_SETSESSSTMT);
     if ( ptr == NULL)
       prepStmt->setNull(1, sql::DataType::UNKNOWN);
     else
@@ -113,7 +114,7 @@ gnutls_datum_t MySQLConn::getConnection (
 
   try
   {
-    prepStmt = con->prepareStatement(GETSESSSTMT);
+    prepStmt = con->prepareStatement(PS_GETSESSSTMT);
     if (ptr == NULL)
       prepStmt->setNull(1, sql::DataType::UNKNOWN);
     else
@@ -180,7 +181,7 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, std::vector<int> old)
 
   try
   {
-    prepStmt = con->prepareStatement(GETCURRRIDES);
+    prepStmt = con->prepareStatement(PS_GETCURRRIDES);
     prepStmt->setDateTime(1, date);
     prepStmt->setString(2, "waiting");
     prepStmt->setInt(3, carnum);
@@ -191,21 +192,23 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, std::vector<int> old)
     delete prepStmt;
   
     while ( res->next() ) {
-      int nCarNum = res->getInt("num"), i = 0;
+      int nCarNum = res->getInt("pid"), i = 0;
       for (; i < old.size(); i++)
       {
         if (old.at(i) == nCarNum)
 	  continue;
       }
-      apbPI = i_apbPatl->add_patron();
       apbPI->set_name(res->getString("name"));
       apbPI->set_phone(res->getString("cell"));
       apbPI->set_passangers(res->getInt("riders"));
-      apbPI->set_status(res->getString("status"));
+      apbPI->set_car(res->getInt("car"));
       apbPI->set_pickup(res->getString("pickup"));
       apbPI->set_dropoff(res->getString("dropoff"));
-      apbPI->set_timetaken(res->getString("timetaken"));
-      apbPI->set_pid(res->getInt("num"));
+      apbPI->set_status(res->getString("status"));
+      apbPI->set_modified(res->getInt("modified"));
+      apbPI->set_ridecreated(res->getString("ridecreated"));
+      apbPI->set_rideassigned(res->getString("rideassigned"));
+      apbPI->set_timepickedup(res->getString("timepickedup"));
     }
     
     delete res;
@@ -237,7 +240,7 @@ map<int, string> MySQLConn::setUpdt(int carnum, PatronList * i_apbPatl, Request 
   {
     try
     {
-      prepStmt = con->prepareStatement(SETUPDTRIDES);
+      prepStmt = con->prepareStatement(PS_SETUPDTRIDES);
       prepStmt->setString(1, i_aPBReq->plpatronlist().patron(i).name());
       prepStmt->setString(2, i_aPBReq->plpatronlist().patron(i).phone());
       prepStmt->setInt(3, i_aPBReq->plpatronlist().patron(i).passangers());
@@ -274,15 +277,55 @@ map<int, string> MySQLConn::setUpdt(int carnum, PatronList * i_apbPatl, Request 
   return patronErrors;;
 }
 
+int MySQLConn::getLocationID(string loc)
+{
+  sql::PreparedStatement * prepStmt;
+  sql::ResultSet * res;
+  int lid;
+
+  if (!loc.compare("Other"))
+    lid = addLocation(loc);
+
+  try
+  {
+    prepStmt = con->prepareStatement(PS_GETLOCATIONID);
+    prepStmt->setString(1, loc);
+    prepStmt->setString(2, loc);
+
+    res = prepStmt->executeQuery();
+    delete prepStmt;
+  
+    while ( res->next() )
+    {
+      lid = res->getInt("lid");
+    }
+    if (!(res->rowsCount()))
+    {
+      lid = addLocation(loc);
+    }
+    delete res;
+  }
+  catch (sql::SQLException &e)
+  {
+    cerr << "ERROR: SQLException in " << __FILE__;
+    cerr << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+    cerr << "ERROR: " << e.what();
+    cerr << " (MySQL error code: " << e.getErrorCode();
+    cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
+    throw PatronException();
+  }
+  return lid;
+}
+
 int MySQLConn::getPatronInfo(int pid, PatronList * i_apbPatl)
 {
   PatronInfo * apbPI;
-  sql::PreparedStatement *prepStmt;
+  sql::PreparedStatement * prepStmt;
   sql::ResultSet *res;
 
   try
   {
-    prepStmt = con->prepareStatement(GETPATRONINFO);
+    prepStmt = con->prepareStatement(PS_GETPATRONINFO);
     prepStmt->setInt(1, pid);
 
     cout << "Retrieving Patron" << endl;
@@ -292,14 +335,18 @@ int MySQLConn::getPatronInfo(int pid, PatronList * i_apbPatl)
   
     while ( res->next() ) {
       apbPI = i_apbPatl->add_patron();
+      apbPI->set_pid(res->getInt("pid"));
       apbPI->set_name(res->getString("name"));
-      apbPI->set_phone(res->getString("phone"));
+      apbPI->set_phone(res->getString("cell"));
       apbPI->set_passangers(res->getInt("riders"));
-      apbPI->set_status(res->getString("status"));
+      apbPI->set_car(res->getInt("car"));
       apbPI->set_pickup(res->getString("pickup"));
       apbPI->set_dropoff(res->getString("dropoff"));
-      apbPI->set_timetaken(res->getString("timetaken"));
-      apbPI->set_pid(res->getInt("num"));
+      apbPI->set_status(res->getString("status"));
+      apbPI->set_modified(res->getInt("modified"));
+      apbPI->set_ridecreated(res->getString("ridecreated"));
+      apbPI->set_rideassigned(res->getString("rideassigned"));
+      apbPI->set_timepickedup(res->getString("timepickedup"));
     }
     if (!(res->rowsCount()))
     {
@@ -317,4 +364,128 @@ int MySQLConn::getPatronInfo(int pid, PatronList * i_apbPatl)
     throw PatronException();
   }
   return 0;
+}
+
+inline
+int MySQLConn::getLastInsertId()
+{
+  sql::PreparedStatement *prepStmt;
+  sql::ResultSet *res;
+
+  int insertid = 0;
+  try
+  {
+    prepStmt = con->prepareStatement(PS_GETLASTINSERTID);
+    res = prepStmt->executeQuery();
+    delete prepStmt;
+  
+    while ( res->next() )
+    {
+      insertid = res->getInt(0);
+    }
+    
+    delete res;
+  }
+  catch (sql::SQLException &e)
+  {
+    cerr << "ERROR: SQLException in " << __FILE__;
+    cerr << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+    cerr << "ERROR: " << e.what();
+    cerr << " (MySQL error code: " << e.getErrorCode();
+    cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
+    return -1;
+  }
+  return insertid;
+}
+
+int MySQLConn::addLocation(string loc)
+{
+  sql::PreparedStatement *prepStmt;
+  string lochash("");
+
+  lochash = getSHA256Hash(loc, loc.size());
+  try
+  {
+    prepStmt = con->prepareStatement(PS_ADDLOCATION);
+    prepStmt->setString(1, loc);
+    prepStmt->setString(2, lochash);
+
+    prepStmt->executeQuery();
+    delete prepStmt;
+  }
+  catch (sql::SQLException &e)
+  {
+    cerr << "ERROR: SQLException in " << __FILE__;
+    cerr << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+    cerr << "ERROR: " << e.what();
+    cerr << " (MySQL error code: " << e.getErrorCode();
+    cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
+    throw PatronException();
+  }
+  return getLastInsertId();
+}
+
+map<int, string> MySQLConn::addPatron(int carnum, PatronList * i_apbPatl, Request * i_aPBReq)
+{
+  PatronInfo * apbPI;
+  apbPI = i_apbPatl->add_patron();
+  sql::PreparedStatement * prepStmt;
+  string spickup, sdropoff;
+  
+  map<int, string> patronErrors;
+  int i = 0;
+  int nRows;
+
+  for (; i<i_aPBReq->plpatronlist().patron_size(); i++)
+  {
+    try
+    {
+      prepStmt = con->prepareStatement(PS_RIDEADDPATRON);
+      prepStmt->setString(1, i_aPBReq->plpatronlist().patron(i).name());
+      prepStmt->setString(2, i_aPBReq->plpatronlist().patron(i).phone());
+      prepStmt->setInt(3, i_aPBReq->plpatronlist().patron(i).passangers());
+      prepStmt->setString(4, i_aPBReq->plpatronlist().patron(i).status());
+      prepStmt->setString(5, i_aPBReq->plpatronlist().patron(i).pickup());
+      prepStmt->setString(6, i_aPBReq->plpatronlist().patron(i).dropoff());
+      prepStmt->setString(7, i_aPBReq->plpatronlist().patron(i).timetaken());
+      prepStmt->setString(8, i_aPBReq->plpatronlist().patron(i).timedone());
+      nRows = prepStmt->execute();
+      if ( nRows == 0 )  // If entry was not updated
+      {
+	try
+	{
+          getPatronInfo(i_aPBReq->plpatronlist().patron(i).pid(), i_apbPatl);  // Add current patron info to response buf
+	} catch (PatronException &e)
+	{
+	  patronErrors.insert( pair<int, string> (i_aPBReq->plpatronlist().patron(i).pid(), e.what()) );
+	}
+      }
+    }
+    catch (sql::SQLException &e)
+    {
+      cerr << "ERROR: SQLException in " << __FILE__;
+      cerr << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+      cerr << "ERROR: " << e.what();
+      cerr << " (MySQL error code: " << e.getErrorCode();
+      cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
+    }
+    cout << "Updated Rides" << endl;
+  }
+  delete prepStmt;
+  return patronErrors;
+}
+
+/*
+ * size: unsigned = long long int64_t (assuming on amd64)
+ */
+string getSHA256Hash(string sdata, int size)
+{
+  struct sha256_ctx ctx;
+  uint8_t unhash, data;
+  data = (uint8_t) *sdata.c_str();
+  sha256_init(&ctx);
+  sha256_update(&ctx, size, &data);
+  sha256_digest(&ctx, 8, &unhash);
+  string shash((char *)unhash);
+  return shash;
 }
