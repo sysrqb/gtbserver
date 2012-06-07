@@ -19,19 +19,12 @@
 #ifndef gtbcommunication_h
 #define gtbcommunication_h
 
+#include <cerrno>
 #include "sqlconn.hpp"
-#include <errno.h>
-
 #include "communication.pb.h"
-#ifndef patronpb
-#define patronpb
 #include "patron.pb.h"
-#endif
-
-//#ifndef gnutls_h
-//#define gnutls_h
 #include <gnutls/gnutls.h>
-//#endif
+#include "gtbexceptions.hpp"
 
 //Sets the priority string for an acceptable TLS handshake
 /*#define GNUTLS_PRIORITY "+VERS-TLS1.2:+VERS-TLS1.1:+DHE-RSA:"\
@@ -54,7 +47,7 @@
 #define PORT "4680"
 
 //Sets number of connections to allow in queue
-#define BACKLOG 1
+#define BACKLOG 7
 
 //Sets number of bytes each request should be, incomming from client
 #define REQSIZE 9
@@ -76,16 +69,23 @@ class GTBCommunication {
     MySQLConn * m_MySQLConn;
 
   public:
-    //Constructors
     GTBCommunication() {
       m_pPriorityCache = (gnutls_priority_t *) 
           operator new (sizeof (gnutls_priority_t));
       m_pX509Cred = (gnutls_certificate_credentials_t * ) 
           operator new (sizeof (gnutls_certificate_credentials_t));
       m_MySQLConn = new MySQLConn();
+      m_pDHParams = (gnutls_dh_params_t *) operator new (sizeof (gnutls_dh_params_t));
+    }
+    ~GTBCommunication(){
+      delete m_pDHParams;
+      delete m_MySQLConn;
+      delete m_pX509Cred;
+      delete m_pPriorityCache;
     }
 
     /*GNUTLS related methods*/
+    void initGNUTLS(); 
     void initTLSSession ();
     int generateDHParams ();
     void loadCertFiles ();
@@ -112,12 +112,14 @@ class GTBCommunication {
     int currRequest (Request * i_aPBReq, Response * i_apbRes);
     int updtRequest (Request * i_aPBReq, Response * i_apbRes);
     int dealWithReq (Request i_sPBReq);
+    int handleConnection (int, int);
     int listeningForClient (int i_sockfd);
+    void receiveRequest(Request *);
 
   private:
     int sendResponse(int i_nRetVal, 
-        Request * i_pbReq, 
-	Response * i_pbRes, 
-	PatronList * i_pbPL);
+            Request * i_pbReq, 
+	    Response * i_pbRes, 
+	    PatronList * i_pbPL);
 };
 #endif
