@@ -1,0 +1,43 @@
+\hypertarget{gtbserver_8cc}{\section{src/gtbserver.cc File Reference}
+\label{gtbserver_8cc}\index{src/gtbserver.\-cc@{src/gtbserver.\-cc}}
+}
+{\ttfamily \#include $<$iostream$>$}\\*
+{\ttfamily \#include $<$csignal$>$}\\*
+{\ttfamily \#include $<$cstring$>$}\\*
+{\ttfamily \#include $<$sys/types.\-h$>$}\\*
+{\ttfamily \#include $<$sys/socket.\-h$>$}\\*
+{\ttfamily \#include $<$sys/wait.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}gtbserver.\-hpp\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}gtbcommunication.\-hpp\char`\"{}}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{gtbserver_8cc_a6c2d9589ac70568b8e3a6980bb3d45d6}{sigchld\-\_\-handler} (int s)
+\item 
+void \hyperlink{gtbserver_8cc_ab43111a35d248f8f53f8234000f815ad}{init\-Incoming\-Con} (int $\ast$pfd\-Sock)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{gtbserver_8cc_ab43111a35d248f8f53f8234000f815ad}{\index{gtbserver.\-cc@{gtbserver.\-cc}!init\-Incoming\-Con@{init\-Incoming\-Con}}
+\index{init\-Incoming\-Con@{init\-Incoming\-Con}!gtbserver.cc@{gtbserver.\-cc}}
+\subsubsection[{init\-Incoming\-Con}]{\setlength{\rightskip}{0pt plus 5cm}void init\-Incoming\-Con (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{pfd\-Sock}
+\end{DoxyParamCaption}
+)}}\label{gtbserver_8cc_ab43111a35d248f8f53f8234000f815ad}
+
+
+Definition at line 50 of file gtbserver.\-cc.
+
+\hypertarget{gtbserver_8cc_a6c2d9589ac70568b8e3a6980bb3d45d6}{\index{gtbserver.\-cc@{gtbserver.\-cc}!sigchld\-\_\-handler@{sigchld\-\_\-handler}}
+\index{sigchld\-\_\-handler@{sigchld\-\_\-handler}!gtbserver.cc@{gtbserver.\-cc}}
+\subsubsection[{sigchld\-\_\-handler}]{\setlength{\rightskip}{0pt plus 5cm}void sigchld\-\_\-handler (
+\begin{DoxyParamCaption}
+\item[{int}]{s}
+\end{DoxyParamCaption}
+)}}\label{gtbserver_8cc_a6c2d9589ac70568b8e3a6980bb3d45d6}
+
+
+Definition at line 40 of file gtbserver.\-cc.
+

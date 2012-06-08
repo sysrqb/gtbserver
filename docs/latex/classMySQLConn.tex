@@ -1,0 +1,456 @@
+\hypertarget{classMySQLConn}{\section{My\-S\-Q\-L\-Conn Class Reference}
+\label{classMySQLConn}\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}}
+}
+
+
+Handle connection to My\-S\-Q\-L/\-Maria\-D\-B server.  
+
+
+
+
+{\ttfamily \#include $<$sqlconn.\-hpp$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classMySQLConn_aa2995f013e14fbb9c195b6aa7226588b}{My\-S\-Q\-L\-Conn} ()
+\begin{DoxyCompactList}\small\item\em Constructor. \end{DoxyCompactList}\item 
+\hyperlink{classMySQLConn_a1a78abd249f89676dd3ae9cffe121ba0}{$\sim$\-My\-S\-Q\-L\-Conn} ()
+\begin{DoxyCompactList}\small\item\em Deconstructor. \end{DoxyCompactList}\item 
+int \hyperlink{classMySQLConn_acf71076f26a8e4c72c8d6d8376d6b3ff}{store\-Connection} (void $\ast$ptr, gnutls\-\_\-datum\-\_\-t session\-\_\-id, gnutls\-\_\-datum\-\_\-t session\-\_\-data)
+\begin{DoxyCompactList}\small\item\em Store client session info used for session resume. \end{DoxyCompactList}\item 
+gnutls\-\_\-datum\-\_\-t \hyperlink{classMySQLConn_a0e7b657d78b0ab3199519546c8acae49}{get\-Connection} (void $\ast$ptr, gnutls\-\_\-datum\-\_\-t session\-\_\-id)
+\begin{DoxyCompactList}\small\item\em Retrieve client session info used for session resume. \end{DoxyCompactList}\item 
+int \hyperlink{classMySQLConn_a081f010ada91cd0d0f67ab8dddb5d8af}{store\-Car\-Info} (std\-::string ipaddr, int car)
+\begin{DoxyCompactList}\small\item\em Stores client info that is used for authentication. \end{DoxyCompactList}\item 
+int \hyperlink{classMySQLConn_ae96f09e4aa859a5294c90ec498c38928}{check\-Auth} (std\-::string i\-\_\-snetid, std\-::string i\-\_\-sauth, std\-::string i\-\_\-scarnum)
+\begin{DoxyCompactList}\small\item\em Authenticate client. \end{DoxyCompactList}\item 
+int \hyperlink{classMySQLConn_ab0a639e5ebb4220e82f4e4f994059774}{exec\-Auth} (std\-::string hash)
+\begin{DoxyCompactList}\small\item\em Unimplemented. I don't remember what this was supposed to do. \end{DoxyCompactList}\item 
+int \hyperlink{classMySQLConn_a259785bc51cae6d0c6c950f6bdf6f475}{get\-Curr} (int carnum, \hyperlink{classPatronList}{Patron\-List} $\ast$i\-\_\-apb\-Patl, std\-::vector$<$ int $>$)
+\begin{DoxyCompactList}\small\item\em Return all rides currently assigned to the client. \end{DoxyCompactList}\item 
+std\-::map$<$ int, std\-::string $>$ \hyperlink{classMySQLConn_a1653065e63d0dc420392b5694e688237}{set\-Updt} (int carnum, \hyperlink{classPatronList}{Patron\-List} $\ast$i\-\_\-apb\-Patl, \hyperlink{classRequest}{Request} $\ast$i\-\_\-a\-P\-B\-Req)
+\begin{DoxyCompactList}\small\item\em Update the information for each patron. \end{DoxyCompactList}\item 
+int \hyperlink{classMySQLConn_a017c08a9bfdf5c20509f754af7c8c7f7}{add\-Patron} (int carnum, \hyperlink{classRequest}{Request} $\ast$i\-\_\-a\-P\-B\-Req)
+\begin{DoxyCompactList}\small\item\em Add a new patron to the database. \end{DoxyCompactList}\item 
+int \hyperlink{classMySQLConn_a045c9cb16434df8c1e50dd7ef6766c5f}{add\-Location} (std\-::string loc)
+\begin{DoxyCompactList}\small\item\em Insert a new location into the database. \end{DoxyCompactList}\item 
+int \hyperlink{classMySQLConn_ae26fdad9114c884ff5b8bfefebee4254}{get\-Patron\-Info} (int pid, \hyperlink{classPatronList}{Patron\-List} $\ast$i\-\_\-apb\-Patl)
+\begin{DoxyCompactList}\small\item\em Returns the information in the database for the patron assigned to the pid/unique id pid. \end{DoxyCompactList}\item 
+int \hyperlink{classMySQLConn_a8ffe3e96eb70c795c4ade821e70dd6bf}{get\-Location\-I\-D} (std\-::string loc)
+\begin{DoxyCompactList}\small\item\em Returns the lid of loc. \end{DoxyCompactList}\item 
+std\-::string \hyperlink{classMySQLConn_a0ab687f92039d6f9934bcd638eecd8e6}{get\-S\-H\-A256\-Hash} (std\-::string sdata, int size)
+\begin{DoxyCompactList}\small\item\em Return S\-H\-A256 hash of input string sdata. \end{DoxyCompactList}\item 
+int \hyperlink{classMySQLConn_ac8aac8ba065bf2f14d1861969a6e2c9e}{get\-Last\-Insert\-Id} ()
+\begin{DoxyCompactList}\small\item\em Returns the last insert I\-D. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Handle connection to My\-S\-Q\-L/\-Maria\-D\-B server. 
+
+Used to authenicate clients, store, retrieve, and update patron information. 
+
+Definition at line 115 of file sqlconn.\-hpp.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classMySQLConn_aa2995f013e14fbb9c195b6aa7226588b}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}}
+\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!MySQLConn@{My\-S\-Q\-L\-Conn}}
+\subsubsection[{My\-S\-Q\-L\-Conn}]{\setlength{\rightskip}{0pt plus 5cm}My\-S\-Q\-L\-Conn\-::\-My\-S\-Q\-L\-Conn (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classMySQLConn_aa2995f013e14fbb9c195b6aa7226588b}
+
+
+Constructor. 
+
+
+
+Definition at line 124 of file sqlconn.\-hpp.
+
+\hypertarget{classMySQLConn_a1a78abd249f89676dd3ae9cffe121ba0}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!$\sim$\-My\-S\-Q\-L\-Conn@{$\sim$\-My\-S\-Q\-L\-Conn}}
+\index{$\sim$\-My\-S\-Q\-L\-Conn@{$\sim$\-My\-S\-Q\-L\-Conn}!MySQLConn@{My\-S\-Q\-L\-Conn}}
+\subsubsection[{$\sim$\-My\-S\-Q\-L\-Conn}]{\setlength{\rightskip}{0pt plus 5cm}My\-S\-Q\-L\-Conn\-::$\sim$\-My\-S\-Q\-L\-Conn (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classMySQLConn_a1a78abd249f89676dd3ae9cffe121ba0}
+
+
+Deconstructor. 
+
+
+
+Definition at line 130 of file sqlconn.\-hpp.
+
+
+
+\subsection{Member Function Documentation}
+\hypertarget{classMySQLConn_a045c9cb16434df8c1e50dd7ef6766c5f}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!add\-Location@{add\-Location}}
+\index{add\-Location@{add\-Location}!MySQLConn@{My\-S\-Q\-L\-Conn}}
+\subsubsection[{add\-Location}]{\setlength{\rightskip}{0pt plus 5cm}int My\-S\-Q\-L\-Conn\-::add\-Location (
+\begin{DoxyParamCaption}
+\item[{std\-::string}]{loc}
+\end{DoxyParamCaption}
+)}}\label{classMySQLConn_a045c9cb16434df8c1e50dd7ef6766c5f}
+
+
+Insert a new location into the database. 
+
+Generates S\-H\-A256 hash of location that will be used as the unique value of the location. The plaintext of the location and first 8 bytes of the hash are then inserted into the database. The lid/unique location id are then returned.
+
+
+\begin{DoxyParams}{Parameters}
+{\em loc} & The location as a string \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+\hyperlink{classMySQLConn_a0ab687f92039d6f9934bcd638eecd8e6}{get\-S\-H\-A256\-Hash} 
+
+\hyperlink{classMySQLConn_ac8aac8ba065bf2f14d1861969a6e2c9e}{get\-Last\-Insert\-Id} 
+\end{DoxySeeAlso}
+\begin{DoxyRefDesc}{Todo}
+\item[\hyperlink{todo__todo000010}{Todo}]Handle S\-Q\-L\-Exception better \end{DoxyRefDesc}
+
+
+Definition at line 411 of file sqlconn.\-cc.
+
+\hypertarget{classMySQLConn_a017c08a9bfdf5c20509f754af7c8c7f7}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!add\-Patron@{add\-Patron}}
+\index{add\-Patron@{add\-Patron}!MySQLConn@{My\-S\-Q\-L\-Conn}}
+\subsubsection[{add\-Patron}]{\setlength{\rightskip}{0pt plus 5cm}int My\-S\-Q\-L\-Conn\-::add\-Patron (
+\begin{DoxyParamCaption}
+\item[{int}]{carnum, }
+\item[{{\bf Request} $\ast$}]{i\-\_\-a\-P\-B\-Req}
+\end{DoxyParamCaption}
+)}}\label{classMySQLConn_a017c08a9bfdf5c20509f754af7c8c7f7}
+
+
+Add a new patron to the database. 
+
+Insert the patron information for every new patron contained in i\-\_\-a\-P\-B\-Req into the database.
+
+
+\begin{DoxyParams}{Parameters}
+{\em carnum} & The car number of the client adding new patrons \\
+\hline
+{\em i\-\_\-a\-P\-B\-Req} & The request from the client containing the new patrons to be inserted into the database. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The first pid of the new patrons that were inserted. Actually it is the last pid minus the number of patrons added, which should be the first pid assuming pid is autoincremented. 
+\end{DoxyReturn}
+\begin{DoxyRefDesc}{Todo}
+\item[\hyperlink{todo__todo000009}{Todo}]Handle S\-Q\-L\-Exception better \end{DoxyRefDesc}
+
+
+Definition at line 438 of file sqlconn.\-cc.
+
+\hypertarget{classMySQLConn_ae96f09e4aa859a5294c90ec498c38928}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!check\-Auth@{check\-Auth}}
+\index{check\-Auth@{check\-Auth}!MySQLConn@{My\-S\-Q\-L\-Conn}}
+\subsubsection[{check\-Auth}]{\setlength{\rightskip}{0pt plus 5cm}int My\-S\-Q\-L\-Conn\-::check\-Auth (
+\begin{DoxyParamCaption}
+\item[{std\-::string}]{i\-\_\-snetid, }
+\item[{std\-::string}]{i\-\_\-sauth, }
+\item[{std\-::string}]{i\-\_\-scarnum}
+\end{DoxyParamCaption}
+)}}\label{classMySQLConn_ae96f09e4aa859a5294c90ec498c38928}
+
+
+Authenticate client. 
+
+Authenticate the client and bind the Net\-Id to the car number. This also ensures that no other car registers as the same car number.
+
+
+\begin{DoxyParams}{Parameters}
+{\em i\-\_\-snetid} & The Net\-I\-D of the ride along in the car \\
+\hline
+{\em i\-\_\-sauth} & The nightly hash \\
+\hline
+{\em i\-\_\-scarnum} & The car number as a string \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 if successful and $>$0 if not 
+\end{DoxyReturn}
+\begin{DoxyRefDesc}{Todo}
+\item[\hyperlink{todo__todo000006}{Todo}]Implement. This only verifies that the three fields are not empty strings. It must actually query the database and add the information to the D\-B for later verification. \end{DoxyRefDesc}
+
+
+Definition at line 148 of file sqlconn.\-cc.
+
+\hypertarget{classMySQLConn_ab0a639e5ebb4220e82f4e4f994059774}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!exec\-Auth@{exec\-Auth}}
+\index{exec\-Auth@{exec\-Auth}!MySQLConn@{My\-S\-Q\-L\-Conn}}
+\subsubsection[{exec\-Auth}]{\setlength{\rightskip}{0pt plus 5cm}int My\-S\-Q\-L\-Conn\-::exec\-Auth (
+\begin{DoxyParamCaption}
+\item[{std\-::string}]{hash}
+\end{DoxyParamCaption}
+)}}\label{classMySQLConn_ab0a639e5ebb4220e82f4e4f994059774}
+
+
+Unimplemented. I don't remember what this was supposed to do. 
+
+\hypertarget{classMySQLConn_a0e7b657d78b0ab3199519546c8acae49}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!get\-Connection@{get\-Connection}}
+\index{get\-Connection@{get\-Connection}!MySQLConn@{My\-S\-Q\-L\-Conn}}
+\subsubsection[{get\-Connection}]{\setlength{\rightskip}{0pt plus 5cm}gnutls\-\_\-datum\-\_\-t My\-S\-Q\-L\-Conn\-::get\-Connection (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{ptr, }
+\item[{gnutls\-\_\-datum\-\_\-t}]{session\-\_\-id}
+\end{DoxyParamCaption}
+)}}\label{classMySQLConn_a0e7b657d78b0ab3199519546c8acae49}
+
+
+Retrieve client session info used for session resume. 
+
+Using ptr and session\-\_\-id find and return the session data.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ptr} & pointer \\
+\hline
+{\em session\-\_\-id} & gnutls\-\_\-datum\-\_\-t holding session id \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+session\-\_\-data gnutls\-\_\-datum\-\_\-t holding session data 
+\end{DoxyReturn}
+
+
+Definition at line 103 of file sqlconn.\-cc.
+
+\hypertarget{classMySQLConn_a259785bc51cae6d0c6c950f6bdf6f475}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!get\-Curr@{get\-Curr}}
+\index{get\-Curr@{get\-Curr}!MySQLConn@{My\-S\-Q\-L\-Conn}}
+\subsubsection[{get\-Curr}]{\setlength{\rightskip}{0pt plus 5cm}int My\-S\-Q\-L\-Conn\-::get\-Curr (
+\begin{DoxyParamCaption}
+\item[{int}]{carnum, }
+\item[{{\bf Patron\-List} $\ast$}]{i\-\_\-apb\-Patl, }
+\item[{std\-::vector$<$ int $>$}]{old}
+\end{DoxyParamCaption}
+)}}\label{classMySQLConn_a259785bc51cae6d0c6c950f6bdf6f475}
+
+
+Return all rides currently assigned to the client. 
+
+Query the database for all cars currently assigned to the client with the given car number. For each car returned, check if the patron id is contained in old which contains all rides the client already knows about. We don't want to send excessive information, so we skip all patron information that would duplicate that which is alreadi in the client's database. When these patrons have been excluded, populate the \hyperlink{classPatronList}{Patron\-List} with all unique patrons.
+
+
+\begin{DoxyParams}{Parameters}
+{\em carnum} & The car number of the client \\
+\hline
+{\em i\-\_\-apb\-Patl} & The \hyperlink{classPatronList}{Patron\-List} that will contain the patron information \\
+\hline
+{\em old} & The Vector that contains all the patron ids that the client already has \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+If successful, 0, otherwise -\/1. 
+\end{DoxyReturn}
+\begin{DoxyRefDesc}{Todo}
+\item[\hyperlink{todo__todo000007}{Todo}]If pid is in old but fields have been modified after last update, resend patron or only resend modified fields. 
+
+Check that all rides in old are still assigned to carnum and inform client to remove patron from database if the patron has been reassigned. 
+
+Handle S\-Q\-L\-Exception better \end{DoxyRefDesc}
+
+
+Definition at line 167 of file sqlconn.\-cc.
+
+\hypertarget{classMySQLConn_ac8aac8ba065bf2f14d1861969a6e2c9e}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!get\-Last\-Insert\-Id@{get\-Last\-Insert\-Id}}
+\index{get\-Last\-Insert\-Id@{get\-Last\-Insert\-Id}!MySQLConn@{My\-S\-Q\-L\-Conn}}
+\subsubsection[{get\-Last\-Insert\-Id}]{\setlength{\rightskip}{0pt plus 5cm}int My\-S\-Q\-L\-Conn\-::get\-Last\-Insert\-Id (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classMySQLConn_ac8aac8ba065bf2f14d1861969a6e2c9e}
+
+
+Returns the last insert I\-D. 
+
+
+
+Definition at line 380 of file sqlconn.\-cc.
+
+\hypertarget{classMySQLConn_a8ffe3e96eb70c795c4ade821e70dd6bf}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!get\-Location\-I\-D@{get\-Location\-I\-D}}
+\index{get\-Location\-I\-D@{get\-Location\-I\-D}!MySQLConn@{My\-S\-Q\-L\-Conn}}
+\subsubsection[{get\-Location\-I\-D}]{\setlength{\rightskip}{0pt plus 5cm}int My\-S\-Q\-L\-Conn\-::get\-Location\-I\-D (
+\begin{DoxyParamCaption}
+\item[{std\-::string}]{loc}
+\end{DoxyParamCaption}
+)}}\label{classMySQLConn_a8ffe3e96eb70c795c4ade821e70dd6bf}
+
+
+Returns the lid of loc. 
+
+If loc is in the database then the query will return the proper lid. If loc is N\-O\-T in the database then loc will be added to the database and that insert id is returned.
+
+
+\begin{DoxyParams}{Parameters}
+{\em loc} & Location as a string \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+L\-I\-D / unique location I\-D of location 
+\end{DoxyReturn}
+\begin{DoxySeeAlso}{See also}
+\hyperlink{classMySQLConn_a045c9cb16434df8c1e50dd7ef6766c5f}{add\-Location} 
+
+get\-Last\-Insert\-I\-D 
+\end{DoxySeeAlso}
+\begin{DoxyRefDesc}{Todo}
+\item[\hyperlink{todo__todo000012}{Todo}]Handle S\-Q\-L\-Exception better \end{DoxyRefDesc}
+
+
+Definition at line 281 of file sqlconn.\-cc.
+
+\hypertarget{classMySQLConn_ae26fdad9114c884ff5b8bfefebee4254}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!get\-Patron\-Info@{get\-Patron\-Info}}
+\index{get\-Patron\-Info@{get\-Patron\-Info}!MySQLConn@{My\-S\-Q\-L\-Conn}}
+\subsubsection[{get\-Patron\-Info}]{\setlength{\rightskip}{0pt plus 5cm}int My\-S\-Q\-L\-Conn\-::get\-Patron\-Info (
+\begin{DoxyParamCaption}
+\item[{int}]{pid, }
+\item[{{\bf Patron\-List} $\ast$}]{i\-\_\-apb\-Patl}
+\end{DoxyParamCaption}
+)}}\label{classMySQLConn_ae26fdad9114c884ff5b8bfefebee4254}
+
+
+Returns the information in the database for the patron assigned to the pid/unique id pid. 
+
+Populate the \hyperlink{classPatronList}{Patron\-List} i\-\_\-apb\-Patl with the information returned by the query to the database.
+
+
+\begin{DoxyParams}{Parameters}
+{\em pid} & The patron's unique id \\
+\hline
+{\em i\-\_\-apb\-Patl} & The \hyperlink{classPatronList}{Patron\-List} to be populated \\
+\hline
+\end{DoxyParams}
+\begin{DoxyRefDesc}{Todo}
+\item[\hyperlink{todo__todo000011}{Todo}]Handle S\-Q\-L\-Exception better \end{DoxyRefDesc}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em \hyperlink{classPatronException}{Patron\-Exception}} & If patron is not found in database \\
+\hline
+\end{DoxyExceptions}
+
+
+Definition at line 330 of file sqlconn.\-cc.
+
+\hypertarget{classMySQLConn_a0ab687f92039d6f9934bcd638eecd8e6}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!get\-S\-H\-A256\-Hash@{get\-S\-H\-A256\-Hash}}
+\index{get\-S\-H\-A256\-Hash@{get\-S\-H\-A256\-Hash}!MySQLConn@{My\-S\-Q\-L\-Conn}}
+\subsubsection[{get\-S\-H\-A256\-Hash}]{\setlength{\rightskip}{0pt plus 5cm}string My\-S\-Q\-L\-Conn\-::get\-S\-H\-A256\-Hash (
+\begin{DoxyParamCaption}
+\item[{std\-::string}]{sdata, }
+\item[{int}]{size}
+\end{DoxyParamCaption}
+)}}\label{classMySQLConn_a0ab687f92039d6f9934bcd638eecd8e6}
+
+
+Return S\-H\-A256 hash of input string sdata. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sdata} & Input string \\
+\hline
+{\em size} & The size of sdata in bytes \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 478 of file sqlconn.\-cc.
+
+\hypertarget{classMySQLConn_a1653065e63d0dc420392b5694e688237}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!set\-Updt@{set\-Updt}}
+\index{set\-Updt@{set\-Updt}!MySQLConn@{My\-S\-Q\-L\-Conn}}
+\subsubsection[{set\-Updt}]{\setlength{\rightskip}{0pt plus 5cm}map$<$ int, string $>$ My\-S\-Q\-L\-Conn\-::set\-Updt (
+\begin{DoxyParamCaption}
+\item[{int}]{carnum, }
+\item[{{\bf Patron\-List} $\ast$}]{i\-\_\-apb\-Patl, }
+\item[{{\bf Request} $\ast$}]{i\-\_\-a\-P\-B\-Req}
+\end{DoxyParamCaption}
+)}}\label{classMySQLConn_a1653065e63d0dc420392b5694e688237}
+
+
+Update the information for each patron. 
+
+Update the patron info for each patron contained in i\-\_\-a\-P\-B\-Req. If an error is occurred while updating a patron, add the patron id and error message to map returned.
+
+
+\begin{DoxyParams}{Parameters}
+{\em carnum} & The car number of the client updating the patrons \\
+\hline
+{\em i\-\_\-apb\-Patl} & Unused \\
+\hline
+{\em i\-\_\-a\-P\-B\-Req} & The request from the client containing the patrons to be updated \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+a std\-::map containing the pid and error returned when the update of that patron was attempted. 
+\end{DoxyReturn}
+\begin{DoxyRefDesc}{Todo}
+\item[\hyperlink{todo__todo000008}{Todo}]Only update fields based on modified fields 
+
+Handle conflict resolution 
+
+Handle S\-Q\-L\-Exception better \end{DoxyRefDesc}
+
+
+Definition at line 229 of file sqlconn.\-cc.
+
+\hypertarget{classMySQLConn_a081f010ada91cd0d0f67ab8dddb5d8af}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!store\-Car\-Info@{store\-Car\-Info}}
+\index{store\-Car\-Info@{store\-Car\-Info}!MySQLConn@{My\-S\-Q\-L\-Conn}}
+\subsubsection[{store\-Car\-Info}]{\setlength{\rightskip}{0pt plus 5cm}int My\-S\-Q\-L\-Conn\-::store\-Car\-Info (
+\begin{DoxyParamCaption}
+\item[{std\-::string}]{ipaddr, }
+\item[{int}]{car}
+\end{DoxyParamCaption}
+)}}\label{classMySQLConn_a081f010ada91cd0d0f67ab8dddb5d8af}
+
+
+Stores client info that is used for authentication. 
+
+After the client is authenticated, we store its I\-P Address and car number in the database. The next time the client connects, we can verify this client is the same as the previous one.
+
+\begin{DoxyRefDesc}{Todo}
+\item[\hyperlink{todo__todo000005}{Todo}]Implement\end{DoxyRefDesc}
+
+
+
+\begin{DoxyParams}{Parameters}
+{\em ipaddr} & The I\-P Address of the client \\
+\hline
+{\em car} & The car's number \\
+\hline
+\end{DoxyParams}
+\hypertarget{classMySQLConn_acf71076f26a8e4c72c8d6d8376d6b3ff}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!store\-Connection@{store\-Connection}}
+\index{store\-Connection@{store\-Connection}!MySQLConn@{My\-S\-Q\-L\-Conn}}
+\subsubsection[{store\-Connection}]{\setlength{\rightskip}{0pt plus 5cm}int My\-S\-Q\-L\-Conn\-::store\-Connection (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{ptr, }
+\item[{gnutls\-\_\-datum\-\_\-t}]{session\-\_\-id, }
+\item[{gnutls\-\_\-datum\-\_\-t}]{session\-\_\-data}
+\end{DoxyParamCaption}
+)}}\label{classMySQLConn_acf71076f26a8e4c72c8d6d8376d6b3ff}
+
+
+Store client session info used for session resume. 
+
+By enabling session resume, subsequent sessions are established quicker.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ptr} & pointer \\
+\hline
+{\em session\-\_\-id} & gnutls\-\_\-datum\-\_\-t holding session id \\
+\hline
+{\em session\-\_\-data} & gnutls\-\_\-datum\-\_\-t holding session data \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 67 of file sqlconn.\-cc.
+
+
+
+The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+include/\hyperlink{sqlconn_8hpp}{sqlconn.\-hpp}\item 
+src/\hyperlink{sqlconn_8cc}{sqlconn.\-cc}\end{DoxyCompactItemize}

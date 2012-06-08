@@ -1,0 +1,242 @@
+\hypertarget{mysqlconn_8hpp}{\section{include/mysqlconn.hpp File Reference}
+\label{mysqlconn_8hpp}\index{include/mysqlconn.\-hpp@{include/mysqlconn.\-hpp}}
+}
+{\ttfamily \#include $<$gnutls/gnutls.\-h$>$}\\*
+{\ttfamily \#include $<$netinet/in.\-h$>$}\\*
+{\ttfamily \#include $<$netdb.\-h$>$}\\*
+{\ttfamily \#include $<$arpa/inet.\-h$>$}\\*
+{\ttfamily \#include $<$sys/socket.\-h$>$}\\*
+{\ttfamily \#include $<$mysql/mysql.\-h$>$}\\*
+{\ttfamily \#include $<$mysql\-\_\-connection.\-h$>$}\\*
+{\ttfamily \#include $<$cppconn/driver.\-h$>$}\\*
+{\ttfamily \#include $<$cppconn/exception.\-h$>$}\\*
+{\ttfamily \#include $<$cppconn/resultset.\-h$>$}\\*
+{\ttfamily \#include $<$cppconn/statement.\-h$>$}\\*
+{\ttfamily \#include $<$string.\-h$>$}\\*
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$sys/types.\-h$>$}\\*
+{\ttfamily \#include $<$errno.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}cred.\-h\char`\"{}}\\*
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structmyinit}{myinit}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{mysqlconn_8hpp_a57534cf54806336be20886e26432eb48}{gnutls\-\_\-h}
+\item 
+\#define \hyperlink{mysqlconn_8hpp_a683663076939360c8940cbcfa1346ff8}{H\-A\-S\-H\-S\-T\-M\-T}~\char`\"{}S\-E\-L\-E\-C\-T car F\-R\-O\-M activeusers W\-H\-E\-R\-E nightlyhash = ?\char`\"{}
+\item 
+\#define \hyperlink{mysqlconn_8hpp_ad72dbcf6d0153db1b8d8a58001feed83}{D\-E\-B\-U\-G}~1
+\item 
+\#define \hyperlink{mysqlconn_8hpp_a1c98a0f4b02f4283af4233cf6e3ad121}{H\-A\-S\-H\-\_\-\-L\-E\-N}~8
+\item 
+\#define \hyperlink{mysqlconn_8hpp_abb0c7b397978c469e9f9e73f865abe60}{T\-E\-M\-P\-S\-E\-S\-H\-S\-T\-M\-T}
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{structmyinit}{myinit} \hyperlink{mysqlconn_8hpp_ab6e7bf0375167238af3f450de1e3ec52}{header}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{mysqlconn_8hpp_a4e24343eb47adcea7b9146f244d5ec37}{storetempconnections\-\_\-c} (char ipaddr\mbox{[}$\,$\mbox{]}, void $\ast$param, gnutls\-\_\-datum\-\_\-t key, gnutls\-\_\-datum\-\_\-t data)
+\item 
+int \hyperlink{mysqlconn_8hpp_a66dc6e1e79ef8bdd69735457935a344d}{checkhash\-\_\-c} (char $\ast$ptr2hash)
+\item 
+int \hyperlink{mysqlconn_8hpp_a3e7ac4b4bcc148706bcb06b4e90b3550}{execauth\-\_\-c} (char hash)
+\item 
+int \hyperlink{mysqlconn_8hpp_a80ba7573a9a3e5d2d50978c0c490c22a}{closeall\-\_\-c} (M\-Y\-S\-Q\-L\-\_\-\-R\-E\-S $\ast$result, \hyperlink{mysqlconn_8hpp_ab6e7bf0375167238af3f450de1e3ec52}{header} $\ast$stmthder)
+\item 
+M\-Y\-S\-Q\-L\-\_\-\-S\-T\-M\-T $\ast$ \hyperlink{mysqlconn_8hpp_af82b765b041d9892f1fe6a10ad3fdc87}{mysqlinit\-\_\-c} (int $\ast$ret, M\-Y\-S\-Q\-L $\ast$myhandler, M\-Y\-S\-Q\-L\-\_\-\-S\-T\-M\-T $\ast$myssh)
+\item 
+int \hyperlink{mysqlconn_8hpp_a41c5c7637087dddb49c286cc0a69fe3a}{mysqlheader\-\_\-c} (\hyperlink{mysqlconn_8hpp_ab6e7bf0375167238af3f450de1e3ec52}{header} $\ast$stmthder)
+\item 
+int \hyperlink{mysqlconn_8hpp_a7b19ab976fba39188e3e748fa1283e20}{mysqlbindexec\-\_\-c} (int $\ast$ret, M\-Y\-S\-Q\-L\-\_\-\-S\-T\-M\-T $\ast$mystmthdler, M\-Y\-S\-Q\-L\-\_\-\-B\-I\-N\-D bind\mbox{[}$\,$\mbox{]}, M\-Y\-S\-Q\-L\-\_\-\-R\-E\-S $\ast$myres)
+\item 
+int \hyperlink{mysqlconn_8hpp_ab99993cdeba44a1b72f13c08eb16f8be}{storetempconnections} (char ipaddr\mbox{[}$\,$\mbox{]}, void $\ast$param, gnutls\-\_\-datum\-\_\-t key, gnutls\-\_\-datum\-\_\-t data)
+\item 
+int \hyperlink{mysqlconn_8hpp_ab4284163e495d143469e0b759df6a5f2}{checkhash} (char $\ast$ptr2hash)
+\item 
+int \hyperlink{mysqlconn_8hpp_a5206a50094287cb1ac0374e0bda7c730}{execauth} (char hash)
+\item 
+int \hyperlink{mysqlconn_8hpp_a2330ed73a8703c4e01bada0bfa59ba1f}{closeall} (M\-Y\-S\-Q\-L\-\_\-\-R\-E\-S $\ast$result, \hyperlink{mysqlconn_8hpp_ab6e7bf0375167238af3f450de1e3ec52}{header} $\ast$stmthder)
+\item 
+M\-Y\-S\-Q\-L\-\_\-\-S\-T\-M\-T $\ast$ \hyperlink{mysqlconn_8hpp_adffe8807cab89a4156a89431689116f2}{mysqlinit} (int $\ast$ret, M\-Y\-S\-Q\-L $\ast$myhandler, M\-Y\-S\-Q\-L\-\_\-\-S\-T\-M\-T $\ast$myssh)
+\item 
+int \hyperlink{mysqlconn_8hpp_a3796d9a87baff8b20c3fca8135030b74}{mysqlheader} (\hyperlink{mysqlconn_8hpp_ab6e7bf0375167238af3f450de1e3ec52}{header} $\ast$stmthder)
+\item 
+int \hyperlink{mysqlconn_8hpp_a849cb75ae7da542606dd870ec4e52280}{mysqlbindexec} (int $\ast$ret, M\-Y\-S\-Q\-L\-\_\-\-S\-T\-M\-T $\ast$mystmthdler, M\-Y\-S\-Q\-L\-\_\-\-B\-I\-N\-D bind\mbox{[}$\,$\mbox{]}, M\-Y\-S\-Q\-L\-\_\-\-R\-E\-S $\ast$myres)
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{mysqlconn_8hpp_ad72dbcf6d0153db1b8d8a58001feed83}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!D\-E\-B\-U\-G@{D\-E\-B\-U\-G}}
+\index{D\-E\-B\-U\-G@{D\-E\-B\-U\-G}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{D\-E\-B\-U\-G}]{\setlength{\rightskip}{0pt plus 5cm}\#define D\-E\-B\-U\-G~1}}\label{mysqlconn_8hpp_ad72dbcf6d0153db1b8d8a58001feed83}
+
+
+Definition at line 50 of file mysqlconn.\-hpp.
+
+\hypertarget{mysqlconn_8hpp_a57534cf54806336be20886e26432eb48}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!gnutls\-\_\-h@{gnutls\-\_\-h}}
+\index{gnutls\-\_\-h@{gnutls\-\_\-h}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{gnutls\-\_\-h}]{\setlength{\rightskip}{0pt plus 5cm}\#define gnutls\-\_\-h}}\label{mysqlconn_8hpp_a57534cf54806336be20886e26432eb48}
+
+
+Definition at line 23 of file mysqlconn.\-hpp.
+
+\hypertarget{mysqlconn_8hpp_a1c98a0f4b02f4283af4233cf6e3ad121}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!H\-A\-S\-H\-\_\-\-L\-E\-N@{H\-A\-S\-H\-\_\-\-L\-E\-N}}
+\index{H\-A\-S\-H\-\_\-\-L\-E\-N@{H\-A\-S\-H\-\_\-\-L\-E\-N}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{H\-A\-S\-H\-\_\-\-L\-E\-N}]{\setlength{\rightskip}{0pt plus 5cm}\#define H\-A\-S\-H\-\_\-\-L\-E\-N~8}}\label{mysqlconn_8hpp_a1c98a0f4b02f4283af4233cf6e3ad121}
+
+
+Definition at line 51 of file mysqlconn.\-hpp.
+
+\hypertarget{mysqlconn_8hpp_a683663076939360c8940cbcfa1346ff8}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!H\-A\-S\-H\-S\-T\-M\-T@{H\-A\-S\-H\-S\-T\-M\-T}}
+\index{H\-A\-S\-H\-S\-T\-M\-T@{H\-A\-S\-H\-S\-T\-M\-T}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{H\-A\-S\-H\-S\-T\-M\-T}]{\setlength{\rightskip}{0pt plus 5cm}\#define H\-A\-S\-H\-S\-T\-M\-T~\char`\"{}S\-E\-L\-E\-C\-T car F\-R\-O\-M activeusers W\-H\-E\-R\-E nightlyhash = ?\char`\"{}}}\label{mysqlconn_8hpp_a683663076939360c8940cbcfa1346ff8}
+
+
+Definition at line 48 of file mysqlconn.\-hpp.
+
+\hypertarget{mysqlconn_8hpp_abb0c7b397978c469e9f9e73f865abe60}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!T\-E\-M\-P\-S\-E\-S\-H\-S\-T\-M\-T@{T\-E\-M\-P\-S\-E\-S\-H\-S\-T\-M\-T}}
+\index{T\-E\-M\-P\-S\-E\-S\-H\-S\-T\-M\-T@{T\-E\-M\-P\-S\-E\-S\-H\-S\-T\-M\-T}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{T\-E\-M\-P\-S\-E\-S\-H\-S\-T\-M\-T}]{\setlength{\rightskip}{0pt plus 5cm}\#define T\-E\-M\-P\-S\-E\-S\-H\-S\-T\-M\-T}}\label{mysqlconn_8hpp_abb0c7b397978c469e9f9e73f865abe60}
+{\bfseries Value\-:}
+\begin{DoxyCode}
+\textcolor{stringliteral}{"INSERT INTO tempconnection"}\(\backslash\)
+    \textcolor{stringliteral}{"(ipaddr, sessionkey, sessiondata) values (?, ?, ?)"}
+\end{DoxyCode}
+
+
+Definition at line 53 of file mysqlconn.\-hpp.
+
+
+
+\subsection{Typedef Documentation}
+\hypertarget{mysqlconn_8hpp_ab6e7bf0375167238af3f450de1e3ec52}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!header@{header}}
+\index{header@{header}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{header}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf myinit}  {\bf header}}}\label{mysqlconn_8hpp_ab6e7bf0375167238af3f450de1e3ec52}
+
+
+\subsection{Function Documentation}
+\hypertarget{mysqlconn_8hpp_ab4284163e495d143469e0b759df6a5f2}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!checkhash@{checkhash}}
+\index{checkhash@{checkhash}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{checkhash}]{\setlength{\rightskip}{0pt plus 5cm}int checkhash (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{ptr2hash}
+\end{DoxyParamCaption}
+)}}\label{mysqlconn_8hpp_ab4284163e495d143469e0b759df6a5f2}
+\hypertarget{mysqlconn_8hpp_a66dc6e1e79ef8bdd69735457935a344d}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!checkhash\-\_\-c@{checkhash\-\_\-c}}
+\index{checkhash\-\_\-c@{checkhash\-\_\-c}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{checkhash\-\_\-c}]{\setlength{\rightskip}{0pt plus 5cm}int checkhash\-\_\-c (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{ptr2hash}
+\end{DoxyParamCaption}
+)}}\label{mysqlconn_8hpp_a66dc6e1e79ef8bdd69735457935a344d}
+\hypertarget{mysqlconn_8hpp_a2330ed73a8703c4e01bada0bfa59ba1f}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!closeall@{closeall}}
+\index{closeall@{closeall}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{closeall}]{\setlength{\rightskip}{0pt plus 5cm}int closeall (
+\begin{DoxyParamCaption}
+\item[{M\-Y\-S\-Q\-L\-\_\-\-R\-E\-S $\ast$}]{result, }
+\item[{{\bf header} $\ast$}]{stmthder}
+\end{DoxyParamCaption}
+)}}\label{mysqlconn_8hpp_a2330ed73a8703c4e01bada0bfa59ba1f}
+\hypertarget{mysqlconn_8hpp_a80ba7573a9a3e5d2d50978c0c490c22a}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!closeall\-\_\-c@{closeall\-\_\-c}}
+\index{closeall\-\_\-c@{closeall\-\_\-c}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{closeall\-\_\-c}]{\setlength{\rightskip}{0pt plus 5cm}int closeall\-\_\-c (
+\begin{DoxyParamCaption}
+\item[{M\-Y\-S\-Q\-L\-\_\-\-R\-E\-S $\ast$}]{result, }
+\item[{{\bf header} $\ast$}]{stmthder}
+\end{DoxyParamCaption}
+)}}\label{mysqlconn_8hpp_a80ba7573a9a3e5d2d50978c0c490c22a}
+\hypertarget{mysqlconn_8hpp_a5206a50094287cb1ac0374e0bda7c730}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!execauth@{execauth}}
+\index{execauth@{execauth}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{execauth}]{\setlength{\rightskip}{0pt plus 5cm}int execauth (
+\begin{DoxyParamCaption}
+\item[{char}]{hash}
+\end{DoxyParamCaption}
+)}}\label{mysqlconn_8hpp_a5206a50094287cb1ac0374e0bda7c730}
+\hypertarget{mysqlconn_8hpp_a3e7ac4b4bcc148706bcb06b4e90b3550}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!execauth\-\_\-c@{execauth\-\_\-c}}
+\index{execauth\-\_\-c@{execauth\-\_\-c}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{execauth\-\_\-c}]{\setlength{\rightskip}{0pt plus 5cm}int execauth\-\_\-c (
+\begin{DoxyParamCaption}
+\item[{char}]{hash}
+\end{DoxyParamCaption}
+)}}\label{mysqlconn_8hpp_a3e7ac4b4bcc148706bcb06b4e90b3550}
+\hypertarget{mysqlconn_8hpp_a849cb75ae7da542606dd870ec4e52280}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!mysqlbindexec@{mysqlbindexec}}
+\index{mysqlbindexec@{mysqlbindexec}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{mysqlbindexec}]{\setlength{\rightskip}{0pt plus 5cm}int mysqlbindexec (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{ret, }
+\item[{M\-Y\-S\-Q\-L\-\_\-\-S\-T\-M\-T $\ast$}]{mystmthdler, }
+\item[{M\-Y\-S\-Q\-L\-\_\-\-B\-I\-N\-D}]{bind\mbox{[}$\,$\mbox{]}, }
+\item[{M\-Y\-S\-Q\-L\-\_\-\-R\-E\-S $\ast$}]{myres}
+\end{DoxyParamCaption}
+)}}\label{mysqlconn_8hpp_a849cb75ae7da542606dd870ec4e52280}
+\hypertarget{mysqlconn_8hpp_a7b19ab976fba39188e3e748fa1283e20}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!mysqlbindexec\-\_\-c@{mysqlbindexec\-\_\-c}}
+\index{mysqlbindexec\-\_\-c@{mysqlbindexec\-\_\-c}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{mysqlbindexec\-\_\-c}]{\setlength{\rightskip}{0pt plus 5cm}int mysqlbindexec\-\_\-c (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{ret, }
+\item[{M\-Y\-S\-Q\-L\-\_\-\-S\-T\-M\-T $\ast$}]{mystmthdler, }
+\item[{M\-Y\-S\-Q\-L\-\_\-\-B\-I\-N\-D}]{bind\mbox{[}$\,$\mbox{]}, }
+\item[{M\-Y\-S\-Q\-L\-\_\-\-R\-E\-S $\ast$}]{myres}
+\end{DoxyParamCaption}
+)}}\label{mysqlconn_8hpp_a7b19ab976fba39188e3e748fa1283e20}
+\hypertarget{mysqlconn_8hpp_a3796d9a87baff8b20c3fca8135030b74}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!mysqlheader@{mysqlheader}}
+\index{mysqlheader@{mysqlheader}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{mysqlheader}]{\setlength{\rightskip}{0pt plus 5cm}int mysqlheader (
+\begin{DoxyParamCaption}
+\item[{{\bf header} $\ast$}]{stmthder}
+\end{DoxyParamCaption}
+)}}\label{mysqlconn_8hpp_a3796d9a87baff8b20c3fca8135030b74}
+\hypertarget{mysqlconn_8hpp_a41c5c7637087dddb49c286cc0a69fe3a}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!mysqlheader\-\_\-c@{mysqlheader\-\_\-c}}
+\index{mysqlheader\-\_\-c@{mysqlheader\-\_\-c}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{mysqlheader\-\_\-c}]{\setlength{\rightskip}{0pt plus 5cm}int mysqlheader\-\_\-c (
+\begin{DoxyParamCaption}
+\item[{{\bf header} $\ast$}]{stmthder}
+\end{DoxyParamCaption}
+)}}\label{mysqlconn_8hpp_a41c5c7637087dddb49c286cc0a69fe3a}
+\hypertarget{mysqlconn_8hpp_adffe8807cab89a4156a89431689116f2}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!mysqlinit@{mysqlinit}}
+\index{mysqlinit@{mysqlinit}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{mysqlinit}]{\setlength{\rightskip}{0pt plus 5cm}M\-Y\-S\-Q\-L\-\_\-\-S\-T\-M\-T$\ast$ mysqlinit (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{ret, }
+\item[{M\-Y\-S\-Q\-L $\ast$}]{myhandler, }
+\item[{M\-Y\-S\-Q\-L\-\_\-\-S\-T\-M\-T $\ast$}]{myssh}
+\end{DoxyParamCaption}
+)}}\label{mysqlconn_8hpp_adffe8807cab89a4156a89431689116f2}
+\hypertarget{mysqlconn_8hpp_af82b765b041d9892f1fe6a10ad3fdc87}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!mysqlinit\-\_\-c@{mysqlinit\-\_\-c}}
+\index{mysqlinit\-\_\-c@{mysqlinit\-\_\-c}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{mysqlinit\-\_\-c}]{\setlength{\rightskip}{0pt plus 5cm}M\-Y\-S\-Q\-L\-\_\-\-S\-T\-M\-T$\ast$ mysqlinit\-\_\-c (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{ret, }
+\item[{M\-Y\-S\-Q\-L $\ast$}]{myhandler, }
+\item[{M\-Y\-S\-Q\-L\-\_\-\-S\-T\-M\-T $\ast$}]{myssh}
+\end{DoxyParamCaption}
+)}}\label{mysqlconn_8hpp_af82b765b041d9892f1fe6a10ad3fdc87}
+\hypertarget{mysqlconn_8hpp_ab99993cdeba44a1b72f13c08eb16f8be}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!storetempconnections@{storetempconnections}}
+\index{storetempconnections@{storetempconnections}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{storetempconnections}]{\setlength{\rightskip}{0pt plus 5cm}int storetempconnections (
+\begin{DoxyParamCaption}
+\item[{char}]{ipaddr\mbox{[}$\,$\mbox{]}, }
+\item[{void $\ast$}]{param, }
+\item[{gnutls\-\_\-datum\-\_\-t}]{key, }
+\item[{gnutls\-\_\-datum\-\_\-t}]{data}
+\end{DoxyParamCaption}
+)}}\label{mysqlconn_8hpp_ab99993cdeba44a1b72f13c08eb16f8be}
+\hypertarget{mysqlconn_8hpp_a4e24343eb47adcea7b9146f244d5ec37}{\index{mysqlconn.\-hpp@{mysqlconn.\-hpp}!storetempconnections\-\_\-c@{storetempconnections\-\_\-c}}
+\index{storetempconnections\-\_\-c@{storetempconnections\-\_\-c}!mysqlconn.hpp@{mysqlconn.\-hpp}}
+\subsubsection[{storetempconnections\-\_\-c}]{\setlength{\rightskip}{0pt plus 5cm}int storetempconnections\-\_\-c (
+\begin{DoxyParamCaption}
+\item[{char}]{ipaddr\mbox{[}$\,$\mbox{]}, }
+\item[{void $\ast$}]{param, }
+\item[{gnutls\-\_\-datum\-\_\-t}]{key, }
+\item[{gnutls\-\_\-datum\-\_\-t}]{data}
+\end{DoxyParamCaption}
+)}}\label{mysqlconn_8hpp_a4e24343eb47adcea7b9146f244d5ec37}

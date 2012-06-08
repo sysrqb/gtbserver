@@ -1,0 +1,49 @@
+
+\begin{DoxyRefList}
+\item[\label{todo__todo000001}%
+\hypertarget{todo__todo000001}{}%
+Member \hyperlink{classGTBCommunication_aed33aec9911e0d570d4653cabd776d6b}{G\-T\-B\-Communication\-:\-:auth\-Request} (\hyperlink{classRequest}{Request} $\ast$i\-\_\-a\-P\-B\-Req)]Store car number, ip address, cert uid for future authentication  
+\item[\label{todo__todo000002}%
+\hypertarget{todo__todo000002}{}%
+Member \hyperlink{classGTBCommunication_ae20ca3b3751720d3ef10bbdfbd4cd25a}{G\-T\-B\-Communication\-:\-:curr\-Request} (\hyperlink{classRequest}{Request} $\ast$i\-\_\-a\-P\-B\-Req, \hyperlink{classResponse}{Response} $\ast$i\-\_\-apb\-Res)]Verify car number, ip address, cert uid  
+\item[\label{todo__todo000004}%
+\hypertarget{todo__todo000004}{}%
+Member \hyperlink{classGTBCommunication_a6353b9cc417d4f7a3fd309fc911cf8f1}{G\-T\-B\-Communication\-:\-:handle\-Connection} (int fd\-Accepted, int sockfd)]Figure out why certificate verification segfaults =( 
+\item[\label{todo__todo000003}%
+\hypertarget{todo__todo000003}{}%
+Member \hyperlink{classGTBCommunication_afd6c49f0bd73a7c2014673b58c87c68b}{G\-T\-B\-Communication\-:\-:updt\-Request} (\hyperlink{classRequest}{Request} $\ast$i\-\_\-a\-P\-B\-Req, \hyperlink{classResponse}{Response} $\ast$i\-\_\-apb\-Res)]Authenticate client based on car number, ip address, cert uid 
+
+Conflict resolution if conflicting modified field exist  
+\item[\label{todo__todo000010}%
+\hypertarget{todo__todo000010}{}%
+Member \hyperlink{classMySQLConn_a045c9cb16434df8c1e50dd7ef6766c5f}{My\-S\-Q\-L\-Conn\-:\-:add\-Location} (std\-::string loc)]Handle S\-Q\-L\-Exception better  
+\item[\label{todo__todo000009}%
+\hypertarget{todo__todo000009}{}%
+Member \hyperlink{classMySQLConn_a017c08a9bfdf5c20509f754af7c8c7f7}{My\-S\-Q\-L\-Conn\-:\-:add\-Patron} (int carnum, \hyperlink{classRequest}{Request} $\ast$i\-\_\-a\-P\-B\-Req)]Handle S\-Q\-L\-Exception better  
+\item[\label{todo__todo000006}%
+\hypertarget{todo__todo000006}{}%
+Member \hyperlink{classMySQLConn_ae96f09e4aa859a5294c90ec498c38928}{My\-S\-Q\-L\-Conn\-:\-:check\-Auth} (std\-::string i\-\_\-snetid, std\-::string i\-\_\-sauth, std\-::string i\-\_\-scarnum)]Implement. This only verifies that the three fields are not empty strings. It must actually query the database and add the information to the D\-B for later verification.  
+\item[\label{todo__todo000007}%
+\hypertarget{todo__todo000007}{}%
+Member \hyperlink{classMySQLConn_a259785bc51cae6d0c6c950f6bdf6f475}{My\-S\-Q\-L\-Conn\-:\-:get\-Curr} (int carnum, \hyperlink{classPatronList}{Patron\-List} $\ast$i\-\_\-apb\-Patl, std\-::vector$<$ int $>$)]If pid is in old but fields have been modified after last update, resend patron or only resend modified fields. 
+
+Check that all rides in old are still assigned to carnum and inform client to remove patron from database if the patron has been reassigned. 
+
+Handle S\-Q\-L\-Exception better  
+\item[\label{todo__todo000012}%
+\hypertarget{todo__todo000012}{}%
+Member \hyperlink{classMySQLConn_a8ffe3e96eb70c795c4ade821e70dd6bf}{My\-S\-Q\-L\-Conn\-:\-:get\-Location\-I\-D} (std\-::string loc)]Handle S\-Q\-L\-Exception better  
+\item[\label{todo__todo000011}%
+\hypertarget{todo__todo000011}{}%
+Member \hyperlink{classMySQLConn_ae26fdad9114c884ff5b8bfefebee4254}{My\-S\-Q\-L\-Conn\-:\-:get\-Patron\-Info} (int pid, \hyperlink{classPatronList}{Patron\-List} $\ast$i\-\_\-apb\-Patl)]Handle S\-Q\-L\-Exception better  
+\item[\label{todo__todo000008}%
+\hypertarget{todo__todo000008}{}%
+Member \hyperlink{classMySQLConn_a1653065e63d0dc420392b5694e688237}{My\-S\-Q\-L\-Conn\-:\-:set\-Updt} (int carnum, \hyperlink{classPatronList}{Patron\-List} $\ast$i\-\_\-apb\-Patl, \hyperlink{classRequest}{Request} $\ast$i\-\_\-a\-P\-B\-Req)]Only update fields based on modified fields 
+
+Handle conflict resolution 
+
+Handle S\-Q\-L\-Exception better  
+\item[\label{todo__todo000005}%
+\hypertarget{todo__todo000005}{}%
+Member \hyperlink{classMySQLConn_a081f010ada91cd0d0f67ab8dddb5d8af}{My\-S\-Q\-L\-Conn\-:\-:store\-Car\-Info} (std\-::string ipaddr, int car)]Implement
+\end{DoxyRefList}

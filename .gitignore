@@ -10,6 +10,4 @@ proto/
 .*
 protobuf/
 src/edu
-docs/html
-docs/latex
 lib/`

@@ -1,0 +1,53 @@
+\hypertarget{gtbcommunication_8cc}{\section{src/gtbcommunication.cc File Reference}
+\label{gtbcommunication_8cc}\index{src/gtbcommunication.\-cc@{src/gtbcommunication.\-cc}}
+}
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$netinet/in.\-h$>$}\\*
+{\ttfamily \#include $<$arpa/inet.\-h$>$}\\*
+{\ttfamily \#include $<$sys/types.\-h$>$}\\*
+{\ttfamily \#include $<$sys/stat.\-h$>$}\\*
+{\ttfamily \#include $<$unistd.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}patron.\-pb.\-h\char`\"{}}\\*
+{\ttfamily \#include $<$iostream$>$}\\*
+{\ttfamily \#include $<$string$>$}\\*
+{\ttfamily \#include \char`\"{}gtbcommunication.\-hpp\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}gtbexceptions.\-hpp\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}sqlconn.\-hpp\char`\"{}}\\*
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structCACHE}{C\-A\-C\-H\-E}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{gtbcommunication_8cc_adce962b5553591d36b5e51bdc06ec2eb}{M\-A\-X\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-I\-D\-\_\-\-S\-I\-Z\-E}~32
+\item 
+\#define \hyperlink{gtbcommunication_8cc_a235acd5aaa5caea1f0ec56b02e1ba2ea}{M\-A\-X\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-D\-A\-T\-A\-\_\-\-S\-I\-Z\-E}~512
+\item 
+\#define \hyperlink{gtbcommunication_8cc_a16943eab0c13effcbdef684cc613ee04}{T\-L\-S\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-C\-A\-C\-H\-E}~10
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{gtbcommunication_8cc_a235acd5aaa5caea1f0ec56b02e1ba2ea}{\index{gtbcommunication.\-cc@{gtbcommunication.\-cc}!M\-A\-X\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-D\-A\-T\-A\-\_\-\-S\-I\-Z\-E@{M\-A\-X\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-D\-A\-T\-A\-\_\-\-S\-I\-Z\-E}}
+\index{M\-A\-X\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-D\-A\-T\-A\-\_\-\-S\-I\-Z\-E@{M\-A\-X\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-D\-A\-T\-A\-\_\-\-S\-I\-Z\-E}!gtbcommunication.cc@{gtbcommunication.\-cc}}
+\subsubsection[{M\-A\-X\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-D\-A\-T\-A\-\_\-\-S\-I\-Z\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\-A\-X\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-D\-A\-T\-A\-\_\-\-S\-I\-Z\-E~512}}\label{gtbcommunication_8cc_a235acd5aaa5caea1f0ec56b02e1ba2ea}
+
+
+Definition at line 35 of file gtbcommunication.\-cc.
+
+\hypertarget{gtbcommunication_8cc_adce962b5553591d36b5e51bdc06ec2eb}{\index{gtbcommunication.\-cc@{gtbcommunication.\-cc}!M\-A\-X\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-I\-D\-\_\-\-S\-I\-Z\-E@{M\-A\-X\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-I\-D\-\_\-\-S\-I\-Z\-E}}
+\index{M\-A\-X\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-I\-D\-\_\-\-S\-I\-Z\-E@{M\-A\-X\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-I\-D\-\_\-\-S\-I\-Z\-E}!gtbcommunication.cc@{gtbcommunication.\-cc}}
+\subsubsection[{M\-A\-X\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-I\-D\-\_\-\-S\-I\-Z\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\-A\-X\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-I\-D\-\_\-\-S\-I\-Z\-E~32}}\label{gtbcommunication_8cc_adce962b5553591d36b5e51bdc06ec2eb}
+
+
+Definition at line 34 of file gtbcommunication.\-cc.
+
+\hypertarget{gtbcommunication_8cc_a16943eab0c13effcbdef684cc613ee04}{\index{gtbcommunication.\-cc@{gtbcommunication.\-cc}!T\-L\-S\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-C\-A\-C\-H\-E@{T\-L\-S\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-C\-A\-C\-H\-E}}
+\index{T\-L\-S\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-C\-A\-C\-H\-E@{T\-L\-S\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-C\-A\-C\-H\-E}!gtbcommunication.cc@{gtbcommunication.\-cc}}
+\subsubsection[{T\-L\-S\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-C\-A\-C\-H\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define T\-L\-S\-\_\-\-S\-E\-S\-S\-I\-O\-N\-\_\-\-C\-A\-C\-H\-E~10}}\label{gtbcommunication_8cc_a16943eab0c13effcbdef684cc613ee04}
+
+
+Definition at line 36 of file gtbcommunication.\-cc.
+

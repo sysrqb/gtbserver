@@ -1,0 +1,592 @@
+\hypertarget{classGTBCommunication}{\section{G\-T\-B\-Communication Class Reference}
+\label{classGTBCommunication}\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}}
+}
+
+
+Handles communication with network clients.  
+
+
+
+
+{\ttfamily \#include $<$gtbcommunication.\-hpp$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classGTBCommunication_ad9935001e2ac8454f6a0846bd3f4c78e}{G\-T\-B\-Communication} (int indebug=0)
+\begin{DoxyCompactList}\small\item\em Constructor with optional debug output. \end{DoxyCompactList}\item 
+\hyperlink{classGTBCommunication_a9a4c0590a68d27986420d573476857f8}{$\sim$\-G\-T\-B\-Communication} ()
+\begin{DoxyCompactList}\small\item\em Deconstructor to clean up dynamic info. \end{DoxyCompactList}\item 
+void \hyperlink{classGTBCommunication_ada748d331d99c87beff8f1052e728670}{init\-G\-N\-U\-T\-L\-S} ()
+\begin{DoxyCompactList}\small\item\em Handle initialization of G\-N\-U\-T\-L\-S backend. \end{DoxyCompactList}\item 
+void \hyperlink{classGTBCommunication_a298abd38038257bf206d22dab7f080f4}{deinit\-G\-N\-U\-T\-L\-S} ()
+\begin{DoxyCompactList}\small\item\em Handle the deinitialization of G\-N\-U\-T\-L\-S. \end{DoxyCompactList}\item 
+void \hyperlink{classGTBCommunication_a798bd82ec73644b1b7be23431c159993}{init\-T\-L\-S\-Session} ()
+\begin{DoxyCompactList}\small\item\em Prepare a new T\-L\-S Session. \end{DoxyCompactList}\item 
+int \hyperlink{classGTBCommunication_a22b23cdf3c160d540a1d5dddacf0efdf}{generate\-D\-H\-Params} ()
+\begin{DoxyCompactList}\small\item\em Prepare Diffie-\/\-Hellman Parameters. \end{DoxyCompactList}\item 
+void \hyperlink{classGTBCommunication_ae6c1cbc4736afe36731d442b72c181e4}{load\-Cert\-Files} ()
+\begin{DoxyCompactList}\small\item\em Loads server-\/side certificates and keys. \end{DoxyCompactList}\item 
+void \hyperlink{classGTBCommunication_a9603172b74add3207353ca4c49bb4290}{get\-Client\-Info} (int i\-\_\-sockfd)
+\begin{DoxyCompactList}\small\item\em Unimplemented. May be removed. \end{DoxyCompactList}\item 
+int \hyperlink{classGTBCommunication_a92ae038bbe4b05f7f17d9b9f59d6c158}{get\-Socket} ()
+\begin{DoxyCompactList}\small\item\em Bind to open port. \end{DoxyCompactList}\item 
+void $\ast$ \hyperlink{classGTBCommunication_a7d2a3e93ca5ba8a880fea467d2d8b325}{get\-In\-Addr} (struct sockaddr $\ast$i\-\_\-sa)
+\begin{DoxyCompactList}\small\item\em Return incoming client as I\-Pv4 or I\-Pv6. \end{DoxyCompactList}\item 
+std\-::string \hyperlink{classGTBCommunication_a0767f8f014450f4ba30d6be2db74086a}{get\-Client\-Addr} ()
+\begin{DoxyCompactList}\small\item\em Accessor\-: Returns the I\-P Address of the current client. \end{DoxyCompactList}\item 
+gnutls\-\_\-priority\-\_\-t $\ast$ \hyperlink{classGTBCommunication_ac40042c1dd24bb71f730eae70c0dfc06}{get\-Priority\-Cache} ()
+\begin{DoxyCompactList}\small\item\em Accessor\-: Returns current priorities set in T\-L\-S session. \end{DoxyCompactList}\item 
+gnutls\-\_\-certificate\-\_\-credentials\-\_\-t $\ast$ \hyperlink{classGTBCommunication_aaff60196d8623e94588a9efb1593fa7e}{get\-Cert\-Cred} ()
+\begin{DoxyCompactList}\small\item\em Accessor\-: Returns struct holding certificate info. \end{DoxyCompactList}\item 
+gnutls\-\_\-dh\-\_\-params\-\_\-t $\ast$ \hyperlink{classGTBCommunication_a73df04ac0442aabd5a1919d6e95501e8}{get\-D\-H\-Params} ()
+\begin{DoxyCompactList}\small\item\em Accessor\-: Return Diffie-\/\-Hellman parameters. \end{DoxyCompactList}\item 
+gnutls\-\_\-session\-\_\-t $\ast$ \hyperlink{classGTBCommunication_a762b0f4bb1e3f27c01e1ce4b2f3aca65}{get\-Session} ()
+\begin{DoxyCompactList}\small\item\em Accessor\-: Return current session info. \end{DoxyCompactList}\item 
+int \hyperlink{classGTBCommunication_a48ac2db7bb407da8d59cfbf69110e598}{send\-Failure\-Response} (int errorcode)
+\begin{DoxyCompactList}\small\item\em Return errorcode to client. \end{DoxyCompactList}\item 
+int \hyperlink{classGTBCommunication_a53163e476fffb9c3b51b7297b5963e6b}{send\-A\-O\-K} ()
+\begin{DoxyCompactList}\small\item\em Return 0 = Successful to client. \end{DoxyCompactList}\item 
+int \hyperlink{classGTBCommunication_a83fbad40d9605078ff9a8ce29c57b383}{send\-Nopes} (int i\-\_\-n\-Ret\-Val)
+\begin{DoxyCompactList}\small\item\em Send only sizeof(int) bytes containing i\-\_\-n\-Ret\-Val to client. \end{DoxyCompactList}\item 
+int \hyperlink{classGTBCommunication_a8558ea1c9e19310b986d5ce84398ca20}{send\-Number\-Of\-Cars} (\hyperlink{classRequest}{Request} $\ast$i\-\_\-a\-P\-B\-Req)
+\begin{DoxyCompactList}\small\item\em Return number of running vans to client. \end{DoxyCompactList}\item 
+int \hyperlink{classGTBCommunication_a42a7648197f7ae8f3817aa8ff9ebca73}{move\-Key} ()
+\begin{DoxyCompactList}\small\item\em Unimplemented\-: May be removed. \end{DoxyCompactList}\item 
+int \hyperlink{classGTBCommunication_aed33aec9911e0d570d4653cabd776d6b}{auth\-Request} (\hyperlink{classRequest}{Request} $\ast$i\-\_\-a\-P\-B\-Req)
+\begin{DoxyCompactList}\small\item\em \hyperlink{classRequest}{Request} to authenticate client. \end{DoxyCompactList}\item 
+int \hyperlink{classGTBCommunication_ae20ca3b3751720d3ef10bbdfbd4cd25a}{curr\-Request} (\hyperlink{classRequest}{Request} $\ast$i\-\_\-a\-P\-B\-Req, \hyperlink{classResponse}{Response} $\ast$i\-\_\-apb\-Res)
+\begin{DoxyCompactList}\small\item\em \hyperlink{classRequest}{Request} for current patrons assigned to client. \end{DoxyCompactList}\item 
+int \hyperlink{classGTBCommunication_afd6c49f0bd73a7c2014673b58c87c68b}{updt\-Request} (\hyperlink{classRequest}{Request} $\ast$i\-\_\-a\-P\-B\-Req, \hyperlink{classResponse}{Response} $\ast$i\-\_\-apb\-Res)
+\begin{DoxyCompactList}\small\item\em \hyperlink{classRequest}{Request} to update a patron's info. \end{DoxyCompactList}\item 
+int \hyperlink{classGTBCommunication_ac0d209ae00b1820f5f29ec7d15f418d6}{deal\-With\-Req} (\hyperlink{classRequest}{Request} i\-\_\-s\-P\-B\-Req)
+\begin{DoxyCompactList}\small\item\em Handle incoming request. \end{DoxyCompactList}\item 
+int \hyperlink{classGTBCommunication_a6353b9cc417d4f7a3fd309fc911cf8f1}{handle\-Connection} (int fd\-Accepted, int sockfd)
+\begin{DoxyCompactList}\small\item\em Perform T\-L\-S handshake with client. \end{DoxyCompactList}\item 
+int \hyperlink{classGTBCommunication_a2f5260afdc69079471e21fd855e7dcc3}{listening\-For\-Client} (int i\-\_\-fd\-Sock)
+\begin{DoxyCompactList}\small\item\em Listen for a client connection. \end{DoxyCompactList}\item 
+void \hyperlink{classGTBCommunication_a0a4e58a46cc8f6037439473442b474b6}{receive\-Request} (\hyperlink{classRequest}{Request} $\ast$a\-P\-B\-Req)
+\begin{DoxyCompactList}\small\item\em Retrieves all incoming requests from client. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Handles communication with network clients. 
+
+Class\-: \hyperlink{classGTBCommunication}{G\-T\-B\-Communication}
+
+Facilitates establishing a connection using T\-L\-S with client, as well as sending, retrieving, and updating patron information in the selected database 
+
+Definition at line 71 of file gtbcommunication.\-hpp.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classGTBCommunication_ad9935001e2ac8454f6a0846bd3f4c78e}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!G\-T\-B\-Communication@{G\-T\-B\-Communication}}
+\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{G\-T\-B\-Communication}]{\setlength{\rightskip}{0pt plus 5cm}G\-T\-B\-Communication\-::\-G\-T\-B\-Communication (
+\begin{DoxyParamCaption}
+\item[{int}]{indebug = {\ttfamily 0}}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classGTBCommunication_ad9935001e2ac8454f6a0846bd3f4c78e}
+
+
+Constructor with optional debug output. 
+
+Constructor defaults to zero debug output. For additional debugging information, increase the value at instantiation. \begin{DoxySeeAlso}{See also}
+debug 
+\end{DoxySeeAlso}
+
+
+Definition at line 92 of file gtbcommunication.\-hpp.
+
+\hypertarget{classGTBCommunication_a9a4c0590a68d27986420d573476857f8}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!$\sim$\-G\-T\-B\-Communication@{$\sim$\-G\-T\-B\-Communication}}
+\index{$\sim$\-G\-T\-B\-Communication@{$\sim$\-G\-T\-B\-Communication}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{$\sim$\-G\-T\-B\-Communication}]{\setlength{\rightskip}{0pt plus 5cm}G\-T\-B\-Communication\-::$\sim$\-G\-T\-B\-Communication (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classGTBCommunication_a9a4c0590a68d27986420d573476857f8}
+
+
+Deconstructor to clean up dynamic info. 
+
+
+
+Definition at line 105 of file gtbcommunication.\-hpp.
+
+
+
+\subsection{Member Function Documentation}
+\hypertarget{classGTBCommunication_aed33aec9911e0d570d4653cabd776d6b}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!auth\-Request@{auth\-Request}}
+\index{auth\-Request@{auth\-Request}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{auth\-Request}]{\setlength{\rightskip}{0pt plus 5cm}int G\-T\-B\-Communication\-::auth\-Request (
+\begin{DoxyParamCaption}
+\item[{{\bf Request} $\ast$}]{i\-\_\-a\-P\-B\-Req}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_aed33aec9911e0d570d4653cabd776d6b}
+
+
+\hyperlink{classRequest}{Request} to authenticate client. 
+
+Checks that i\-\_\-a\-P\-B\-Req is a valid request. If so, the provided values in the packet are verified.
+
+
+\begin{DoxyParams}{Parameters}
+{\em i\-\_\-a\-P\-B\-Req} & The request received from the client \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+check\-Auth 
+\end{DoxySeeAlso}
+\begin{DoxyRefDesc}{Todo}
+\item[\hyperlink{todo__todo000001}{Todo}]Store car number, ip address, cert uid for future authentication \end{DoxyRefDesc}
+
+
+Definition at line 230 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_ae20ca3b3751720d3ef10bbdfbd4cd25a}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!curr\-Request@{curr\-Request}}
+\index{curr\-Request@{curr\-Request}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{curr\-Request}]{\setlength{\rightskip}{0pt plus 5cm}int G\-T\-B\-Communication\-::curr\-Request (
+\begin{DoxyParamCaption}
+\item[{{\bf Request} $\ast$}]{i\-\_\-a\-P\-B\-Req, }
+\item[{{\bf Response} $\ast$}]{i\-\_\-apb\-Res}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_ae20ca3b3751720d3ef10bbdfbd4cd25a}
+
+
+\hyperlink{classRequest}{Request} for current patrons assigned to client. 
+
+Checks that i\-\_\-a\-P\-B\-Req is a valid request. If so, the current patrons are returned to the client, excluding those that have have not be modified and the client already has in its D\-B.
+
+
+\begin{DoxyParams}{Parameters}
+{\em i\-\_\-a\-P\-B\-Req} & The request received from the client \\
+\hline
+{\em i\-\_\-apb\-Res} & The response that will be filled with the requested information. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyRefDesc}{Todo}
+\item[\hyperlink{todo__todo000002}{Todo}]Verify car number, ip address, cert uid \end{DoxyRefDesc}
+
+
+Definition at line 264 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_ac0d209ae00b1820f5f29ec7d15f418d6}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!deal\-With\-Req@{deal\-With\-Req}}
+\index{deal\-With\-Req@{deal\-With\-Req}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{deal\-With\-Req}]{\setlength{\rightskip}{0pt plus 5cm}int G\-T\-B\-Communication\-::deal\-With\-Req (
+\begin{DoxyParamCaption}
+\item[{{\bf Request}}]{i\-\_\-s\-P\-B\-Req}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_ac0d209ae00b1820f5f29ec7d15f418d6}
+
+
+Handle incoming request. 
+
+When a request is received, determine the request I\-D number. Using this number, the request is then handed off to the correct method
+
+
+\begin{DoxyParams}{Parameters}
+{\em i\-\_\-s\-P\-B\-Req} & The request received from the client. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+\hyperlink{classGTBCommunication_aed33aec9911e0d570d4653cabd776d6b}{auth\-Request} 
+
+\hyperlink{classGTBCommunication_ae20ca3b3751720d3ef10bbdfbd4cd25a}{curr\-Request} 
+
+\hyperlink{classGTBCommunication_afd6c49f0bd73a7c2014673b58c87c68b}{updt\-Request} 
+\end{DoxySeeAlso}
+
+
+Definition at line 672 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_a298abd38038257bf206d22dab7f080f4}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!deinit\-G\-N\-U\-T\-L\-S@{deinit\-G\-N\-U\-T\-L\-S}}
+\index{deinit\-G\-N\-U\-T\-L\-S@{deinit\-G\-N\-U\-T\-L\-S}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{deinit\-G\-N\-U\-T\-L\-S}]{\setlength{\rightskip}{0pt plus 5cm}void G\-T\-B\-Communication\-::deinit\-G\-N\-U\-T\-L\-S (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_a298abd38038257bf206d22dab7f080f4}
+
+
+Handle the deinitialization of G\-N\-U\-T\-L\-S. 
+
+Calls gnutls\-\_\-deinit on the current T\-L\-S session 
+
+Definition at line 503 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_a22b23cdf3c160d540a1d5dddacf0efdf}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!generate\-D\-H\-Params@{generate\-D\-H\-Params}}
+\index{generate\-D\-H\-Params@{generate\-D\-H\-Params}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{generate\-D\-H\-Params}]{\setlength{\rightskip}{0pt plus 5cm}int G\-T\-B\-Communication\-::generate\-D\-H\-Params (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_a22b23cdf3c160d540a1d5dddacf0efdf}
+
+
+Prepare Diffie-\/\-Hellman Parameters. 
+
+Initialize Diffie-\/\-Hellman parameters for new T\-L\-S session and generate new keys. 
+
+Definition at line 509 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_aaff60196d8623e94588a9efb1593fa7e}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!get\-Cert\-Cred@{get\-Cert\-Cred}}
+\index{get\-Cert\-Cred@{get\-Cert\-Cred}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{get\-Cert\-Cred}]{\setlength{\rightskip}{0pt plus 5cm}gnutls\-\_\-certificate\-\_\-credentials\-\_\-t$\ast$ G\-T\-B\-Communication\-::get\-Cert\-Cred (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classGTBCommunication_aaff60196d8623e94588a9efb1593fa7e}
+
+
+Accessor\-: Returns struct holding certificate info. 
+
+
+
+Definition at line 176 of file gtbcommunication.\-hpp.
+
+\hypertarget{classGTBCommunication_a0767f8f014450f4ba30d6be2db74086a}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!get\-Client\-Addr@{get\-Client\-Addr}}
+\index{get\-Client\-Addr@{get\-Client\-Addr}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{get\-Client\-Addr}]{\setlength{\rightskip}{0pt plus 5cm}std\-::string G\-T\-B\-Communication\-::get\-Client\-Addr (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classGTBCommunication_a0767f8f014450f4ba30d6be2db74086a}
+
+
+Accessor\-: Returns the I\-P Address of the current client. 
+
+
+
+Definition at line 168 of file gtbcommunication.\-hpp.
+
+\hypertarget{classGTBCommunication_a9603172b74add3207353ca4c49bb4290}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!get\-Client\-Info@{get\-Client\-Info}}
+\index{get\-Client\-Info@{get\-Client\-Info}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{get\-Client\-Info}]{\setlength{\rightskip}{0pt plus 5cm}void G\-T\-B\-Communication\-::get\-Client\-Info (
+\begin{DoxyParamCaption}
+\item[{int}]{i\-\_\-sockfd}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_a9603172b74add3207353ca4c49bb4290}
+
+
+Unimplemented. May be removed. 
+
+\hypertarget{classGTBCommunication_a73df04ac0442aabd5a1919d6e95501e8}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!get\-D\-H\-Params@{get\-D\-H\-Params}}
+\index{get\-D\-H\-Params@{get\-D\-H\-Params}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{get\-D\-H\-Params}]{\setlength{\rightskip}{0pt plus 5cm}gnutls\-\_\-dh\-\_\-params\-\_\-t$\ast$ G\-T\-B\-Communication\-::get\-D\-H\-Params (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classGTBCommunication_a73df04ac0442aabd5a1919d6e95501e8}
+
+
+Accessor\-: Return Diffie-\/\-Hellman parameters. 
+
+
+
+Definition at line 179 of file gtbcommunication.\-hpp.
+
+\hypertarget{classGTBCommunication_a7d2a3e93ca5ba8a880fea467d2d8b325}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!get\-In\-Addr@{get\-In\-Addr}}
+\index{get\-In\-Addr@{get\-In\-Addr}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{get\-In\-Addr}]{\setlength{\rightskip}{0pt plus 5cm}void $\ast$ G\-T\-B\-Communication\-::get\-In\-Addr (
+\begin{DoxyParamCaption}
+\item[{struct sockaddr $\ast$}]{i\-\_\-sa}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_a7d2a3e93ca5ba8a880fea467d2d8b325}
+
+
+Return incoming client as I\-Pv4 or I\-Pv6. 
+
+Checks if client is using I\-Pv4 or I\-Pv6 and sets/initializes the structs accordingly. Depending on the protocol that is being used, i\-\_\-sa will either be struct in\-\_\-addr or in6\-\_\-addr. sin\-\_\-addr or sin6\-\_\-addr, respectively, is then the return value.
+
+
+\begin{DoxyParams}{Parameters}
+{\em i\-\_\-sa} & struct sockaddr\-\_\-storage; Address of peer layer as known to the communication layer \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 585 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_ac40042c1dd24bb71f730eae70c0dfc06}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!get\-Priority\-Cache@{get\-Priority\-Cache}}
+\index{get\-Priority\-Cache@{get\-Priority\-Cache}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{get\-Priority\-Cache}]{\setlength{\rightskip}{0pt plus 5cm}gnutls\-\_\-priority\-\_\-t$\ast$ G\-T\-B\-Communication\-::get\-Priority\-Cache (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classGTBCommunication_ac40042c1dd24bb71f730eae70c0dfc06}
+
+
+Accessor\-: Returns current priorities set in T\-L\-S session. 
+
+
+
+Definition at line 173 of file gtbcommunication.\-hpp.
+
+\hypertarget{classGTBCommunication_a762b0f4bb1e3f27c01e1ce4b2f3aca65}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!get\-Session@{get\-Session}}
+\index{get\-Session@{get\-Session}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{get\-Session}]{\setlength{\rightskip}{0pt plus 5cm}gnutls\-\_\-session\-\_\-t$\ast$ G\-T\-B\-Communication\-::get\-Session (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classGTBCommunication_a762b0f4bb1e3f27c01e1ce4b2f3aca65}
+
+
+Accessor\-: Return current session info. 
+
+
+
+Definition at line 182 of file gtbcommunication.\-hpp.
+
+\hypertarget{classGTBCommunication_a92ae038bbe4b05f7f17d9b9f59d6c158}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!get\-Socket@{get\-Socket}}
+\index{get\-Socket@{get\-Socket}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{get\-Socket}]{\setlength{\rightskip}{0pt plus 5cm}int G\-T\-B\-Communication\-::get\-Socket (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_a92ae038bbe4b05f7f17d9b9f59d6c158}
+
+
+Bind to open port. 
+
+Find free port and bind it it. 
+
+Definition at line 596 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_a6353b9cc417d4f7a3fd309fc911cf8f1}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!handle\-Connection@{handle\-Connection}}
+\index{handle\-Connection@{handle\-Connection}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{handle\-Connection}]{\setlength{\rightskip}{0pt plus 5cm}int G\-T\-B\-Communication\-::handle\-Connection (
+\begin{DoxyParamCaption}
+\item[{int}]{fd\-Accepted, }
+\item[{int}]{sockfd}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_a6353b9cc417d4f7a3fd309fc911cf8f1}
+
+
+Perform T\-L\-S handshake with client. 
+
+After a client connects to the server, perform T\-L\-S handshake with client to establish T\-L\-S session. Once complete, verify the client provides a certificate and that it was signed by our C\-A
+
+\begin{DoxyRefDesc}{Todo}
+\item[\hyperlink{todo__todo000004}{Todo}]Figure out why certificate verification segfaults =(\end{DoxyRefDesc}
+
+
+
+\begin{DoxyParams}{Parameters}
+{\em fd\-Accepted} & File descriptor for opened socket connection \\
+\hline
+{\em sockfd} & File descriptor for bound socket \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 777 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_ada748d331d99c87beff8f1052e728670}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!init\-G\-N\-U\-T\-L\-S@{init\-G\-N\-U\-T\-L\-S}}
+\index{init\-G\-N\-U\-T\-L\-S@{init\-G\-N\-U\-T\-L\-S}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{init\-G\-N\-U\-T\-L\-S}]{\setlength{\rightskip}{0pt plus 5cm}void G\-T\-B\-Communication\-::init\-G\-N\-U\-T\-L\-S (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_ada748d331d99c87beff8f1052e728670}
+
+
+Handle initialization of G\-N\-U\-T\-L\-S backend. 
+
+Directly calls gnutls\-\_\-global\-\_\-init and subsequently calls for the loading of Certificate files and setting priority values 
+
+Definition at line 496 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_a798bd82ec73644b1b7be23431c159993}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!init\-T\-L\-S\-Session@{init\-T\-L\-S\-Session}}
+\index{init\-T\-L\-S\-Session@{init\-T\-L\-S\-Session}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{init\-T\-L\-S\-Session}]{\setlength{\rightskip}{0pt plus 5cm}void G\-T\-B\-Communication\-::init\-T\-L\-S\-Session (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_a798bd82ec73644b1b7be23431c159993}
+
+
+Prepare a new T\-L\-S Session. 
+
+Initialize a new session for the current client. Set certificate to use and connection requirements. 
+
+Definition at line 449 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_a2f5260afdc69079471e21fd855e7dcc3}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!listening\-For\-Client@{listening\-For\-Client}}
+\index{listening\-For\-Client@{listening\-For\-Client}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{listening\-For\-Client}]{\setlength{\rightskip}{0pt plus 5cm}int G\-T\-B\-Communication\-::listening\-For\-Client (
+\begin{DoxyParamCaption}
+\item[{int}]{i\-\_\-fd\-Sock}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_a2f5260afdc69079471e21fd855e7dcc3}
+
+
+Listen for a client connection. 
+
+Initialize T\-L\-S session. When a client connects, store the client's I\-P address.
+
+
+\begin{DoxyParams}{Parameters}
+{\em i\-\_\-fd\-Sock} & File descriptor for bound socket \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+File descriptor for opened socket connection 
+\end{DoxyReturn}
+
+
+Definition at line 861 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_ae6c1cbc4736afe36731d442b72c181e4}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!load\-Cert\-Files@{load\-Cert\-Files}}
+\index{load\-Cert\-Files@{load\-Cert\-Files}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{load\-Cert\-Files}]{\setlength{\rightskip}{0pt plus 5cm}void G\-T\-B\-Communication\-::load\-Cert\-Files (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_ae6c1cbc4736afe36731d442b72c181e4}
+
+
+Loads server-\/side certificates and keys. 
+
+
+
+Definition at line 521 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_a42a7648197f7ae8f3817aa8ff9ebca73}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!move\-Key@{move\-Key}}
+\index{move\-Key@{move\-Key}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{move\-Key}]{\setlength{\rightskip}{0pt plus 5cm}int G\-T\-B\-Communication\-::move\-Key (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_a42a7648197f7ae8f3817aa8ff9ebca73}
+
+
+Unimplemented\-: May be removed. 
+
+
+
+Definition at line 223 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_a0a4e58a46cc8f6037439473442b474b6}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!receive\-Request@{receive\-Request}}
+\index{receive\-Request@{receive\-Request}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{receive\-Request}]{\setlength{\rightskip}{0pt plus 5cm}void G\-T\-B\-Communication\-::receive\-Request (
+\begin{DoxyParamCaption}
+\item[{{\bf Request} $\ast$}]{a\-P\-B\-Req}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_a0a4e58a46cc8f6037439473442b474b6}
+
+
+Retrieves all incoming requests from client. 
+
+Once the connection is established, all request/incoming packets are received and returned to plaintext.
+
+param a\-P\-B\-Req Where incoming request is stored because it's content will be used throughout the request's lifetime 
+
+Definition at line 742 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_a53163e476fffb9c3b51b7297b5963e6b}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!send\-A\-O\-K@{send\-A\-O\-K}}
+\index{send\-A\-O\-K@{send\-A\-O\-K}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{send\-A\-O\-K}]{\setlength{\rightskip}{0pt plus 5cm}int G\-T\-B\-Communication\-::send\-A\-O\-K (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_a53163e476fffb9c3b51b7297b5963e6b}
+
+
+Return 0 = Successful to client. 
+
+\hypertarget{classGTBCommunication_a48ac2db7bb407da8d59cfbf69110e598}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!send\-Failure\-Response@{send\-Failure\-Response}}
+\index{send\-Failure\-Response@{send\-Failure\-Response}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{send\-Failure\-Response}]{\setlength{\rightskip}{0pt plus 5cm}int G\-T\-B\-Communication\-::send\-Failure\-Response (
+\begin{DoxyParamCaption}
+\item[{int}]{errorcode}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_a48ac2db7bb407da8d59cfbf69110e598}
+
+
+Return errorcode to client. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em errorcode} & The errorcode returned from processing the request. \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 41 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_a83fbad40d9605078ff9a8ce29c57b383}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!send\-Nopes@{send\-Nopes}}
+\index{send\-Nopes@{send\-Nopes}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{send\-Nopes}]{\setlength{\rightskip}{0pt plus 5cm}int G\-T\-B\-Communication\-::send\-Nopes (
+\begin{DoxyParamCaption}
+\item[{int}]{i\-\_\-n\-Ret\-Val}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_a83fbad40d9605078ff9a8ce29c57b383}
+
+
+Send only sizeof(int) bytes containing i\-\_\-n\-Ret\-Val to client. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em i\-\_\-n\-Ret\-Val} & The return value from the request. \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 154 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_a8558ea1c9e19310b986d5ce84398ca20}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!send\-Number\-Of\-Cars@{send\-Number\-Of\-Cars}}
+\index{send\-Number\-Of\-Cars@{send\-Number\-Of\-Cars}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{send\-Number\-Of\-Cars}]{\setlength{\rightskip}{0pt plus 5cm}int G\-T\-B\-Communication\-::send\-Number\-Of\-Cars (
+\begin{DoxyParamCaption}
+\item[{{\bf Request} $\ast$}]{i\-\_\-a\-P\-B\-Req}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_a8558ea1c9e19310b986d5ce84398ca20}
+
+
+Return number of running vans to client. 
+
+Checks that i\-\_\-a\-P\-B\-Req is a valid request. If so, the database is queried and the result is returned in a \hyperlink{classResponse}{Response} packet. 
+\begin{DoxyParams}{Parameters}
+{\em i\-\_\-a\-P\-B\-Req} & The request received from the client. \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 167 of file gtbcommunication.\-cc.
+
+\hypertarget{classGTBCommunication_afd6c49f0bd73a7c2014673b58c87c68b}{\index{G\-T\-B\-Communication@{G\-T\-B\-Communication}!updt\-Request@{updt\-Request}}
+\index{updt\-Request@{updt\-Request}!GTBCommunication@{G\-T\-B\-Communication}}
+\subsubsection[{updt\-Request}]{\setlength{\rightskip}{0pt plus 5cm}int G\-T\-B\-Communication\-::updt\-Request (
+\begin{DoxyParamCaption}
+\item[{{\bf Request} $\ast$}]{i\-\_\-a\-P\-B\-Req, }
+\item[{{\bf Response} $\ast$}]{i\-\_\-apb\-Res}
+\end{DoxyParamCaption}
+)}}\label{classGTBCommunication_afd6c49f0bd73a7c2014673b58c87c68b}
+
+
+\hyperlink{classRequest}{Request} to update a patron's info. 
+
+Checks that i\-\_\-a\-P\-B\-Req is a valid request. If so, the patrons information is updated in the database.
+
+
+\begin{DoxyParams}{Parameters}
+{\em i\-\_\-a\-P\-B\-Req} & The request received from the client \\
+\hline
+{\em i\-\_\-apb\-Res} & The response that will be filled with the \\
+\hline
+\end{DoxyParams}
+\begin{DoxyRefDesc}{Todo}
+\item[\hyperlink{todo__todo000003}{Todo}]Authenticate client based on car number, ip address, cert uid 
+
+Conflict resolution if conflicting modified field exist \end{DoxyRefDesc}
+
+
+Definition at line 297 of file gtbcommunication.\-cc.
+
+
+
+The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+include/\hyperlink{gtbcommunication_8hpp}{gtbcommunication.\-hpp}\item 
+src/\hyperlink{gtbcommunication_8cc}{gtbcommunication.\-cc}\end{DoxyCompactItemize}
