@@ -143,6 +143,7 @@ class GTBCommunication {
 
     /*Misc mutator and accessor methods*/
 
+    /** \brief Unimplemented. May be removed. */
     void getClientInfo (int i_sockfd);
 
     /** \brief Bind to open port
@@ -182,7 +183,10 @@ class GTBCommunication {
 
     /*Communication with client*/
 
-    /** \brief Return errorcode to client. */
+    /** \brief Return errorcode to client.
+     *
+     * \param errorcode The errorcode returned from processing the request.
+     */
     int sendFailureResponse(int errorcode);
 
     /** \brief Return 0 = Successful to client. */
@@ -190,6 +194,8 @@ class GTBCommunication {
 
     /** \brief Send only sizeof(int) bytes containing i_nRetVal 
      * to client. 
+     *
+     * \param i_nRetVal The return value from the request.
      */
     int sendNopes(int i_nRetVal);
 
@@ -197,6 +203,7 @@ class GTBCommunication {
      *
      * Checks that i_aPBReq is a valid request. If so, the database 
      * is queried and the result is returned in a Response packet.
+     * \param i_aPBReq The request received from the client.
      */
     int sendNumberOfCars(Request * i_aPBReq);
 
@@ -208,6 +215,8 @@ class GTBCommunication {
      * Checks that i_aPBReq is a valid request. If so, the provided
      * values in the packet are verified.
      *
+     * \param i_aPBReq The request received from the client
+     * \sa checkAuth
      * \todo Store car number, ip address, cert uid for future 
      * authentication
      */
@@ -219,6 +228,9 @@ class GTBCommunication {
      * patrons are returned to the client, excluding those that have
      * have not be modified and the client already has in its DB.
      *
+     * \param i_aPBReq The request received from the client
+     * \param i_apbRes The response that will be filled with the
+     * requested information.
      * \todo Verify car number, ip address, cert uid
      */
     int currRequest (Request * i_aPBReq, Response * i_apbRes);
@@ -228,6 +240,8 @@ class GTBCommunication {
      * Checks that i_aPBReq is a valid request. If so, the patrons
      * information is updated in the database.
      *
+     * \param i_aPBReq The request received from the client
+     * \param i_apbRes The response that will be filled with the
      * \todo Authenticate client based on car number, ip address, cert uid
      * \todo Conflict resolution if conflicting modified field exist
      */
@@ -238,6 +252,7 @@ class GTBCommunication {
      * When a request is received, determine the request ID number. Using
      * this number, the request is then handed off to the correct method
      *
+     * \param i_sPBReq The request received from the client.
      * \sa authRequest
      * \sa currRequest
      * \sa updtRequest
@@ -256,7 +271,7 @@ class GTBCommunication {
      * \param fdAccepted File descriptor for opened socket connection
      * \param sockfd File descriptor for bound socket
      */
-    int handleConnection (int, int);
+    int handleConnection (int fdAccepted, int sockfd);
 
     /** \brief Listen for a client connection
      *
@@ -266,7 +281,7 @@ class GTBCommunication {
      * \param i_fdSock File descriptor for bound socket
      * \return File descriptor for opened socket connection
      */
-    int listeningForClient (int i_sockfd);
+    int listeningForClient (int i_fdSock);
 
     /** \brief Retrieves all incoming requests from client
      *
@@ -276,7 +291,7 @@ class GTBCommunication {
      * param aPBReq Where incoming request is stored because it's content
      * will be used throughout the request's lifetime
      */
-    void receiveRequest(Request *);
+    void receiveRequest(Request * aPBReq);
 
   private:
     /** \brief Sends response to client.

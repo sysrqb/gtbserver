@@ -282,16 +282,25 @@ int MySQLConn::getLocationID(string loc)
 {
   sql::PreparedStatement * prepStmt;
   sql::ResultSet * res;
+  string lochash("");
   int lid;
 
+  /*
+   * TODO Guard the Brdige will need to generate a list of all builtin
+   * locations and need to provide a TextView if the location is not in 
+   * the list. Other will need to be selected from list or will be 
+   * auto-selected if the location is typed into textview. 
+   
   if (!loc.compare("Other"))
     lid = addLocation(loc);
+  */
+  lochash = getSHA256Hash(loc, loc.size());
 
   try
   {
     prepStmt = con->prepareStatement(PS_GETLOCATIONID);
     prepStmt->setString(1, loc);
-    prepStmt->setString(2, loc);
+    prepStmt->setString(2, lochash);
 
     res = prepStmt->executeQuery();
     delete prepStmt;
@@ -426,16 +435,12 @@ int MySQLConn::addLocation(string loc)
   return getLastInsertId();
 }
 
-map<int, string> MySQLConn::addPatron(int carnum, PatronList * i_apbPatl, Request * i_aPBReq)
+int MySQLConn::addPatron(int carnum, Request * i_aPBReq)
 {
-  PatronInfo * apbPI;
-  apbPI = i_apbPatl->add_patron();
   sql::PreparedStatement * prepStmt;
   string spickup, sdropoff;
   
-  map<int, string> patronErrors;
   int i = 0;
-  int nRows;
 
   for (; i<i_aPBReq->plpatronlist().patron_size(); i++)
   {
@@ -450,16 +455,7 @@ map<int, string> MySQLConn::addPatron(int carnum, PatronList * i_apbPatl, Reques
       prepStmt->setString(6, i_aPBReq->plpatronlist().patron(i).dropoff());
       prepStmt->setString(7, i_aPBReq->plpatronlist().patron(i).ridecreated());
       prepStmt->setString(8, i_aPBReq->plpatronlist().patron(i).timecomplete());
-      nRows = prepStmt->execute();
-      if ( nRows == 0 )  // If entry was not updated
-      {
-	try
-	{
-          getPatronInfo(i_aPBReq->plpatronlist().patron(i).pid(), i_apbPatl);  // Add current patron info to response buf
-	} catch (PatronException &e)
-	{
-	  patronErrors.insert( pair<int, string> (i_aPBReq->plpatronlist().patron(i).pid(), e.what()) );
-	}
+      prepStmt->executeQuery();
       }
     }
     catch (sql::SQLException &e)
@@ -470,10 +466,10 @@ map<int, string> MySQLConn::addPatron(int carnum, PatronList * i_apbPatl, Reques
       cerr << " (MySQL error code: " << e.getErrorCode();
       cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
     }
-    cout << "Updated Rides" << endl;
+    cout << "Added Rides" << endl;
   }
   delete prepStmt;
-  return patronErrors;
+  return (getLastInsertID() - i_aPBReq->plpatronlist().patron_size());
 }
 
 /*
