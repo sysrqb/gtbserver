@@ -22,7 +22,22 @@
 #include "patron.pb.h"
 #include "communication.pb.h"
 
-TEST(GETCURRENT, CallsgetCurr)
+TEST(GETCURRENT, CallsGetCurrEmptyVector)
+{
+  MySQLConn * aMySQLConn;
+  aMySQLConn = new MySQLConn();
+  Response apbRes;
+
+  PatronList * apbPL = apbRes.mutable_plpatronlist();
+  long npladdr = (long)apbPL;
+  std::vector<int> old;
+
+  EXPECT_NE(0, npladdr);
+  EXPECT_TRUE(apbRes.has_plpatronlist());
+  EXPECT_EQ(0, aMySQLConn->getCurr(5, apbPL, old));
+}
+
+TEST(GETCURRENT, CallsGetCurrNonEmptyVector)
 {
   MySQLConn * aMySQLConn;
   aMySQLConn = new MySQLConn();

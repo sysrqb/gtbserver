@@ -20,6 +20,7 @@
 #include "gtbcommunication.hpp"
 #include "gtest/gtest.h"
 #include "communication.pb.h"
+#include "gtbexceptions.hpp"
 #include <gnutls/gnutls.h>
 #include <gnutls/gnutlsxx.h>
 #include <gnutls/x509.h>
@@ -280,6 +281,116 @@ TEST(CommunicationTest, HandlingConnectionThrowBadConnectionExceptionFromInvalid
     gnutls_transport_set_ptr (session, (gnutls_transport_ptr_t) client_sockfd); 
 
     ASSERT_LT(gnutls_handshake(session), 0);
+    close(client_sockfd);
+    gnutls_deinit (session);
+    gnutls_certificate_free_credentials (xcred);
+ }
+}
+
+TEST(CommunicationTest, ReceiveRequestValidRequest)
+{
+  if(!fork())
+  {
+    Request aPBReq;
+    GTBCommunication aGtbComm;
+    int server_sockfd(0);
+    server_sockfd = aGtbComm.getSocket();
+    initIncomingCon (&server_sockfd);
+    aGtbComm.initGNUTLS();
+    handleConnectionWrapper(&aGtbComm, server_sockfd, true);
+    ASSERT_NO_THROW(aGtbComm.receiveRequest(&aPBReq));
+    ASSERT_EQ(aPBReq.sreqtype(), "CURR");
+    ASSERT_EQ(aPBReq.nreqid(), 1);
+    aPBReq.PrintDebugString();
+    close(server_sockfd);
+  }
+  else
+  {
+    int client_sockfd(0);
+    Request aPBReq;
+    std::string sPBReq("");
+    unsigned int sleep(1000);
+    gnutls_certificate_credentials_t xcred;
+    gnutls_session_t session;
+    gnutls_certificate_allocate_credentials (&xcred);
+    gnutls_certificate_set_x509_trust_file (xcred, "pem/oldcerts/cacrt.pem", 
+        GNUTLS_X509_FMT_PEM);
+    gnutls_certificate_set_x509_key_file (xcred, "pem/oldcert/gtbscrt.pem", 
+        "pem/keys/gtbskey.pem", GNUTLS_X509_FMT_PEM);
+    gnutls_init (&session, GNUTLS_CLIENT);
+    gnutls_priority_set_direct (session, "NORMAL", NULL);
+    gnutls_credentials_set (session, GNUTLS_CRD_CERTIFICATE, xcred);
+    usleep(sleep);
+    client_sockfd = establishTCPConnection();
+    gnutls_transport_set_ptr (session, (gnutls_transport_ptr_t) client_sockfd); 
+
+    ASSERT_LT(gnutls_handshake(session), 0);
+
+    aPBReq.set_sreqtype("CURR");
+    aPBReq.set_nreqid(1);
+    aPBReq.SerializeToString(&sPBReq);
+    int reqsize = aPBReq.ByteSize();
+    if(gnutls_record_send(session, &reqsize, aPBReq.ByteSize())
+        == -1)
+    {
+      std::cerr << "ERROR: Error on send: " << strerror(errno) << std::endl;
+    }
+    if(gnutls_record_send(session, sPBReq.c_str(), aPBReq.ByteSize())
+        == -1)
+    {
+      std::cerr << "ERROR: Error on send: " << strerror(errno) << std::endl;
+    }
+    close(client_sockfd);
+    gnutls_deinit (session);
+    gnutls_certificate_free_credentials (xcred);
+ }
+}
+
+
+TEST(CommunicationTest, ReceiveRequestNULLRequest)
+{
+  if(fork())
+  {
+    Request aPBReq;
+    GTBCommunication aGtbComm;
+    int server_sockfd(0);
+    server_sockfd = aGtbComm.getSocket();
+    initIncomingCon (&server_sockfd);
+    aGtbComm.initGNUTLS();
+    handleConnectionWrapper(&aGtbComm, server_sockfd, true);
+    ASSERT_THROW(aGtbComm.receiveRequest(NULL), PatronException);
+    close(server_sockfd);
+  }
+  else
+  {
+    int client_sockfd(0);
+    Request aPBReq;
+    std::string sPBReq("");
+    unsigned int sleep(1000);
+    gnutls_certificate_credentials_t xcred;
+    gnutls_session_t session;
+    gnutls_certificate_allocate_credentials (&xcred);
+    gnutls_certificate_set_x509_trust_file (xcred, "pem/oldcerts/cacrt.pem", 
+        GNUTLS_X509_FMT_PEM);
+    gnutls_certificate_set_x509_key_file (xcred, "pem/oldcert/gtbscrt.pem", 
+        "pem/keys/gtbskey.pem", GNUTLS_X509_FMT_PEM);
+    gnutls_init (&session, GNUTLS_CLIENT);
+    gnutls_priority_set_direct (session, "NORMAL", NULL);
+    gnutls_credentials_set (session, GNUTLS_CRD_CERTIFICATE, xcred);
+    usleep(sleep);
+    client_sockfd = establishTCPConnection();
+    gnutls_transport_set_ptr (session, (gnutls_transport_ptr_t) client_sockfd); 
+
+    ASSERT_LT(gnutls_handshake(session), 0);
+
+    aPBReq.set_sreqtype("CURR");
+    aPBReq.set_nreqid(1);
+    aPBReq.SerializeToString(&sPBReq);
+    if(gnutls_record_send(session, sPBReq.c_str(), aPBReq.ByteSize())
+        == -1)
+    {
+      std::cerr << "ERROR: C: Error on send for OK: " << strerror(errno) << std::endl;
+    }
     close(client_sockfd);
     gnutls_deinit (session);
     gnutls_certificate_free_credentials (xcred);
