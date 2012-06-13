@@ -19,15 +19,11 @@
 #ifndef SQLINIT
 #define SQLINIT
 
-//#ifndef gnutls_h
-//#define gnutls_h
-#include <gnutls/gnutls.h>
-//#endif
-
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <gnutls/gnutls.h>
 
 #include <mysql_connection.h>
 #include <cppconn/driver.h>
@@ -38,31 +34,30 @@
 #include <cppconn/prepared_statement.h>
 
 #include <string.h>
-#include "cred.h"
 #include <stdlib.h>
 
-#ifndef patronpb
-#define patronpb
 #include "patron.pb.h"
-#endif
-
-#ifndef commpb
-#define commnpb
 #include "communication.pb.h"
-#endif
+#include "cred.h"
 
 #define HASHSTMT  "SELECT car FROM activeusers WHERE nightlyhash = ?"
 //#define STMT	"SELECT nightlyhash FROM activeusers"
+
 #define DEBUG 1
+
 #define PS_SETSESSSTMT "INSERT INTO sessionconnection"\
     "(ptr, sessionkey, sessiondata) values (?, ?, ?)"
+
 #define PS_GETSESSSTMT "SELECT sessionkey FROM sessionconnection"\
     " WHERE ptr=? AND sessiondata=?"
+
 #define PS_GETCURRRIDES "SELECT * FROM saferide.rides, saferide.ridetimes " \
     "WHERE LEFT(ridetimes.ridecreate, 10) = ? AND status=? AND " \
     " ridetimes.pid = patron.pid AND car=? ORDER BY car ASC"
+
 #define PS_GETPATRONINFO "SELECT * FROM saferide.patron, saferide.riderimes " \
     "WHERE num = ? AND ridetimes.pid = patron.pid"
+
 
 #define PS_GETLOCATIONID "SELECT lid FROM locations WHERE value = ?" \
     " OR name = ?"
@@ -70,6 +65,7 @@
 #define PS_SETUPDTRIDES "UPDATE saferide.rides SET name=?, cell=?, riders=?,"  \
     " status=?, pickup=?, dropoff=?, timetaken=?, timedone=? WHERE num=? AND " \
     " car=?"
+
 #define PS_RIDEADDPATRON "INSERT INTO patron (name,cell,riders,pickup,dropoff," \
     "clothes,notes,status) VALUES (?,?,?,?,?,?,?,?)"
 

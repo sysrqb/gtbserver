@@ -24,12 +24,13 @@
 #include <unistd.h>
 #include <csignal>
 
-#include "patron.pb.h"
 #include <iostream>
 #include <string>
 
+
 #include "gtbcommunication.hpp"
 #include "gtbexceptions.hpp"
+#include "patron.pb.h"
 #include "sqlconn.hpp"
 
 #define MAX_SESSION_ID_SIZE 32
@@ -37,6 +38,11 @@
 #define TLS_SESSION_CACHE 10
 
 using namespace std;
+
+
+/************************** 
+* Thread Related Methods *
+**************************/
 
 void GTBCommunication::gtb_wrapperForCommunication()
 {
@@ -97,6 +103,514 @@ void GTBCommunication::gtb_wrapperForCommunication()
 }
 
 
+
+
+/**************************
+* GNUTLS related methods *
+**************************/
+
+void GTBCommunication::initGNUTLS()
+{
+  if(debug & 17)
+  {
+    cout << "Initialize gnutls" << endl;
+  }
+  if( gnutls_global_init() ) cout << "gnutls_global_init: Failed to intialize" 
+      << endl;
+  loadCertFiles();
+}
+
+void GTBCommunication::deinitGNUTLS()
+{
+  gnutls_deinit(m_aSession);
+}
+
+
+void
+GTBCommunication::initTLSSession()
+{
+
+  int retval;
+
+  // Initialize session
+  if ((retval = gnutls_init (&m_aSession, GNUTLS_SERVER)))
+  {
+    cerr << "ERROR: initTLSSession: gnutls_init error code: " << retval;
+    cerr << ": " << strerror(retval)<< endl;
+    exit(1);
+  }
+
+  // Sets priority of session, i.e. specifies which crypto algos to use
+  if ((retval = gnutls_priority_set (m_aSession, *m_pPriorityCache))) 
+  {
+    cerr << "ERROR: initTLSSession: gnutls_priority_set error code: " << retval;
+    cerr << ": " << strerror(retval)<< endl;
+    exit(1);
+  }
+
+ // Sets the needed credentials for the specified type; an x509 cert, in this case
+  if ((retval = gnutls_credentials_set (
+      m_aSession, 
+      GNUTLS_CRD_CERTIFICATE,
+      *m_pX509Cred))) 
+  {
+    cerr << "ERROR: initTLSSession: gnutls_credentials_set error code:  " 
+        << retval;
+    cerr << ": " << strerror(retval) << endl;
+    exit (1);
+  }
+
+  // Request client cert
+  /* gnutls_certificate_server_set_request (m_aSession, GNUTLS_CERT_REQUEST);
+  if (TLS_SESSION_CACHE != 0)
+  {
+    gnutls_db_set_retrieve_function (m_aSession, wrap_db_fetch);
+    gnutls_db_set_remove_function (m_aSession, wrap_db_delete);
+    gnutls_db_set_store_function (m_aSession, wrap_db_store);
+    gnutls_db_set_ptr (m_aSession, NULL);
+  }
+
+  gnutls_certificate_server_set_request (m_aSession, 
+              GNUTLS_CERT_REQUIRE); //Require client to provide cert
+  gnutls_certificate_send_x509_rdn_sequence  (
+              m_aSession, 
+              1); //REMOVE IN ORDER TO COMPLETE CERT EXCHANGE
+  */
+}
+
+int
+GTBCommunication::generateDHParams ()
+{
+  /*gnutls_pk_algorithm_t aPKAlgo = gnutls_pk_get_id (DH_PK_ALGO);
+  int bits = gnutls_sec_param_to_pk_bits (aPKAlgo, DH_BITS);
+  */
+  gnutls_dh_params_init(m_pDHParams);
+  gnutls_dh_params_generate2(*m_pDHParams, DH_BITS);
+
+  return 0;
+}
+
+void
+GTBCommunication::loadCertFiles ()
+{
+  int retval;
+
+  if(debug & 17)
+  {
+    cout << "loadCertFiles: allocate creds" << endl;
+  }
+  if ((retval = gnutls_certificate_allocate_credentials (m_pX509Cred)))
+  {
+    //TODO
+    if(debug & 17)
+    {
+      cout << "loadCertFiles: gnutls_certificate_allocate_credentials: false" 
+          << endl;
+    }
+  }
+  if(debug & 17)
+  {
+    cout << "loadCertFiles: load cert trust file" << endl;
+  }
+  if ((retval = gnutls_certificate_set_x509_trust_file (
+      *m_pX509Cred, 
+      CAFILE, 
+      GNUTLS_X509_FMT_PEM)))
+  {
+    //TODO
+    if ( retval <= 0 )
+      cerr << "ERROR: loadCertFiles: gnutls_certificate_set_x509_trust_file " << 
+          "error code: " << strerror(retval) << endl;
+    if(debug & 18)
+    {
+      cout << "loadCertFiles: gnutls_certificate_set_x509_trust_file: " << 
+          "certs loaded: " << retval << endl;
+    }
+  }
+  if(debug & 17)
+  {
+    cout << "loadCertFiles: load CSL" << endl;
+  }
+  if((retval = gnutls_certificate_set_x509_crl_file (*m_pX509Cred, CRLFILE, 
+                                        GNUTLS_X509_FMT_PEM)) < 1)
+  {
+    //TODO
+    cerr << "ERROR: loadCertFiles: gnutls_certificate_set_x509_crl_file error code: %d"
+        << retval << endl;
+  }
+    
+  if(debug & 17)
+  {
+    cout << "loadCertFiles: load key" << endl;
+  }
+  if (( retval = gnutls_certificate_set_x509_key_file (
+                   *m_pX509Cred,
+		   CERTFILE,
+		   SKEYFILE,
+		   GNUTLS_X509_FMT_PEM)))
+      cerr << "ERROR: loadCertFiles: gnutls_certificate_set_x509_key_file " << 
+          "error code: " << strerror(retval) << endl;
+  
+
+  if(debug & 17)
+  {
+    cout << "loadCertFiles: gen DH params" << endl;
+  }
+  generateDHParams ();
+  if(debug & 17)
+  {
+    cout << "loadCertFiles: priority init" << endl;
+  }
+  
+  // Set gnutls priority string
+  const char * cErrLoc;
+  if((retval = gnutls_priority_init (m_pPriorityCache, GNUTLS_PRIORITY, &cErrLoc)))
+  {
+    //TODO
+    cerr << "ERROR: loadCertFiles: gnutls_priority_init error code: &s" << *cErrLoc << endl;
+  }
+
+  if((debug & 17) || (debug & 18))
+  {
+    cout << "Set priority: " << GNUTLS_PRIORITY << endl;
+  }
+
+  gnutls_certificate_set_dh_params (*m_pX509Cred, *m_pDHParams);
+  
+}
+
+
+int 
+GTBCommunication::moveKey() 
+{
+  //TODO
+  return 0;
+}
+
+
+
+/**********************
+* Networking Related *
+**********************/
+
+int 
+GTBCommunication::getSocket()
+{
+  // FD the server will listen on
+  int fdSock;
+
+  /* STRUCTS
+   * addrinfo: aHints (used to retrieve addr), 
+   * pServinfo (used to store retrieved addr), pPIterator (iterator)
+   */
+  struct addrinfo aHints, aServinfo, *pServinfo, *pIterator;
+
+  // int rv: return value; i: iterator; yes: optval set in setsockopt
+  int nRV, i = 0, nYes = 1;
+
+  memset(&aHints, 0, sizeof aHints);
+
+  // struct set to allow for binding and connections
+  aHints.ai_family = AF_UNSPEC;
+  aHints.ai_socktype = SOCK_STREAM;
+  aHints.ai_flags = AI_PASSIVE; //uses extern local IP
+
+  pServinfo = &aServinfo;
+
+  //Retrieve addr and socket
+  if((nRV = getaddrinfo(NULL, PORT, &aHints, &pServinfo)) != 0)
+  {
+    cerr << "ERROR: getaddrinfo: " << gai_strerror(nRV) << endl;
+    return 1;
+  }
+
+  //Iterate through servinfo and bind to the first available
+  for(pIterator = pServinfo; pIterator != NULL; pIterator = pIterator->ai_next)
+  {
+    i++;
+    /* If socket is unseccessful in creating an
+     * endpoint, e.g. filedescriptor, then it returns -1,
+     */
+    if ((fdSock= socket(pIterator->ai_family, pIterator->ai_socktype, 
+      pIterator->ai_protocol)) == -1) 
+    {
+      cerr << "ERROR: server: socket" << endl; //so continue to the next addr
+      continue;
+    }
+
+    if(setsockopt(fdSock, 
+                  SOL_SOCKET, 
+		  SO_REUSEADDR, 
+		  &nYes, //If unsuccessful in setting socket options
+		  sizeof nYes) == -1)
+    {
+      // exit on error
+      cerr << "ERROR: setsockopt" << endl;
+      exit(1);
+    }
+
+    if(bind(fdSock, pIterator->ai_addr, pIterator->ai_addrlen) == -1)
+    { 
+      cerr << "ERROR: server: bind: " << fdSock << endl;
+      cerr << "\t" << pIterator->ai_addr->sa_data << " " << pIterator->ai_addrlen << endl;
+      close(fdSock);
+      continue;
+    }
+
+    // if successful, exit loop, yup, yup +)
+    break;
+  }
+
+  if(pIterator == NULL)
+  {
+    cerr << "ERROR: server: Failed to bind for unknown reason" << "\n" <<
+        "\tIterated through loop " << i << " times" << endl;
+
+    // We no longer need this struct
+    freeaddrinfo(pServinfo);
+    exit(-2);
+    return 2;
+  }
+
+  if(pServinfo)
+    // We no longer need this struct
+    freeaddrinfo(pServinfo);
+
+  // Marks socket as passive, so it accepts incoming connections
+  if (listen(fdSock, BACKLOG) == -1)
+  { 
+    cerr << "listen: failed to mark as passive" << endl;
+    exit(1);
+  }
+  return fdSock;
+}
+
+void * GTBCommunication::getInAddr (struct sockaddr *i_sa)
+{
+
+  if(i_sa->sa_family == AF_INET)
+  {
+    return &(((struct sockaddr_in*)i_sa)->sin_addr);
+  }
+  return &(((struct sockaddr_in6*)i_sa)->sin6_addr);
+}
+
+
+int GTBCommunication::handleConnection(int fdAccepted, int sockfd)
+{
+  struct stat fdstatus;
+  int error;
+  if((error = fstat(fdAccepted, &fdstatus)) || fdstatus.st_rdev)
+  {
+    throw BadConnectionException("Bad Accepted Connection");
+  }
+  if((error = fstat(sockfd, &fdstatus)) || fdstatus.st_rdev)
+  {
+    throw BadConnectionException("Bad Incoming Connection");
+  }
+    
+  if(debug & 17)
+  {
+    cout << "Start TLS Session" << endl;
+  }
+  gnutls_transport_set_ptr (m_aSession, (gnutls_transport_ptr_t) fdAccepted);
+  if(debug & 17)
+  {
+    cout << "Performing handshake.." << endl;
+  }
+  int nRetVal, i=0, lastret = 0;;
+  do
+  {
+    i++;
+    nRetVal = gnutls_handshake (m_aSession);
+    if(debug & 18)
+    {
+      cout << "First Return value: " << nRetVal << endl;
+    }
+    /*if (nRetVal == lastret)
+    if ( nRetVal == GNUTLS_E_INTERNAL_ERROR ||
+	 nRetVal == GNUTLS_E_INVALID_SESSION )
+    {
+      close(fdAccepted);
+      throw BadConnectionException("Failed to Handshake");
+    }*/
+    lastret = nRetVal;
+  } while (gnutls_error_is_fatal (nRetVal) != GNUTLS_E_SUCCESS);
+  if(debug & 18)
+  {
+    cout << "Last Return Value: " << nRetVal << endl;
+  }
+  
+  if ( nRetVal < 0)
+  {
+    cerr << "ERROR " << i << ": Failed to perform handshake, error code : ";
+    cerr << gnutls_strerror(nRetVal) << endl;;
+    cerr << "Closing connection..." << endl;
+    sendFailureResponse(3);
+    gnutls_deinit(m_aSession);
+    close(fdAccepted);
+    throw BadConnectionException("Handshake Failed");
+  }
+
+  gnutls_cipher_algorithm_t aUsingCipher =
+      gnutls_cipher_get (m_aSession);
+  const char * sCipherName;
+  sCipherName = gnutls_cipher_get_name(aUsingCipher);
+  if(debug & 18)
+  {
+    cout << "Using cipher: " << sCipherName << endl;
+  }
+
+  // unsigned int nstatus;
+
+  /* Need to uncomment when we can successfully establish authenicated 
+   * connection 
+   */
+  /*if( gnutls_certificate_verify_peers2 (m_aSession, &nstatus) )
+  {
+    cerr << "ERROR: Failed to verify client certificate, error code ";
+    //TODO: Send Plaintext message
+    cerr << "Closing connection..." << endl;
+    close(fdAccepted);
+    gnutls_deinit(m_aSession);
+    throw BadConnectionException("Client Verification Failed");
+  }
+
+  if (nstatus)
+  {
+    cerr << "ERROR: Failed to verify client certificate, error code ";
+    cerr << "Closing connection..." << endl;
+    close(fdAccepted);
+    gnutls_deinit(m_aSession);
+    throw BadConnectionException("Client Verification Failed. Invalid Certificate.");
+  }*/
+
+  //TODO
+  //cout << "Storing connection information" << endl;
+  return 0;
+
+}
+  
+
+int 
+GTBCommunication::listeningForClient (int i_fdSock)
+{
+  int fdAccepted = 0;
+  // sockaddr_storage: aClientAddr (IP Address of the requestor)
+  struct sockaddr_storage aClientAddr;
+  // socklen_t: nSinSize (set size of socket)
+  socklen_t nSinSize;
+  // char: vAddr (stores the IP Addr of the incoming connection so it can be diplayed)
+  char vAddr[INET6_ADDRSTRLEN] = "";
+
+  nSinSize = sizeof aClientAddr;
+
+  /*
+  if (TLS_SESSION_CACHE != 0)
+  {
+    wrap_db_init ();
+  }
+  */
+
+  if(debug & 17)
+  {
+    cout << endl;
+    cout << "Initialize TLS Session" << endl;
+  }
+  initTLSSession();
+
+  if(debug & 17)
+  {
+    cout << "Accepting Connection" << endl;
+  }
+  fdAccepted = accept(i_fdSock, (struct sockaddr *)&aClientAddr, &nSinSize);
+  
+  if(debug & 17)
+  {
+    cout << "accept fdAccepted:" << fdAccepted << endl;
+  }
+  if (fdAccepted == -1)
+  {
+    cerr << "ERROR: Error at accept!" << endl;
+    fdAccepted = 0;
+  }
+
+  inet_ntop(aClientAddr.ss_family, 
+      getInAddr((struct sockaddr *)&aClientAddr), 
+      vAddr, sizeof vAddr);
+
+  if ( vAddr == NULL ) 
+  {
+    cerr << "ERROR: Failed to convert the client IP Address!";
+    cerr << " Error: " << strerror(errno) << endl;
+    cerr << "ERROR: Closing connection..." << endl;
+    close(fdAccepted);
+  }
+  if(debug & 17)
+  {
+    cout << "Accepting Connection from: " << vAddr << endl;
+  }
+    
+  //They're already char*, might as well just compare without wasting
+  //the time to convert them
+  strncpy(m_vIPAddr, vAddr, INET6_ADDRSTRLEN);
+  return fdAccepted;
+}
+
+
+void GTBCommunication::receiveRequest(Request * aPBReq)
+{
+  int nNumBytes = 0;
+  char vReqBuf[AUTHSIZE] = "";
+  if(debug & 17)
+  {
+    cout << "Receiving request" << endl;
+  }
+  if(aPBReq == NULL)
+    throw new PatronException("NULL Pointer at receiveRequest\n");
+  int nsize = 0;
+  if((nNumBytes = gnutls_record_recv (m_aSession, &nsize, REQSIZE)) < 0)
+  {
+    cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
+    throw BadConnectionException(strerror(errno));
+  }
+
+  if(debug & 18)
+  {
+    cout << "Incoming size: " << nsize << endl;
+  }
+      
+  if((nNumBytes = gnutls_record_recv (m_aSession, &vReqBuf, nsize)) < 0)
+  {
+    cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
+    throw BadConnectionException(strerror(errno));
+  }
+
+  if(debug & 18)
+  {
+    cout << "Received Transmission Size: " << nNumBytes << endl;
+  }
+
+  aPBReq->ParseFromString(vReqBuf);
+
+  if(debug & 18)
+  {
+    cout << "Request: " << endl;
+    for (int i = 0; i<nsize; i++)
+        cout << (int)vReqBuf[i] << " ";
+    cout << endl;
+  
+    cout << "Print Debug String: " << endl;
+    aPBReq->PrintDebugString();
+  }
+}
+
+
+
+/*****************************
+* Communication with client *
+*****************************/
+
 int
 GTBCommunication::sendFailureResponse(int nerr)
 {
@@ -126,6 +640,62 @@ GTBCommunication::sendFailureResponse(int nerr)
   cout << "C: Bytes sent: " << sizeof(sResp) << " ?= " << nretval << endl;
   return nretval;
 }
+
+int 
+GTBCommunication::sendNopes(int i_nRetVal)
+{
+  int nNumBytes;
+
+  if ((nNumBytes = gnutls_record_send (m_aSession, &i_nRetVal, sizeof i_nRetVal)) == -1){
+    cerr << "Error on send for retval: " << strerror(errno) << endl;
+  }
+  cout << "Number of bytes sent: " << nNumBytes << endl;
+	
+  return nNumBytes;
+}
+
+int 
+GTBCommunication::sendNumberOfCars(Request * i_aPBReq)
+{
+  char nNumOfCars = 7;
+  int nNumBytes;
+  const char * pReqBuf;
+
+  pReqBuf = i_aPBReq->sreqtype().c_str();
+  cout << "C: Function: numberOfCars: " << i_aPBReq->sreqtype() << endl;
+  if(0 != strncmp("CARS", pReqBuf, 5))
+  {
+    cerr << "ERROR: C: Not CARS" << endl;
+    return -3;
+  }
+  cout << "C: Sending packet" << endl;
+
+  Response aPBRes;
+  aPBRes.set_nrespid(0); //Successful parse
+  aPBRes.set_sresvalue("CARS");
+  aPBRes.add_nresadd(nNumOfCars);
+  if (!aPBRes.IsInitialized())
+    cerr << "ERROR: C: Response not properly formatted!" << endl;
+
+
+  int npbsize = aPBRes.ByteSize();
+  string sResponse;
+  aPBRes.SerializeToString(&sResponse);
+
+  if ((nNumBytes = gnutls_record_send (
+      m_aSession, 
+      sResponse.c_str(), 
+      npbsize)) == -1){
+    cerr << "ERROR: C: Error on send for cars: " << strerror(errno) << endl;
+  }
+  cout << "C: " << npbsize << ":" << nNumBytes << " Send: ";
+  for (int i = 0; i<sResponse.length(); i++)
+    cout << (int)sResponse.at(i) << " ";
+  cout << endl;
+  cout << "C: Number of bytes sent: " << nNumBytes << endl;
+  return nNumBytes;
+}
+
 
 int 
 GTBCommunication::sendResponse(
@@ -210,81 +780,14 @@ GTBCommunication::sendResponse(
   return -1;
 }
 
-int 
-GTBCommunication::sendNopes(int i_nRetVal)
-{
-  int nNumBytes;
-
-  if ((nNumBytes = gnutls_record_send (m_aSession, &i_nRetVal, sizeof i_nRetVal)) == -1){
-    cerr << "Error on send for retval: " << strerror(errno) << endl;
-  }
-  cout << "Number of bytes sent: " << nNumBytes << endl;
-	
-  return nNumBytes;
-}
-
-int 
-GTBCommunication::sendNumberOfCars(Request * i_aPBReq)
-{
-  char nNumOfCars = 7;
-  int nNumBytes;
-  const char * pReqBuf;
-
-  pReqBuf = i_aPBReq->sreqtype().c_str();
-  cout << "C: Function: numberOfCars: " << i_aPBReq->sreqtype() << endl;
-  if(0 != strncmp("CARS", pReqBuf, 5))
-  {
-    cerr << "ERROR: C: Not CARS" << endl;
-    return -3;
-  }
-  cout << "C: Sending packet" << endl;
-
-  Response aPBRes;
-  aPBRes.set_nrespid(0); //Successful parse
-  aPBRes.set_sresvalue("CARS");
-  aPBRes.add_nresadd(nNumOfCars);
-  if (!aPBRes.IsInitialized())
-    cerr << "ERROR: C: Response not properly formatted!" << endl;
 
 
-  int npbsize = aPBRes.ByteSize();
-/*  if ((nNumBytes = gnutls_record_send(m_aSession, &npbsize, aPBRes.ByteSize())) < 0)
-    cerr << "C: Error on sending size of buf: " << strerror(errno) << endl;
-  cout << " C: " << aPBRes.ByteSize() << ":" << nNumBytes << " bytes written: Size of Response" << endl;
 
-  char vchars[12] = { 'a', ' ', 'f', 'e', 'w', ' ', 'b', 'y', 't', 'e', 's', '\0'};
-  if ((nNumBytes = gnutls_record_send(m_aSession, vchars, sizeof(vchars))) < 0)
-    cerr << "C: Error on sending size of buf: " << strerror(errno) << endl;
-  cout << " C: " << sizeof(vchars) << ":" << nNumBytes << " bytes written: A few bytes" << endl;
 
-  string vtest = "Test 1 2 3 4";
-  if ((nNumBytes = gnutls_record_send(m_aSession, vtest.c_str(), sizeof(vtest))) < 0)
-    cerr << "C: Error on sending size of buf: " << strerror(errno) << endl;
-  cout << " C: " << sizeof(vtest) << ":" << nNumBytes << " bytes written: Test 1 2 3 4" << endl;
-*/
-  string sResponse;
-  aPBRes.SerializeToString(&sResponse);
+/******************************
+* Related to Client Requests *
+******************************/
 
-  if ((nNumBytes = gnutls_record_send (
-      m_aSession, 
-      sResponse.c_str(), 
-      npbsize)) == -1){
-    cerr << "ERROR: C: Error on send for cars: " << strerror(errno) << endl;
-  }
-  cout << "C: " << npbsize << ":" << nNumBytes << " Send: ";
-  for (int i = 0; i<sResponse.length(); i++)
-    cout << (int)sResponse.at(i) << " ";
-  cout << endl;
-  cout << "C: Number of bytes sent: " << nNumBytes << endl;
-  return nNumBytes;
-}
-
-int 
-GTBCommunication::moveKey() 
-{
-  //TODO
-  return 0;
-}
 
 int 
 GTBCommunication::authRequest (Request * i_aPBReq)
@@ -303,7 +806,8 @@ GTBCommunication::authRequest (Request * i_aPBReq)
     if((retval = m_MySQLConn->checkAuth(
         i_aPBReq->sparams(0), 
 	i_aPBReq->sparams(1), 
-	i_aPBReq->sparams(2)))){
+	i_aPBReq->sparams(2))))
+    {
       cerr << "ERROR: C: Authenication Failed: " << retval << endl;;
       return retval;
     }
@@ -325,12 +829,6 @@ GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
 {
   int nRetVal;
 
-  /*string sRequest = "";
-  i_aPBReq->SerializeToString(&sRequest);
-  for (int i = 0; i<sRequest.length(); i++)
-    cout << (int)sRequest.at(i) << " ";
-  cout << endl;
-*/
   if(0 != i_aPBReq->sreqtype().compare("CURR"))
   {
     cerr << "ERROR: C: Not CURR: " << i_aPBReq->sreqtype()  << endl;
@@ -339,7 +837,6 @@ GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
     return -2;
   }
   int i = 0;
-  //int * vrides = new int[i_aPBReq->nparams_size()];
   vector<int> vrides;
   for(; i < i_aPBReq->nparams_size(); i++)
     vrides.insert(vrides.end(), i_aPBReq->nparams(i));
@@ -348,7 +845,6 @@ GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
   nRetVal = m_MySQLConn->getCurr(i_aPBReq->ncarid(), i_pbRes->mutable_plpatronlist(), vrides);
   if (nRetVal == -1)
     i_pbRes->clear_plpatronlist();
-  //delete[] vrides;
   return 0;
 }
 
@@ -358,14 +854,7 @@ GTBCommunication::updtRequest (Request * i_aPBReq, Response * i_pbRes)
 {
   map<int, string> vRetVal;
   map<int, string>::iterator vrvIt;
-  //int i = 0;
 
-  /*string sRequest = "";
-  i_aPBReq->SerializeToString(&sRequest);
-  for (int i = 0; i<sRequest.length(); i++)
-    cout << (int)sRequest.at(i) << " ";
-  cout << endl;
-*/
   if(0 != i_aPBReq->sreqtype().compare("UPDT"))
   {
     cerr << "ERROR: C: Not UPDT: " << i_aPBReq->sreqtype()  << endl;
@@ -383,6 +872,94 @@ GTBCommunication::updtRequest (Request * i_aPBReq, Response * i_pbRes)
   }
   return 0;
 }
+
+int GTBCommunication::dealWithReq (Request i_aPBReq) 
+{
+  /*
+   * Case 1: CURR
+   * Case 2: AUTH
+   * Case 3: CARS
+   * Case 4: UPDT
+   */
+
+  Response apbRes;
+  switch (i_aPBReq.nreqid())
+  {
+    // CURRent Rides
+    case 1:
+      int nCurrRet;
+
+      if(debug & 17)
+      {
+        cout << "Type CURR" << endl;
+      }
+      if(!(nCurrRet = currRequest (&i_aPBReq, &apbRes)))
+      {
+        if(debug & 17)
+	{
+          cout << "C: Sending Response for CURR" << endl;
+	}
+        sendResponse(0, NULL, &apbRes, NULL);
+      }
+      else
+      {
+        cerr << "ERROR: C: Sending ERROR Response for CURR" << endl;
+        sendResponse(nCurrRet, NULL, &apbRes, NULL);
+      }
+      break;
+    // AUTH
+    case 2:
+      int nAuthRet;
+      if(debug & 17)
+      {
+        cout << "Type AUTH" << endl;
+      }
+      if(!(nAuthRet = authRequest (&i_aPBReq)))
+      {
+        sendResponse(0, NULL, NULL, NULL);
+        moveKey();
+      }
+      else
+      {
+        sendResponse(nAuthRet, NULL, NULL, NULL);
+      }
+      break;
+    // CARS
+    case 3:
+      if(debug & 17)
+      {
+        cout << "C: Type CARS, forking...." << endl;
+      }
+      if(sendNumberOfCars (&i_aPBReq) < 0)
+        return sendFailureResponse(2);
+      break;
+    // UPDT
+    case 4:
+      int nUpdtRet;
+      if(debug & 17)
+      {
+        cout << "Type UPDT" << endl;
+      }
+      if(!(nUpdtRet = updtRequest (&i_aPBReq, &apbRes)))
+      {
+	if(debug & 17)
+	{
+          cout << "C: Sending Response for UPDT" << endl;
+	}
+        sendResponse(0, NULL, &apbRes, NULL);
+      }
+      else
+      {
+        cerr << "ERROR: C: Sending ERROR Response for UPDT" << endl;
+        sendResponse(nUpdtRet, NULL, &apbRes, NULL);
+      }
+      break;
+    default:
+      break;
+  }
+  return 0;
+}
+
 
 /* Functions and other stuff needed for session resuming.
  * This is done using a very simple list which holds session ids
@@ -504,652 +1081,3 @@ wrap_db_delete (void *dbf, gnutls_datum_t key)
 }
 #endif
 
-
-void
-GTBCommunication::initTLSSession ()
-{
-
-  int retval;
-
- //Initialize session
-  if ((retval = gnutls_init (&m_aSession, GNUTLS_SERVER)))
-  {
-    cerr << "ERROR: initTLSSession: gnutls_init error code: " << retval;
-    cerr << ": " << strerror(retval)<< endl;
-    exit(1);
-  }
-  //Sets priority of session, i.e. specifies which crypto algos to use
-  if ((retval = gnutls_priority_set (m_aSession, *m_pPriorityCache))) 
-  {
-    cerr << "ERROR: initTLSSession: gnutls_priority_set error code: " << retval;
-    cerr << ": " << strerror(retval)<< endl;
-    exit(1);
-  }
- //Sets the needed credentials for the specified type; an x509 cert, in this case
-  if ((retval = gnutls_credentials_set (
-      m_aSession, 
-      GNUTLS_CRD_CERTIFICATE,
-      *m_pX509Cred))) 
-  {
-    cerr << "ERROR: initTLSSession: gnutls_credentials_set error code:  " 
-        << retval;
-    cerr << ": " << strerror(retval) << endl;
-    exit (1);
-  }
-//Request client cert
-  /*gnutls_certificate_server_set_request (m_aSession, GNUTLS_CERT_REQUEST);
-  if (TLS_SESSION_CACHE != 0)
-  {
-    gnutls_db_set_retrieve_function (m_aSession, wrap_db_fetch);
-    gnutls_db_set_remove_function (m_aSession, wrap_db_delete);
-    gnutls_db_set_store_function (m_aSession, wrap_db_store);
-    gnutls_db_set_ptr (m_aSession, NULL);
-  }
-
-  gnutls_certificate_server_set_request (m_aSession, 
-              GNUTLS_CERT_REQUIRE); //Require client to provide cert
-  gnutls_certificate_send_x509_rdn_sequence  (
-              m_aSession, 
-              1); //REMOVE IN ORDER TO COMPLETE CERT EXCHANGE
-*/
-}
-
-
-
-void GTBCommunication::initGNUTLS()
-{
-  if(debug & 17)
-  {
-    cout << "Initialize gnutls" << endl;
-  }
-  if( gnutls_global_init() ) cout << "gnutls_global_init: Failed to intialize" << endl;
-  loadCertFiles();
-}
-
-void GTBCommunication::deinitGNUTLS()
-{
-  gnutls_deinit(m_aSession);
-}
-
-int
-GTBCommunication::generateDHParams ()
-{
-  /*gnutls_pk_algorithm_t aPKAlgo = gnutls_pk_get_id (DH_PK_ALGO);
-  int bits = gnutls_sec_param_to_pk_bits (aPKAlgo, DH_BITS);
-  */
-  gnutls_dh_params_init(m_pDHParams);
-  gnutls_dh_params_generate2(*m_pDHParams, DH_BITS);
-
-  return 0;
-}
-
-void
-GTBCommunication::loadCertFiles ()
-{
-  //const char ** err_pos; //store returned code (error or successful)
-  int retval;
-
-  if(debug & 17)
-  {
-    cout << "loadCertFiles: allocate creds" << endl;
-  }
-  if ((retval = gnutls_certificate_allocate_credentials (m_pX509Cred)))
-  {
-    //TODO
-    if(debug & 17)
-    {
-      cout << "loadCertFiles: gnutls_certificate_allocate_credentials: false" 
-          << endl;
-    }
-  }
-  if(debug & 17)
-  {
-    cout << "loadCertFiles: load cert trust file" << endl;
-  }
-  if ((retval = gnutls_certificate_set_x509_trust_file (
-      *m_pX509Cred, 
-      CAFILE, 
-      GNUTLS_X509_FMT_PEM)))
-  {
-    //TODO
-    if ( retval <= 0 )
-      cerr << "ERROR: loadCertFiles: gnutls_certificate_set_x509_trust_file " << 
-          "error code: " << strerror(retval) << endl;
-    /*else
-      cout << "loadCertFiles: gnutls_certificate_set_x509_trust_file: " << 
-          "certs loaded: " << retval << endl;
-    */
-  }
-  if(debug & 17)
-  {
-    cout << "loadCertFiles: load CSL" << endl;
-  }
-  if((retval = gnutls_certificate_set_x509_crl_file (*m_pX509Cred, CRLFILE, 
-                                        GNUTLS_X509_FMT_PEM)) < 1)
-  {
-    //TODO
-    cerr << "ERROR: loadCertFiles: gnutls_certificate_set_x509_crl_file error code: %d"
-        << retval << endl;
-  }
-    
-  if(debug & 17)
-  {
-    cout << "loadCertFiles: load key" << endl;
-  }
-  if (( retval = gnutls_certificate_set_x509_key_file (
-                   *m_pX509Cred,
-		   CERTFILE,
-		   SKEYFILE,
-		   GNUTLS_X509_FMT_PEM)))
-      cerr << "ERROR: loadCertFiles: gnutls_certificate_set_x509_key_file " << 
-          "error code: " << strerror(retval) << endl;
-  
-
-  if(debug & 17)
-  {
-    cout << "loadCertFiles: gen DH params" << endl;
-  }
-  generateDHParams ();
-  if(debug & 17)
-  {
-    cout << "loadCertFiles: priority init" << endl;
-  }
-  
-  //Set gnutls priority string
-  const char * cErrLoc;
-  if((retval = gnutls_priority_init (m_pPriorityCache, GNUTLS_PRIORITY, &cErrLoc)))
-  {
-    //TODO
-    cerr << "ERROR: loadCertFiles: gnutls_priority_init error code: &s" << *cErrLoc << endl;
-  }
-
-  if((debug & 17) || (debug & 18))
-  {
-    cout << "Set priority: " << GNUTLS_PRIORITY << endl;
-  }
-
-  gnutls_certificate_set_dh_params (*m_pX509Cred, *m_pDHParams);
-  
-}
-
-void * GTBCommunication::getInAddr (struct sockaddr *i_sa)
-{
-
-  if(i_sa->sa_family == AF_INET)
-  {
-    return &(((struct sockaddr_in*)i_sa)->sin_addr);
-  }
-  return &(((struct sockaddr_in6*)i_sa)->sin6_addr);
-}
-
-int 
-GTBCommunication::getSocket()
-{
-//FileDescriptors: sockfd (listen), new_fd (new connections)
-  int fdSock;
-
-/*
-   STRUCTS
-   addrinfo: aHints (used to retrieve addr), 
-   pServinfo (used to store retrieved addr), pPIterator (iterator)
- */
-  struct addrinfo aHints, aServinfo, *pServinfo, *pIterator;
-
-//int rv: return value; i: iterator; yes: optval set in setsockopt
-  int nRV, i = 0, nYes = 1;
-
-  memset(&aHints, 0, sizeof aHints);
-
-//struct set to allow for binding and connections
-  aHints.ai_family = AF_UNSPEC;
-  aHints.ai_socktype = SOCK_STREAM;
-  aHints.ai_flags = AI_PASSIVE; //uses extern local IP
-
-  pServinfo = &aServinfo;
-
-//Retrieve addr and socket
-  if((nRV = getaddrinfo(NULL, PORT, &aHints, &pServinfo)) != 0)
-  {
-    cerr << "ERROR: getaddrinfo: " << gai_strerror(nRV) << endl;
-    return 1;
-  }
-
-//Iterate through servinfo and bind to the first available
-  for(pIterator = pServinfo; pIterator != NULL; pIterator = pIterator->ai_next)
-  {
-    i++;
-    //If socket is unseccessful in creating an
-    if ((fdSock= socket(pIterator->ai_family, pIterator->ai_socktype, 
-      pIterator->ai_protocol)) == -1) 
-    { //endpoint, e.g. filedescriptor, then it returns -1,
-      cerr << "ERROR: server: socket" << endl; //so continue to the next addr
-      continue;
-    }
-
-    if(setsockopt(fdSock, 
-                  SOL_SOCKET, 
-		  SO_REUSEADDR, 
-		  &nYes, //If unsuccessful in setting socket options
-		  sizeof nYes) == -1)
-    { //exit on error
-      cerr << "ERROR: setsockopt" << endl;
-      exit(1);
-    }
-
-    if(bind(fdSock, pIterator->ai_addr, pIterator->ai_addrlen) == -1)
-    { //Assign a name to an addr
-      cerr << "ERROR: server: bind: " << fdSock << endl;
-      cerr << "\t" << pIterator->ai_addr->sa_data << " " << pIterator->ai_addrlen << endl;
-      close(fdSock);	//If unsuccessful, print error and check next
-      continue;
-    }
-
-    break; //if successful, exit loop
-  }
-
-  if(pIterator == NULL)
-  {
-    cerr << "ERROR: server: Failed to bind for unknown reason" << "\n" <<
-        "\tIterated through loop " << i << " times" << endl;
-    freeaddrinfo(pServinfo); //no longer need this struct
-    exit(-2);
-    return 2;
-  }
-
-  if(pServinfo)
-    freeaddrinfo(pServinfo); //no longer need this struct
-
-  //marks socket as passive, so it accepts incoming connections
-  if (listen(fdSock, BACKLOG) == -1)
-  { 
-    cerr << "listen: failed to mark as passive" << endl;
-    exit(1);
-  }
-  return fdSock;
-}
-
-int GTBCommunication::dealWithReq (Request i_aPBReq) 
-{
-  /*
-   * Case 1: CURR
-   * Case 2: AUTH
-   * Case 3: CARS
-   * Case 4: UPDT
-   */
-
-  Response apbRes;
-  switch (i_aPBReq.nreqid())
-  {
-    case 1: //CURRent Rides
-      int nCurrRet;
-      cout << "Type CURR" << endl;
-      cout << "C: Forked, processing request" << endl;
-      if(!(nCurrRet = currRequest (&i_aPBReq, &apbRes)))
-      {
-        cout << "C: Sending Response for CURR" << endl;
-        sendResponse(0, NULL, &apbRes, NULL);
-      }
-      else
-      {
-        cerr << "ERROR: C: Sending ERROR Response for CURR" << endl;
-        sendResponse(nCurrRet, NULL, &apbRes, NULL);
-      }
-      break;
-    case 2: //AUTH
-      int nAuthRet;
-      cout << "Type AUTH" << endl;
-      cout << "C: Forked, processing request" << endl;
-      if(!(nAuthRet = authRequest (&i_aPBReq)))
-      {
-        sendResponse(0, NULL, NULL, NULL);
-        moveKey();
-      }
-      else
-      {
-        sendResponse(nAuthRet, NULL, NULL, NULL);
-      }
-      break;
-    case 3: //CARS
-      cout << "C: Type CARS, forking...." << endl;
-      if(sendNumberOfCars (&i_aPBReq) < 0)
-        return sendFailureResponse(2);
-      cout << "Done....exiting parent\n" << endl;
-      break;
-    case 4:  // UPDT
-      int nUpdtRet;
-      cout << "Type UPDT" << endl;
-      cout << "C: Forked, processing request" << endl;
-      if(!(nUpdtRet = updtRequest (&i_aPBReq, &apbRes)))
-      {
-        cout << "C: Sending Response for UPDT" << endl;
-        sendResponse(0, NULL, &apbRes, NULL);
-      }
-      else
-      {
-        cerr << "ERROR: C: Sending ERROR Response for UPDT" << endl;
-        sendResponse(nUpdtRet, NULL, &apbRes, NULL);
-      }
-      break;
-    default:
-      break;
-  }
-  cout << "Child PID: " << getpid();
-  cout << " Parent PID: " << getppid() << endl;
-  return 0;
-}
-
-void GTBCommunication::receiveRequest(Request * aPBReq)
-{
-  int nNumBytes = 0;
-  char vReqBuf[AUTHSIZE] = "";
-  if(debug & 17)
-  {
-    cout << "Receiving request" << endl;
-  }
-  if(aPBReq == NULL)
-    throw new PatronException("NULL Pointer at receiveRequest\n");
-  int nsize = 0;
-  if((nNumBytes = gnutls_record_recv (m_aSession, &nsize, REQSIZE)) < 0)
-  {
-    cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
-    throw BadConnectionException(strerror(errno));
-  }
-
-  if(debug & 18)
-  {
-    cout << "Incoming size: " << nsize << endl;
-  }
-      
-  if((nNumBytes = gnutls_record_recv (m_aSession, &vReqBuf, nsize)) < 0)
-  {
-    cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
-    throw BadConnectionException(strerror(errno));
-  }
-
-  if(debug & 18)
-  {
-    cout << "Received Transmission Size: " << nNumBytes << endl;
-  }
-
-  aPBReq->ParseFromString(vReqBuf);
-
-  if(debug & 18)
-  {
-    cout << "Request: " << endl;
-    for (int i = 0; i<nsize; i++)
-        cout << (int)vReqBuf[i] << " ";
-    cout << endl;
-  
-    cout << "Print Debug String: " << endl;
-    aPBReq->PrintDebugString();
-  }
-}
-
-int GTBCommunication::handleConnection(int fdAccepted, int sockfd)
-{
-  struct stat fdstatus;
-  int error;
-  if((error = fstat(fdAccepted, &fdstatus)) || fdstatus.st_rdev)
-  {
-    throw BadConnectionException("Bad Accepted Connection");
-  }
-  if((error = fstat(sockfd, &fdstatus)) || fdstatus.st_rdev)
-  {
-    throw BadConnectionException("Bad Incoming Connection");
-  }
-    
-  if(debug & 17)
-  {
-    cout << "Start TLS Session" << endl;
-  }
-  gnutls_transport_set_ptr (m_aSession, (gnutls_transport_ptr_t) fdAccepted);
-  if(debug & 17)
-  {
-    cout << "Performing handshake.." << endl;
-  }
-  //char vReqBuf[AUTHSIZE] = "";
-  //int nNumBytes=0;
-  int nRetVal, i=0, lastret = 0;;
-  do
-  {
-    i++;
-    nRetVal = gnutls_handshake (m_aSession);
-    if(debug & 18)
-    {
-      cout << "First Return value: " << nRetVal << endl;
-    }
-    /*if (nRetVal == lastret)
-    if ( nRetVal == GNUTLS_E_INTERNAL_ERROR ||
-	 nRetVal == GNUTLS_E_INVALID_SESSION )
-    {
-      close(fdAccepted);
-      throw BadConnectionException("Failed to Handshake");
-    }*/
-    lastret = nRetVal;
-  } while (gnutls_error_is_fatal (nRetVal) != GNUTLS_E_SUCCESS);
-  if(debug & 18)
-  {
-    cout << "Last Return Value: " << nRetVal << endl;
-  }
-  
-  if ( nRetVal < 0)
-  {
-    cerr << "ERROR " << i << ": Failed to perform handshake, error code : ";
-    cerr << gnutls_strerror(nRetVal) << endl;;
-    cerr << "Closing connection..." << endl;
-    sendFailureResponse(3);
-    gnutls_deinit(m_aSession);
-    close(fdAccepted);
-    throw BadConnectionException("Handshake Failed");
-  }
-
-  gnutls_cipher_algorithm_t aUsingCipher =
-      gnutls_cipher_get (m_aSession);
-  const char * sCipherName;
-  sCipherName = gnutls_cipher_get_name(aUsingCipher);
-  //cout << "Using cipher: " << sCipherName << endl;
-
-  unsigned int nstatus;
-
-  /* Need to uncomment when we can successfully establish authenicated 
-   * connection 
-   */
-  /*if( gnutls_certificate_verify_peers2 (m_aSession, &nstatus) )
-  {
-    cerr << "ERROR: Failed to verify client certificate, error code ";
-    //TODO: Send Plaintext message
-    cerr << "Closing connection..." << endl;
-    close(fdAccepted);
-    gnutls_deinit(m_aSession);
-    throw BadConnectionException("Client Verification Failed");
-  }
-
-  if (nstatus)
-  {
-    cerr << "ERROR: Failed to verify client certificate, error code ";
-    cerr << "Closing connection..." << endl;
-    close(fdAccepted);
-    gnutls_deinit(m_aSession);
-    throw BadConnectionException("Client Verification Failed. Invalid Certificate.");
-  }*/
-
-  //TODO
-  //cout << "Storing connection information" << endl;
-  return 0;
-
-}
-  
-
-int 
-GTBCommunication::listeningForClient (int i_fdSock)
-{
-  int fdAccepted = 0;
-//sockaddr_storage: aClientAddr (IP Address of the requestor)
-  struct sockaddr_storage aClientAddr;
-//socklen_t: nSinSize (set size of socket)
-  socklen_t nSinSize;
-//char: vAddr (stores the IP Addr of the incoming connection so it can be diplayed)
-  char vAddr[INET6_ADDRSTRLEN] = "";
-//char: reqbuf (request key)
-  //char vReqBuf[AUTHSIZE] = "";
-  //char * ntopRetVal;
-//int: numbytes (received)
-  //int nNumBytes=0;
-
-  nSinSize = sizeof aClientAddr;
-
-  if (TLS_SESSION_CACHE != 0)
-  {
-    wrap_db_init ();
-  }
-
- // while(1)
-  //{
-    if(debug & 17)
-    {
-      cout << endl;
-      cout << "Initialize TLS Session" << endl;
-    }
-    initTLSSession();
-
-    if(debug & 17)
-    {
-      cout << "Accepting Connection" << endl;
-    }
-    fdAccepted = accept(i_fdSock, (struct sockaddr *)&aClientAddr, &nSinSize);
-    
-    if(debug & 17)
-    {
-      cout << "accept fdAccepted:" << fdAccepted << endl;
-    }
-    if (fdAccepted == -1)
-    {
-      cerr << "ERROR: Error at accept!" << endl;
-      fdAccepted = 0;
-      //continue;
-    }
-
-    inet_ntop(aClientAddr.ss_family, 
-              getInAddr((struct sockaddr *)&aClientAddr), 
-	      vAddr, sizeof vAddr);
-
-    if ( vAddr == NULL ) 
-    {
-      cerr << "ERROR: Failed to convert the client IP Address!";
-      cerr << " Error: " << strerror(errno) << endl;
-      cerr << "ERROR: Closing connection..." << endl;
-      close(fdAccepted);
-      //continue;
-    }
-
-    //cout << "Accepting Connection from: " << vAddr << endl;
-    //They're already char*, might as well just compare without wasting
-    //the time to convert them
-    strncpy(m_vIPAddr, vAddr, INET6_ADDRSTRLEN);
-    return fdAccepted;
-
-    /*int childpid = 0;
-    if (!(childpid = fork()))
-    {
-      cout << "Start TLS Session" << endl;
-      gnutls_transport_set_ptr (m_aSession, (gnutls_transport_ptr_t) fdAccepted);
-      cout << "Performing handshake.." << endl;
-      int nRetVal, i=0;
-      do
-      {
-        i++;
-        nRetVal = gnutls_handshake (m_aSession);
-        cout << "Return value: " << nRetVal << endl;
-        if ( nRetVal == -59 || nRetVal == -10)
-          break;
-      } while (gnutls_error_is_fatal (nRetVal) != GNUTLS_E_SUCCESS);
-    
-      if ( nRetVal < 0)
-      {
-        cerr << "ERROR " << i << ": Failed to perform handshake, error code : ";
-        cerr << gnutls_strerror(nRetVal) << endl;;
-        cerr << "Closing connection..." << endl;
-        sendFailureResponse(3);
-        close(fdAccepted);
-        gnutls_deinit(m_aSession);
-        continue;
-      }
-
-      gnutls_cipher_algorithm_t aUsingCipher =
-          gnutls_cipher_get (m_aSession);
-      const char * sCipherName;
-      sCipherName = gnutls_cipher_get_name(aUsingCipher);
-      cout << "Using cipher: " << sCipherName << endl;
-
-      unsigned int nstatus;
-      if( gnutls_certificate_verify_peers2 (m_aSession, &nstatus) )
-      {
-         cerr << "ERROR: Failed to verify client certificate, error code ";
-        //TODO: Send Plaintext message
-        cerr << "Closing connection..." << endl;
-        close(fdAccepted);
-        gnutls_deinit(m_aSession);
-        continue;
-      }
-
-      if (nstatus)
-      {
-        cerr << "ERROR: Failed to verify client certificate, error code ";
-        cerr << "Closing connection..." << endl;
-        close(fdAccepted);
-        gnutls_deinit(m_aSession);
-        continue;
-      }
-
-      //TODO
-      cout << "Storing connection information" << endl;
-
-      cout << "Receiving request" << endl;
-
-      int nsize = 0;
-      if((nNumBytes = gnutls_record_recv (m_aSession, &nsize, REQSIZE)) < 0){
-        cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
-        continue;
-      }
-
-      cout << "Incoming size: " << nsize << endl;
-      
-      if((nNumBytes = gnutls_record_recv (m_aSession, &vReqBuf, nsize)) < 0)
-      {
-        cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
-        continue;
-      }
-
-      cout << "Received Transmission Size: " << nNumBytes << endl;
-
-      Request aPBReq;
-      aPBReq.ParseFromString(vReqBuf);
-
-      cout << "Request: " << endl;
-      for (int i = 0; i<nsize; i++)
-        cout << (int)vReqBuf[i] << " ";
-      cout << endl;
-
-      cout << "Print Debug String: " << endl;
-      aPBReq.PrintDebugString();
-
-      cout << "\nHandle Request" << endl;
-      int handledreqerr = 0;
-      if((handledreqerr = dealWithReq(aPBReq)))
-      {
-        cerr << "ERROR: dealWithReq returned with value: " << handledreqerr
-	    << endl;
-      }
-      close(fdAccepted);
-      gnutls_deinit(m_aSession);
-      break;
-    }
-    else
-    {
-      cout << "Child pid: " << childpid << endl;
-      continue;
-    }
-  }
-  exit(0);
-*/
-}

@@ -27,8 +27,8 @@ gtb : $(obj)
 	$(CC) $(LINKEROPTS) -o gtbserver $(obj) communication.pb.o patron.pb.o $(PKGCOPTS)
 	#doxygen docs/gtbdoxygen.conf
 
-gtbserver.o : $(SRC)main.cc $(SRC)gtbserver.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc communication.pb.cc 
-	$(CC) -c $(SRC)main.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)gtbserver.cc $(SRC)communication.pb.cc $(SRC)patron.pb.cc
+gtbserver.o : $(SRC)main.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc communication.pb.cc 
+	$(CC) -c $(SRC)main.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)communication.pb.cc $(SRC)patron.pb.cc
 
 communication.pb.cc : patron.pb.cc
 	./protobuf/bin/protoc -I$(SRC) -Iinclude $(SRC)communication.proto --cpp_out=$(SRC) --java_out=$(SRC)

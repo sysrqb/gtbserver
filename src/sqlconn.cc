@@ -17,13 +17,18 @@
  */
 
 #include <time.h>
-#include "sqlconn.hpp"
-#include "gtbexceptions.hpp"
 #include <nettle/sha.h>
 #include <map>
 
+#include "sqlconn.hpp"
+#include "gtbexceptions.hpp"
+
 using namespace std;
 
+/***********************************
+ * Start GNUTLS Backend Connection *
+ *                                 *
+ ***********************************/
 #if __cplusplus
 extern "C" {
 #endif
@@ -144,6 +149,12 @@ gnutls_datum_t MySQLConn::getConnection (
   }
   return *retval;
 }
+
+/****************************************************
+ * Start DB related methods for fulfilling requests *
+ *                                                  *
+ ****************************************************/
+
 
 int MySQLConn::checkAuth(std::string i_snetid, std::string i_sauth, std::string i_scarnum)
 {
@@ -376,38 +387,6 @@ int MySQLConn::getPatronInfo(int pid, PatronList * i_apbPatl)
   return 0;
 }
 
-inline
-int MySQLConn::getLastInsertId()
-{
-  sql::PreparedStatement *prepStmt;
-  sql::ResultSet *res;
-
-  int insertid = 0;
-  try
-  {
-    prepStmt = con->prepareStatement(PS_GETLASTINSERTID);
-    res = prepStmt->executeQuery();
-    delete prepStmt;
-  
-    while ( res->next() )
-    {
-      insertid = res->getInt(0);
-    }
-    
-    delete res;
-  }
-  catch (sql::SQLException &e)
-  {
-    cerr << "ERROR: SQLException in " << __FILE__;
-    cerr << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-    cerr << "ERROR: " << e.what();
-    cerr << " (MySQL error code: " << e.getErrorCode();
-    cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
-    return -1;
-  }
-  return insertid;
-}
-
 int MySQLConn::addLocation(string loc)
 {
   sql::PreparedStatement *prepStmt;
@@ -471,8 +450,15 @@ int MySQLConn::addPatron(int carnum, Request * i_aPBReq)
   return (getLastInsertId() - i_aPBReq->plpatronlist().patron_size());
 }
 
+
+/***********************
+ * Utility-ish Methods *
+ *                     *
+ ***********************/
+
 /*
- * size: unsigned = long long int64_t (assuming on amd64)
+ * NOTE: 
+ *   size: unsigned = long long int64_t (assuming on amd64)
  */
 string MySQLConn::getSHA256Hash(string sdata, int size)
 {
@@ -484,4 +470,36 @@ string MySQLConn::getSHA256Hash(string sdata, int size)
   sha256_digest(&ctx, 8, &unhash);
   string shash((char *)unhash);
   return shash;
+}
+
+inline
+int MySQLConn::getLastInsertId()
+{
+  sql::PreparedStatement *prepStmt;
+  sql::ResultSet *res;
+
+  int insertid = 0;
+  try
+  {
+    prepStmt = con->prepareStatement(PS_GETLASTINSERTID);
+    res = prepStmt->executeQuery();
+    delete prepStmt;
+  
+    while ( res->next() )
+    {
+      insertid = res->getInt(0);
+    }
+    
+    delete res;
+  }
+  catch (sql::SQLException &e)
+  {
+    cerr << "ERROR: SQLException in " << __FILE__;
+    cerr << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+    cerr << "ERROR: " << e.what();
+    cerr << " (MySQL error code: " << e.getErrorCode();
+    cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
+    return -1;
+  }
+  return insertid;
 }

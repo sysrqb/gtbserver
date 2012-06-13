@@ -20,17 +20,18 @@
 #define gtbcommunication_h
 
 #include <cerrno>
+#include <vector>
+#include <queue>
+#include <pthread.h>
+#include <gnutls/gnutlsxx.h>
+
 #include "sqlconn.hpp"
 #include "communication.pb.h"
 #include "patron.pb.h"
-#include <gnutls/gnutlsxx.h>
 #include "gtbexceptions.hpp"
-#include <pthread.h>
 
-#include <vector>
-#include <queue>
 
-//Sets the priority string for an acceptable TLS handshake
+// Sets the priority string for an acceptable TLS handshake
 /*#define GNUTLS_PRIORITY "+VERS-TLS1.2:+VERS-TLS1.1:+DHE-RSA:"\
     "+DHE-DSS:+AES-256-CBC:+AES-128-CBC:"\
     "+SHA256:+SHA128:+SHA1:+COMP-NULL:+NORMAL:%SAFE_RENEGOTIATION"
@@ -41,25 +42,25 @@
 #define DH_BITS 1024
 #define DH_PK_ALGO "RSA"
 
-//CA, CERT, and CRL files
+// CA, CERT, and CRL files
 #define SKEYFILE "pem/tmpl/vdev/gtbskey.pem"
 #define CAFILE "pem/certs/cacrt.pem"
 #define CRLFILE "pem/cacrl.pem"
 #define CERTFILE "pem/tmpl/vdev/gtbsvdevcrt.pem"
 
-///Sets port number for server to listen on
+/// Sets port number for server to listen on
 #define PORT "4680"
 
-//Sets number of connections to allow in queue
+// Sets number of connections to allow in queue
 #define BACKLOG 7
 
-//Sets number of bytes each request should be, incomming from client
+// Sets number of bytes each request should be, incomming from client
 #define REQSIZE 9
 
-//Sets number of bytes each login request should be from a client
+// Sets number of bytes each login request should be from a client
 #define LOGINSIZE 18
 
-//Sets number of bytes each authentication request should be from a client
+// Sets number of bytes each authentication request should be from a client
 #define AUTHSIZE 60
 
 /**
@@ -81,6 +82,7 @@ class GTBCommunication {
     std::string m_sHash;
     /** SQL connection handler */
     MySQLConn * m_MySQLConn;
+
     /** Debug bit mask 
      *
      * 1 = Current Operation
@@ -135,6 +137,11 @@ class GTBCommunication {
     }
 
 
+    /************************** 
+     * Thread Related Methods *
+     *                        *
+     **************************/
+
     /** \brief Add thread ID to thread_ids vector */
     void threadid_push_back(pthread_t id)
     {
@@ -170,7 +177,10 @@ class GTBCommunication {
      */
     void gtb_wrapperForCommunication();
 
-    /* GNUTLS related methods */
+
+    /**************************
+     * GNUTLS related methods *
+     **************************/
 
     /** \brief Handle initialization of GNUTLS backend
      *
@@ -202,7 +212,13 @@ class GTBCommunication {
     /** \brief Loads server-side certificates and keys */
     void loadCertFiles ();
 
-    /*Misc mutator and accessor methods*/
+    /** \brief Unimplemented: May be removed */
+    int moveKey();
+
+    
+    /**********************
+     * Networking Related *
+     **********************/
 
     /** \brief Unimplemented. May be removed. */
     void getClientInfo (int i_sockfd);
@@ -225,6 +241,47 @@ class GTBCommunication {
      */
     void *getInAddr (struct sockaddr *i_sa);
 
+    /** \brief Perform TLS handshake with client
+     *
+     * After a client connects to the server, perform TLS handshake
+     * with client to establish TLS session. Once complete, verify 
+     * the client provides a certificate and that it was signed by
+     * our CA
+     *
+     * \todo Figure out why certificate verification segfaults =(
+     *
+     * \param fdAccepted File descriptor for opened socket connection
+     * \param sockfd File descriptor for bound socket
+     */
+    int handleConnection (int fdAccepted, int sockfd);
+
+    /** \brief Listen for a client connection
+     *
+     * Initialize TLS session. When a client connects, store the client's
+     * IP address.
+     *
+     * \param i_fdSock File descriptor for bound socket
+     * \return File descriptor for opened socket connection
+     */
+    int listeningForClient (int i_fdSock);
+
+    /** \brief Retrieves all incoming requests from client
+     *
+     * Once the connection is established, all request/incoming packets
+     * are received and returned to plaintext.
+     *
+     * param aPBReq Where incoming request is stored because it's content
+     * will be used throughout the request's lifetime
+     */
+    void receiveRequest(Request * aPBReq);
+
+
+
+
+    /*************************************
+     * Misc mutator and accessor methods *
+     *************************************/
+
     /** \brief Accessor: Returns the IP Address of the current client */
     std::string getClientAddr(){ return std::string(m_vIPAddr); } 
 
@@ -242,7 +299,11 @@ class GTBCommunication {
     /** \brief Accessor: Return current session info */
     gnutls_session_t * getSession() { return &m_aSession; }
 
-    /*Communication with client*/
+
+
+    /*****************************
+     * Communication with client *
+     *****************************/
 
     /** \brief Return errorcode to client.
      *
@@ -268,8 +329,11 @@ class GTBCommunication {
      */
     int sendNumberOfCars(Request * i_aPBReq);
 
-    /** \brief Unimplemented: May be removed */
-    int moveKey();
+
+
+    /******************************
+     * Related to Client Requests *
+     ******************************/
 
     /** \brief Request to authenticate client.
      *
@@ -319,40 +383,6 @@ class GTBCommunication {
      * \sa updtRequest
      */
     int dealWithReq (Request i_sPBReq);
-
-    /** \brief Perform TLS handshake with client
-     *
-     * After a client connects to the server, perform TLS handshake
-     * with client to establish TLS session. Once complete, verify 
-     * the client provides a certificate and that it was signed by
-     * our CA
-     *
-     * \todo Figure out why certificate verification segfaults =(
-     *
-     * \param fdAccepted File descriptor for opened socket connection
-     * \param sockfd File descriptor for bound socket
-     */
-    int handleConnection (int fdAccepted, int sockfd);
-
-    /** \brief Listen for a client connection
-     *
-     * Initialize TLS session. When a client connects, store the client's
-     * IP address.
-     *
-     * \param i_fdSock File descriptor for bound socket
-     * \return File descriptor for opened socket connection
-     */
-    int listeningForClient (int i_fdSock);
-
-    /** \brief Retrieves all incoming requests from client
-     *
-     * Once the connection is established, all request/incoming packets
-     * are received and returned to plaintext.
-     *
-     * param aPBReq Where incoming request is stored because it's content
-     * will be used throughout the request's lifetime
-     */
-    void receiveRequest(Request * aPBReq);
 
   private:
     /** \brief Sends response to client.

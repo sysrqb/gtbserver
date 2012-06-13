@@ -17,7 +17,6 @@
  */
 
 
-#include "gtbserver.hpp"
 #include "gtbcommunication.hpp"
 #include "patron.pb.h"
 #include <signal.h>
