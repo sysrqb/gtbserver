@@ -93,15 +93,62 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="textblock"><code>#include &quot;<a class="el" href="gtbserver_8hpp_source.html">gtbserver.hpp</a>&quot;</code><br/>
 <code>#include &quot;<a class="el" href="gtbcommunication_8hpp_source.html">gtbcommunication.hpp</a>&quot;</code><br/>
 <code>#include &quot;<a class="el" href="patron_8pb_8h_source.html">patron.pb.h</a>&quot;</code><br/>
+<code>#include &lt;signal.h&gt;</code><br/>
 </div>
 <p><a href="main_8cc_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a41bd65b248cf89c7666604794e3628a6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cc.html#a41bd65b248cf89c7666604794e3628a6">main</a> (int argc, char *arv[])</td></tr>
+<tr class="memitem:a70ec27cbfc3748adc2f9fde8feb577e1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cc.html#a70ec27cbfc3748adc2f9fde8feb577e1">cpp_forCommunication</a> (void *instance)</td></tr>
+<tr class="memdesc:a70ec27cbfc3748adc2f9fde8feb577e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper used to allow pthread_create call method.  <a href="#a70ec27cbfc3748adc2f9fde8feb577e1"></a><br/></td></tr>
+<tr class="memitem:a681348833b2b81fdeb2dc7bca213039b"><td class="memItemLeft" align="right" valign="top">void *()&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cc.html#a681348833b2b81fdeb2dc7bca213039b">for_communication</a> (void *instance)</td></tr>
+<tr class="memdesc:a681348833b2b81fdeb2dc7bca213039b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper used to allow pthread_create call method.  <a href="#a681348833b2b81fdeb2dc7bca213039b"></a><br/></td></tr>
+<tr class="memitem:a0ddf1224851353fc92bfbff6f499fa97"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cc.html#a0ddf1224851353fc92bfbff6f499fa97">main</a> (int argc, char *argv[])</td></tr>
 </table>
 <hr/><h2>Function Documentation</h2>
-<a class="anchor" id="a41bd65b248cf89c7666604794e3628a6"></a>
+<a class="anchor" id="a70ec27cbfc3748adc2f9fde8feb577e1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cpp_forCommunication </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>instance</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Wrapper used to allow pthread_create call method. </p>
+<dl class="section see"><dt>See also:</dt><dd>listenForClient </dd></dl>
+
+<p>Definition at line <a class="el" href="main_8cc_source.html#l00032">32</a> of file <a class="el" href="main_8cc_source.html">main.cc</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a681348833b2b81fdeb2dc7bca213039b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void*() for_communication </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>instance</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Wrapper used to allow pthread_create call method. </p>
+<dl class="section see"><dt>See also:</dt><dd>cpp_listenForClient </dd></dl>
+
+<p>Definition at line <a class="el" href="main_8cc_source.html#l00043">43</a> of file <a class="el" href="main_8cc_source.html">main.cc</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a0ddf1224851353fc92bfbff6f499fa97"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -115,7 +162,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>arv</em>[]&#160;</td>
+          <td class="paramname"><em>argv</em>[]&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -125,14 +172,14 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="main_8cc_source.html#l00027">27</a> of file <a class="el" href="main_8cc_source.html">main.cc</a>.</p>
+<p>Definition at line <a class="el" href="main_8cc_source.html#l00050">50</a> of file <a class="el" href="main_8cc_source.html">main.cc</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jun 8 2012 14:28:57 for GTBServer by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 12 2012 23:44:00 for GTBServer by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1
 </small></address>

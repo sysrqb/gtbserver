@@ -25,6 +25,10 @@
 #include "patron.pb.h"
 #include <gnutls/gnutlsxx.h>
 #include "gtbexceptions.hpp"
+#include <pthread.h>
+
+#include <vector>
+#include <queue>
 
 //Sets the priority string for an acceptable TLS handshake
 /*#define GNUTLS_PRIORITY "+VERS-TLS1.2:+VERS-TLS1.1:+DHE-RSA:"\
@@ -58,7 +62,6 @@
 //Sets number of bytes each authentication request should be from a client
 #define AUTHSIZE 60
 
-
 /**
  * Class: GTBCommunication
  * 
@@ -78,8 +81,23 @@ class GTBCommunication {
     std::string m_sHash;
     /** SQL connection handler */
     MySQLConn * m_MySQLConn;
-    /** Debug bit mask */
+    /** Debug bit mask 
+     *
+     * 1 = Current Operation
+     * 2 = Debugging value output (Not in consistant locations)
+     * 4
+     * 8
+     * 16 = All
+     * */
     int debug;
+
+    /** \brief Vector containing the thread ids all all spawned threads. */
+    std::vector<pthread_t> thread_ids;
+
+    /** \brief Vector containing all remaining requests that stt need to be
+     * processed.
+     */
+    std::queue<Request> requestQueue;
 
   public:
     /** \brief Constructor with optional debug output 
@@ -104,13 +122,56 @@ class GTBCommunication {
     /** \brief Deconstructor to clean up dynamic info */
     ~GTBCommunication()
     {
+      
+      int * nRetVal;
+      std::vector<pthread_t>::iterator it;
+      for(it = thread_ids.begin(); it < thread_ids.end(); it++)
+        pthread_join(*it, (void **) &nRetVal);
+
       delete m_pDHParams;
       delete m_MySQLConn;
       delete m_pX509Cred;
       delete m_pPriorityCache;
     }
 
+
+    /** \brief Add thread ID to thread_ids vector */
+    void threadid_push_back(pthread_t id)
+    {
+      thread_ids.push_back(id);
+    }
+
+    /** \brief Return if Request Queue is empty
+     *
+     * Returns if Request queue is empty by calling
+     * empty() on requestQueue.
+     */
+    bool requestQueueIsEmpty()
+    {
+      return requestQueue.empty();
+    }
+
+    /** \brief Return Request at front of queue
+     *
+     * Fill provided Request address with the first request in the queue.
+     * This pops the first request, thus removing it.
+     *
+     * \param request The request to be filled and fulfilled
+     */
+    void requestQueuePop(Request * request)
+    {
+      *request = requestQueue.front();
+      requestQueue.pop();
+    }
+    
+    /** \brief Networking thread handler
+     *
+     * Internal class method that handles communication with client.
+     */
+    void gtb_wrapperForCommunication();
+
     /* GNUTLS related methods */
+
     /** \brief Handle initialization of GNUTLS backend
      *
      * Directly calls gnutls_global_init and subsequently calls for

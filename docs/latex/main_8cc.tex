@@ -4,23 +4,64 @@
 {\ttfamily \#include \char`\"{}gtbserver.\-hpp\char`\"{}}\\*
 {\ttfamily \#include \char`\"{}gtbcommunication.\-hpp\char`\"{}}\\*
 {\ttfamily \#include \char`\"{}patron.\-pb.\-h\char`\"{}}\\*
+{\ttfamily \#include $<$signal.\-h$>$}\\*
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-int \hyperlink{main_8cc_a41bd65b248cf89c7666604794e3628a6}{main} (int argc, char $\ast$arv\mbox{[}$\,$\mbox{]})
+void \hyperlink{main_8cc_a70ec27cbfc3748adc2f9fde8feb577e1}{cpp\-\_\-for\-Communication} (void $\ast$instance)
+\begin{DoxyCompactList}\small\item\em Wrapper used to allow pthread\-\_\-create call method. \end{DoxyCompactList}\item 
+void $\ast$() \hyperlink{main_8cc_a681348833b2b81fdeb2dc7bca213039b}{for\-\_\-communication} (void $\ast$instance)
+\begin{DoxyCompactList}\small\item\em Wrapper used to allow pthread\-\_\-create call method. \end{DoxyCompactList}\item 
+int \hyperlink{main_8cc_a0ddf1224851353fc92bfbff6f499fa97}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
 \end{DoxyCompactItemize}
 
 
 \subsection{Function Documentation}
-\hypertarget{main_8cc_a41bd65b248cf89c7666604794e3628a6}{\index{main.\-cc@{main.\-cc}!main@{main}}
+\hypertarget{main_8cc_a70ec27cbfc3748adc2f9fde8feb577e1}{\index{main.\-cc@{main.\-cc}!cpp\-\_\-for\-Communication@{cpp\-\_\-for\-Communication}}
+\index{cpp\-\_\-for\-Communication@{cpp\-\_\-for\-Communication}!main.cc@{main.\-cc}}
+\subsubsection[{cpp\-\_\-for\-Communication}]{\setlength{\rightskip}{0pt plus 5cm}void cpp\-\_\-for\-Communication (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{instance}
+\end{DoxyParamCaption}
+)}}\label{main_8cc_a70ec27cbfc3748adc2f9fde8feb577e1}
+
+
+Wrapper used to allow pthread\-\_\-create call method. 
+
+\begin{DoxySeeAlso}{See also}
+listen\-For\-Client 
+\end{DoxySeeAlso}
+
+
+Definition at line 32 of file main.\-cc.
+
+\hypertarget{main_8cc_a681348833b2b81fdeb2dc7bca213039b}{\index{main.\-cc@{main.\-cc}!for\-\_\-communication@{for\-\_\-communication}}
+\index{for\-\_\-communication@{for\-\_\-communication}!main.cc@{main.\-cc}}
+\subsubsection[{for\-\_\-communication}]{\setlength{\rightskip}{0pt plus 5cm}void$\ast$() for\-\_\-communication (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{instance}
+\end{DoxyParamCaption}
+)}}\label{main_8cc_a681348833b2b81fdeb2dc7bca213039b}
+
+
+Wrapper used to allow pthread\-\_\-create call method. 
+
+\begin{DoxySeeAlso}{See also}
+cpp\-\_\-listen\-For\-Client 
+\end{DoxySeeAlso}
+
+
+Definition at line 43 of file main.\-cc.
+
+\hypertarget{main_8cc_a0ddf1224851353fc92bfbff6f499fa97}{\index{main.\-cc@{main.\-cc}!main@{main}}
 \index{main@{main}!main.cc@{main.\-cc}}
 \subsubsection[{main}]{\setlength{\rightskip}{0pt plus 5cm}int main (
 \begin{DoxyParamCaption}
 \item[{int}]{argc, }
-\item[{char $\ast$}]{arv\mbox{[}$\,$\mbox{]}}
+\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}}
 \end{DoxyParamCaption}
-)}}\label{main_8cc_a41bd65b248cf89c7666604794e3628a6}
+)}}\label{main_8cc_a0ddf1224851353fc92bfbff6f499fa97}
 
 
-Definition at line 27 of file main.\-cc.
+Definition at line 50 of file main.\-cc.
 

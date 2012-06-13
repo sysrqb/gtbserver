@@ -17,5 +17,6 @@ var searchData=
   ['getsession',['getSession',['../classGTBCommunication.html#a762b0f4bb1e3f27c01e1ce4b2f3aca65',1,'GTBCommunication']]],
   ['getsha256hash',['getSHA256Hash',['../classMySQLConn.html#a0ab687f92039d6f9934bcd638eecd8e6',1,'MySQLConn']]],
   ['getsocket',['getSocket',['../classGTBCommunication.html#a92ae038bbe4b05f7f17d9b9f59d6c158',1,'GTBCommunication']]],
+  ['gtb_5fwrapperforcommunication',['gtb_wrapperForCommunication',['../classGTBCommunication.html#a7d93e8cd8f88f9dc86534d9ecab05f7c',1,'GTBCommunication']]],
   ['gtbcommunication',['GTBCommunication',['../classGTBCommunication.html#ad9935001e2ac8454f6a0846bd3f4c78e',1,'GTBCommunication']]]
 ];

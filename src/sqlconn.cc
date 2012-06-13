@@ -456,7 +456,6 @@ int MySQLConn::addPatron(int carnum, Request * i_aPBReq)
       prepStmt->setString(7, i_aPBReq->plpatronlist().patron(i).ridecreated());
       prepStmt->setString(8, i_aPBReq->plpatronlist().patron(i).timecomplete());
       prepStmt->executeQuery();
-      }
     }
     catch (sql::SQLException &e)
     {
@@ -466,10 +465,10 @@ int MySQLConn::addPatron(int carnum, Request * i_aPBReq)
       cerr << " (MySQL error code: " << e.getErrorCode();
       cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
     }
-    cout << "Added Rides" << endl;
   }
+  cout << "Added Rides" << endl;
   delete prepStmt;
-  return (getLastInsertID() - i_aPBReq->plpatronlist().patron_size());
+  return (getLastInsertId() - i_aPBReq->plpatronlist().patron_size());
 }
 
 /*

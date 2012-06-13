@@ -16,8 +16,9 @@ var searchData=
   ['release_5ftimecomplete',['release_timecomplete',['../classPatronInfo.html#a62f48895efe5ec33e63ebd65df00c4a1',1,'PatronInfo']]],
   ['release_5ftimepickedup',['release_timepickedup',['../classPatronInfo.html#ac583e393d9b69e8aea297858dd5ea9e2',1,'PatronInfo']]],
   ['request',['Request',['../classRequest.html#afaf8d8928de7ffff8a3767589489bd33',1,'Request::Request()'],['../classRequest.html#ad98d77ec146e4853b747cf8bf0b86c6e',1,'Request::Request(const Request &amp;from)']]],
+  ['requestqueueisempty',['requestQueueIsEmpty',['../classGTBCommunication.html#a758bba4abe39f43cf8f10f7c12de33b3',1,'GTBCommunication']]],
+  ['requestqueuepop',['requestQueuePop',['../classGTBCommunication.html#ac9f8f014e6c5b9c1e1819cb631138d73',1,'GTBCommunication']]],
   ['response',['Response',['../classResponse.html#aa9b6e391d77fce8daca8bac13730ec8e',1,'Response::Response()'],['../classResponse.html#abea00a908d82a1d64043ca8139d87451',1,'Response::Response(const Response &amp;from)']]],
-  ['return',['return',['../sqlconn_8cc.html#a469b2e4e324c235cd909cb42e7e29d8f',1,'sqlconn.cc']]],
   ['rideassigned',['rideassigned',['../classPatronInfo.html#adfedd814f7b45c5877448aff70ce777f',1,'PatronInfo']]],
   ['ridecreated',['ridecreated',['../classPatronInfo.html#aafa64a6f56fc1a68d26aaf67f84c3609',1,'PatronInfo']]]
 ];

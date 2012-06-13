@@ -20,50 +20,93 @@
 #include "gtbserver.hpp"
 #include "gtbcommunication.hpp"
 #include "patron.pb.h"
+#include <signal.h>
 
 using namespace std;
 
+/** \brief Wrapper used to allow pthread_create call method 
+ *
+ *
+ * \sa listenForClient
+ */
+void cpp_forCommunication(void * instance)
+{
+  GTBCommunication * aComm = (GTBCommunication *) instance;
+  aComm->gtb_wrapperForCommunication();
+}
+
+/** \brief Wrapper used to allow pthread_create call method 
+ *
+ * \sa cpp_listenForClient
+ */
+extern "C"
+void *(for_communication)(void * instance)
+{
+  cpp_forCommunication(instance);
+  //return 0;
+}
+
 int 
-main(int argc, char *arv[])
+main(int argc, char *argv[])
 {
 //FileDescriptors: sockfd (listen), new_fd (new connections)
-  int sockfd, fdAccepted;
-  GTBCommunication aComm;
+  pthread_attr_t attr;
+  int nRetVal(0);
+  pthread_t thread_id(0);
+  int signum(0);
+  int debug = 0;
+  sigset_t set;
   Request aPBReq;
 
-  sockfd = aComm.getSocket();
-  cout << "Establish Incoming Connections" << endl;;
-  initIncomingCon (&sockfd);
-  cout << "Continuing..." << endl;
-
-  //Initialize gnutls
-  aComm.initGNUTLS();
-
-  cout << "server: waiting for connection" << endl;
-  fdAccepted = aComm.listeningForClient (sockfd);
-  aComm.handleConnection(fdAccepted, sockfd);
-  //cout << "\nHandle Request" << endl;
-  try
+  if(argc == 2)
+    debug = (int) *argv[1];
+  
+  GTBCommunication aComm(debug);
+  sigemptyset(&set);
+  sigaddset(&set, SIGIO);
+  nRetVal = pthread_sigmask(SIG_BLOCK, &set, NULL);
+  if(nRetVal != 0)
   {
-    aComm.receiveRequest(&aPBReq);
-  } catch (PatronException &e)
+    cerr << "Failed to sigio mask!" << endl;
+    throw new exception();
+  }
+    
+  nRetVal = pthread_attr_init(&attr);
+  if(nRetVal != 0)
   {
-    try
+    cerr << "Failed to Initialize pthread_attr_t!" << endl;
+    throw new exception();
+  }
+      
+  nRetVal = pthread_create(&thread_id, &attr, &for_communication, (void *) &aComm);
+  if(nRetVal != 0)
+  {
+    cerr << "Failed to Create pthread!" << endl;
+    throw new exception();
+  }
+
+  nRetVal = pthread_attr_destroy(&attr);
+  if(nRetVal != 0)
+  {
+     cerr << "Failed to destroy pthread_attr_t!" << endl;
+     throw new exception();
+  }
+  aComm.threadid_push_back(thread_id);
+
+  for(;;)
+  {
+    if(sigwait(&set, &signum) != 0)
     {
-      Request * apPBReq = new Request();
+      cerr << "Error while waiting for signal!" << endl;
+      continue;
     }
-    catch (PatronException &ex)
+    if(signum == SIGIO)
     {
-      close(fdAccepted);
-      aComm.initGNUTLS();
+      if(!aComm.requestQueueIsEmpty())
+      {
+        aComm.requestQueuePop(&aPBReq);
+	aComm.dealWithReq(aPBReq);
+      }
     }
   }
-  int handledreqerr = 0;
-  if((handledreqerr = aComm.dealWithReq(aPBReq)))
-  {
-    cerr << "ERROR: dealWithReq returned with value: " << handledreqerr
-      << endl;
-  }
-  close(fdAccepted);
-  aComm.initGNUTLS();
 }

@@ -23,7 +23,6 @@ extern "C" {
   void initIncomingCon(int *);
 }
 
-
 /*Return Values:
  4: Error MySQL query prep
  3: reqbuf did not equal the value it was supposed to

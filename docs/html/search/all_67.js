@@ -20,6 +20,7 @@ var searchData=
   ['getsocket',['getSocket',['../classGTBCommunication.html#a92ae038bbe4b05f7f17d9b9f59d6c158',1,'GTBCommunication']]],
   ['gnutls_5fpriority',['GNUTLS_PRIORITY',['../gtbcommunication_8hpp.html#ac57fb201134c09b4891bfcdbfccb94c6',1,'gtbcommunication.hpp']]],
   ['google',['google',['../namespacegoogle.html',1,'']]],
+  ['gtb_5fwrapperforcommunication',['gtb_wrapperForCommunication',['../classGTBCommunication.html#a7d93e8cd8f88f9dc86534d9ecab05f7c',1,'GTBCommunication']]],
   ['gtbcommunication',['GTBCommunication',['../classGTBCommunication.html',1,'GTBCommunication'],['../classGTBCommunication.html#ad9935001e2ac8454f6a0846bd3f4c78e',1,'GTBCommunication::GTBCommunication()']]],
   ['gtbcommunication_2ecc',['gtbcommunication.cc',['../gtbcommunication_8cc.html',1,'']]],
   ['gtbcommunication_2ehpp',['gtbcommunication.hpp',['../gtbcommunication_8hpp.html',1,'']]],

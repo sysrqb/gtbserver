@@ -50,6 +50,10 @@ sigchld_handler (int s)
 void initIncomingCon(int * pfdSock)
 {
   int fdSock;
+
+  /* sigaction: sa (used to make sys call to change action taken on receipt 
+   * of a certain sig) 
+   */
   struct sigaction sa;
 
   fdSock = *pfdSock;
@@ -60,7 +64,7 @@ void initIncomingCon(int * pfdSock)
     cerr << "listen: failed to mark as passive" << endl;
     exit(1);
   }
-  cout << "Socket marked as passive...listening for connections" << endl;
+  //cout << "Socket marked as passive...listening for connections" << endl;
 
   sa.sa_handler = sigchld_handler;
   sigemptyset(&sa.sa_mask);
@@ -72,3 +76,54 @@ void initIncomingCon(int * pfdSock)
   }
 } 
 
+
+void cpp_openSocket(void * in)
+{ 
+  GTBCommunication * instance;
+  int sockfd(0), fdAccepted(0);
+  Request * apPBReq = NULL;
+
+  instance = (GTBCommunication *) in;
+
+  sockfd = instance->getSocket();
+  cout << "Establish Incoming Connections" << endl;;
+  initIncomingCon (&sockfd);
+  cout << "Continuing..." << endl;
+
+  //Initialize gnutls
+  instance->initGNUTLS();
+
+  cout << "server: waiting for connection" << endl;
+  fdAccepted = instance->listeningForClient (sockfd);
+  instance->handleConnection(fdAccepted, sockfd);
+  //cout << "\nHandle Request" << endl;
+  try
+  {
+    instance->receiveRequest(apPBReq);
+  } catch (PatronException &e)
+  {
+    try
+    {
+      apPBReq = new Request();
+    }
+    catch (PatronException &ex)
+    {
+      close(fdAccepted);
+      instance->initGNUTLS();
+    }
+  }
+  int handledreqerr = 0;
+  if((handledreqerr = instance->dealWithReq(*apPBReq)))
+  {
+    cerr << "ERROR: dealWithReq returned with value: " << handledreqerr
+      << endl;
+  }
+  close(fdAccepted);
+  instance->initGNUTLS();
+}
+
+extern "C"
+void openSocket(void * instance)
+{ 
+  cpp_openSocket(instance);
+}

@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <csignal>
 
 #include "patron.pb.h"
 #include <iostream>
@@ -36,6 +37,65 @@
 #define TLS_SESSION_CACHE 10
 
 using namespace std;
+
+void GTBCommunication::gtb_wrapperForCommunication()
+{
+  int sockfd, fdAccepted;
+  int nRetVal = 0;
+  Request request;
+  
+  sockfd = getSocket();
+  
+  if(debug & 17)
+  {
+    cout << "Establish Incoming Connections" << endl;;
+  }
+
+  if(debug & 17)
+  {
+    cout << "Continuing..." << endl;
+  }
+  initGNUTLS();
+
+
+  fdAccepted = listeningForClient(sockfd);
+  for(;;)
+  {
+    try
+    {
+      handleConnection(fdAccepted, sockfd);
+    } catch (BadConnectionException &e)
+    {
+      close(fdAccepted);
+      continue;
+    }
+    try
+    {
+      receiveRequest(&request);
+    } catch (BadConnectionException &e)
+    {
+      close(fdAccepted);
+      continue;
+    }
+    requestQueue.push(request);
+    nRetVal = pthread_kill(thread_ids.front(), SIGIO);
+    if(nRetVal != 0)
+    {
+      if(nRetVal == EINVAL)
+      {
+        cerr << "SIGIO Does Not Exist On This System!";
+        cerr << " We Need To Use A Different Signal. Exiting." << endl;
+      }
+      else if(nRetVal == ESRCH)
+      {
+        cerr << "The Main Thread No Longer Exists??"<< 
+        cerr << "We Can't Send SIGIO To It! Exiting." << endl;
+      }
+    }
+  }
+  close(sockfd);
+}
+
 
 int
 GTBCommunication::sendFailureResponse(int nerr)
@@ -454,13 +514,15 @@ GTBCommunication::initTLSSession ()
  //Initialize session
   if ((retval = gnutls_init (&m_aSession, GNUTLS_SERVER)))
   {
-    cerr << "ERROR: initTLSSession: gnutls_init error code: %d" << retval << endl;
+    cerr << "ERROR: initTLSSession: gnutls_init error code: " << retval;
+    cerr << ": " << strerror(retval)<< endl;
     exit(1);
   }
   //Sets priority of session, i.e. specifies which crypto algos to use
   if ((retval = gnutls_priority_set (m_aSession, *m_pPriorityCache))) 
   {
-    cerr << "ERROR: initTLSSession: gnutls_priority_set error code: %d" << retval << endl;
+    cerr << "ERROR: initTLSSession: gnutls_priority_set error code: " << retval;
+    cerr << ": " << strerror(retval)<< endl;
     exit(1);
   }
  //Sets the needed credentials for the specified type; an x509 cert, in this case
@@ -469,8 +531,9 @@ GTBCommunication::initTLSSession ()
       GNUTLS_CRD_CERTIFICATE,
       *m_pX509Cred))) 
   {
-    cerr << "ERROR: initTLSSession: gnutls_credentials_set error code:  %d" 
-        << retval << endl;
+    cerr << "ERROR: initTLSSession: gnutls_credentials_set error code:  " 
+        << retval;
+    cerr << ": " << strerror(retval) << endl;
     exit (1);
   }
 //Request client cert
@@ -495,7 +558,10 @@ GTBCommunication::initTLSSession ()
 
 void GTBCommunication::initGNUTLS()
 {
-  //cout << "Initialize gnutls" << endl;
+  if(debug & 17)
+  {
+    cout << "Initialize gnutls" << endl;
+  }
   if( gnutls_global_init() ) cout << "gnutls_global_init: Failed to intialize" << endl;
   loadCertFiles();
 }
@@ -523,14 +589,23 @@ GTBCommunication::loadCertFiles ()
   //const char ** err_pos; //store returned code (error or successful)
   int retval;
 
-  //cout << "loadCertFiles: allocate creds" << endl;
+  if(debug & 17)
+  {
+    cout << "loadCertFiles: allocate creds" << endl;
+  }
   if ((retval = gnutls_certificate_allocate_credentials (m_pX509Cred)))
   {
     //TODO
-    //cout <<"loadCertFiles: gnutls_certificate_allocate_credentials: false" 
-        //<< endl;
+    if(debug & 17)
+    {
+      cout << "loadCertFiles: gnutls_certificate_allocate_credentials: false" 
+          << endl;
+    }
   }
-  //cout << "loadCertFiles: load cert trust file" << endl;
+  if(debug & 17)
+  {
+    cout << "loadCertFiles: load cert trust file" << endl;
+  }
   if ((retval = gnutls_certificate_set_x509_trust_file (
       *m_pX509Cred, 
       CAFILE, 
@@ -545,7 +620,10 @@ GTBCommunication::loadCertFiles ()
           "certs loaded: " << retval << endl;
     */
   }
-  //cout << "loadCertFiles: load CSL" << endl;
+  if(debug & 17)
+  {
+    cout << "loadCertFiles: load CSL" << endl;
+  }
   if((retval = gnutls_certificate_set_x509_crl_file (*m_pX509Cred, CRLFILE, 
                                         GNUTLS_X509_FMT_PEM)) < 1)
   {
@@ -554,7 +632,10 @@ GTBCommunication::loadCertFiles ()
         << retval << endl;
   }
     
-  //cout << "loadCertFiles: load key" << endl;
+  if(debug & 17)
+  {
+    cout << "loadCertFiles: load key" << endl;
+  }
   if (( retval = gnutls_certificate_set_x509_key_file (
                    *m_pX509Cred,
 		   CERTFILE,
@@ -564,11 +645,17 @@ GTBCommunication::loadCertFiles ()
           "error code: " << strerror(retval) << endl;
   
 
-  //cout << "loadCertFiles: gen DH params" << endl;
+  if(debug & 17)
+  {
+    cout << "loadCertFiles: gen DH params" << endl;
+  }
   generateDHParams ();
-  //cout << "loadCertFiles: priority init" << endl;
-  //Set gnutls priority string
+  if(debug & 17)
+  {
+    cout << "loadCertFiles: priority init" << endl;
+  }
   
+  //Set gnutls priority string
   const char * cErrLoc;
   if((retval = gnutls_priority_init (m_pPriorityCache, GNUTLS_PRIORITY, &cErrLoc)))
   {
@@ -576,7 +663,10 @@ GTBCommunication::loadCertFiles ()
     cerr << "ERROR: loadCertFiles: gnutls_priority_init error code: &s" << *cErrLoc << endl;
   }
 
-  //cout << "Set priority: " << GNUTLS_PRIORITY << endl;
+  if((debug & 17) || (debug & 18))
+  {
+    cout << "Set priority: " << GNUTLS_PRIORITY << endl;
+  }
 
   gnutls_certificate_set_dh_params (*m_pX509Cred, *m_pDHParams);
   
@@ -648,8 +738,9 @@ GTBCommunication::getSocket()
 
     if(bind(fdSock, pIterator->ai_addr, pIterator->ai_addrlen) == -1)
     { //Assign a name to an addr
+      cerr << "ERROR: server: bind: " << fdSock << endl;
+      cerr << "\t" << pIterator->ai_addr->sa_data << " " << pIterator->ai_addrlen << endl;
       close(fdSock);	//If unsuccessful, print error and check next
-      cerr << "ERROR: server: bind" << endl;
       continue;
     }
 
@@ -659,13 +750,21 @@ GTBCommunication::getSocket()
   if(pIterator == NULL)
   {
     cerr << "ERROR: server: Failed to bind for unknown reason" << "\n" <<
-        " Iterated through loop" << i << " times" << endl;
+        "\tIterated through loop " << i << " times" << endl;
     freeaddrinfo(pServinfo); //no longer need this struct
+    exit(-2);
     return 2;
   }
 
   if(pServinfo)
     freeaddrinfo(pServinfo); //no longer need this struct
+
+  //marks socket as passive, so it accepts incoming connections
+  if (listen(fdSock, BACKLOG) == -1)
+  { 
+    cerr << "listen: failed to mark as passive" << endl;
+    exit(1);
+  }
   return fdSock;
 }
 
@@ -743,7 +842,10 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
 {
   int nNumBytes = 0;
   char vReqBuf[AUTHSIZE] = "";
-  //cout << "Receiving request" << endl;
+  if(debug & 17)
+  {
+    cout << "Receiving request" << endl;
+  }
   if(aPBReq == NULL)
     throw new PatronException("NULL Pointer at receiveRequest\n");
   int nsize = 0;
@@ -753,7 +855,10 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
     throw BadConnectionException(strerror(errno));
   }
 
-  //cout << "Incoming size: " << nsize << endl;
+  if(debug & 18)
+  {
+    cout << "Incoming size: " << nsize << endl;
+  }
       
   if((nNumBytes = gnutls_record_recv (m_aSession, &vReqBuf, nsize)) < 0)
   {
@@ -761,17 +866,23 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
     throw BadConnectionException(strerror(errno));
   }
 
-  //cout << "Received Transmission Size: " << nNumBytes << endl;
+  if(debug & 18)
+  {
+    cout << "Received Transmission Size: " << nNumBytes << endl;
+  }
 
   aPBReq->ParseFromString(vReqBuf);
 
-  /*cout << "Request: " << endl;
-  for (int i = 0; i<nsize; i++)
-      cout << (int)vReqBuf[i] << " ";
-  cout << endl;
-  */
-  //cout << "Print Debug String: " << endl;
-  //aPBReq.PrintDebugString();
+  if(debug & 18)
+  {
+    cout << "Request: " << endl;
+    for (int i = 0; i<nsize; i++)
+        cout << (int)vReqBuf[i] << " ";
+    cout << endl;
+  
+    cout << "Print Debug String: " << endl;
+    aPBReq->PrintDebugString();
+  }
 }
 
 int GTBCommunication::handleConnection(int fdAccepted, int sockfd)
@@ -787,9 +898,15 @@ int GTBCommunication::handleConnection(int fdAccepted, int sockfd)
     throw BadConnectionException("Bad Incoming Connection");
   }
     
-  //cout << "Start TLS Session" << endl;
+  if(debug & 17)
+  {
+    cout << "Start TLS Session" << endl;
+  }
   gnutls_transport_set_ptr (m_aSession, (gnutls_transport_ptr_t) fdAccepted);
-  //cout << "Performing handshake.." << endl;
+  if(debug & 17)
+  {
+    cout << "Performing handshake.." << endl;
+  }
   //char vReqBuf[AUTHSIZE] = "";
   //int nNumBytes=0;
   int nRetVal, i=0, lastret = 0;;
@@ -797,7 +914,10 @@ int GTBCommunication::handleConnection(int fdAccepted, int sockfd)
   {
     i++;
     nRetVal = gnutls_handshake (m_aSession);
-    //cout << "First Return value: " << nRetVal << endl;
+    if(debug & 18)
+    {
+      cout << "First Return value: " << nRetVal << endl;
+    }
     /*if (nRetVal == lastret)
     if ( nRetVal == GNUTLS_E_INTERNAL_ERROR ||
 	 nRetVal == GNUTLS_E_INVALID_SESSION )
@@ -807,7 +927,10 @@ int GTBCommunication::handleConnection(int fdAccepted, int sockfd)
     }*/
     lastret = nRetVal;
   } while (gnutls_error_is_fatal (nRetVal) != GNUTLS_E_SUCCESS);
-  //cout << "Last Return Value: " << nRetVal << endl;
+  if(debug & 18)
+  {
+    cout << "Last Return Value: " << nRetVal << endl;
+  }
   
   if ( nRetVal < 0)
   {
@@ -882,13 +1005,23 @@ GTBCommunication::listeningForClient (int i_fdSock)
 
  // while(1)
   //{
-    //cout << endl;
-    //cout << "Initialize TLS Session" << endl;
+    if(debug & 17)
+    {
+      cout << endl;
+      cout << "Initialize TLS Session" << endl;
+    }
     initTLSSession();
 
-    //cout << "Accepting Connection" << endl;
+    if(debug & 17)
+    {
+      cout << "Accepting Connection" << endl;
+    }
     fdAccepted = accept(i_fdSock, (struct sockaddr *)&aClientAddr, &nSinSize);
-    //cout << "accept fdAccepted:" << fdAccepted << endl;
+    
+    if(debug & 17)
+    {
+      cout << "accept fdAccepted:" << fdAccepted << endl;
+    }
     if (fdAccepted == -1)
     {
       cerr << "ERROR: Error at accept!" << endl;

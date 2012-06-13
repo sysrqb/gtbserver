@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-obj = main.o gtbserver.o sqlconn.o gtbcommunication.o
+obj = gtbserver.o main.o sqlconn.o gtbcommunication.o
 SRC=src/
 TEST=test/
 INCLUDE=include/
@@ -25,7 +25,7 @@ GTEST=../gtest
 
 gtb : $(obj)
 	$(CC) $(LINKEROPTS) -o gtbserver $(obj) communication.pb.o patron.pb.o $(PKGCOPTS)
-	doxygen docs/gtbdoxygen.conf
+	#doxygen docs/gtbdoxygen.conf
 
 gtbserver.o : $(SRC)main.cc $(SRC)gtbserver.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc communication.pb.cc 
 	$(CC) -c $(SRC)main.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)gtbserver.cc $(SRC)communication.pb.cc $(SRC)patron.pb.cc
@@ -37,6 +37,9 @@ communication.pb.cc : patron.pb.cc
 patron.pb.cc : 
 	./protobuf/bin/protoc -I$(SRC) $(SRC)patron.proto --cpp_out=$(SRC) --java_out=$(SRC)
 	mv $(SRC)patron.pb.h $(INCLUDE)
+
+docs:
+	#doxygen docs/gtbdoxygen.conf
 
 
 ##############
