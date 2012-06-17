@@ -93,6 +93,7 @@ class GTBCommunication {
      * */
     int debug;
 
+  protected:
     /** \brief Vector containing the thread ids all all spawned threads. */
     std::vector<pthread_t> thread_ids;
 
@@ -321,6 +322,13 @@ class GTBCommunication {
      */
     int sendNopes(int i_nRetVal);
 
+
+
+
+    /******************************
+     * Related to Client Requests *
+     ******************************/
+
     /** \brief Return number of running vans to client.
      *
      * Checks that i_aPBReq is a valid request. If so, the database 
@@ -328,12 +336,6 @@ class GTBCommunication {
      * \param i_aPBReq The request received from the client.
      */
     int sendNumberOfCars(Request * i_aPBReq);
-
-
-
-    /******************************
-     * Related to Client Requests *
-     ******************************/
 
     /** \brief Request to authenticate client.
      *

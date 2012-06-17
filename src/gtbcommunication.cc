@@ -321,7 +321,7 @@ GTBCommunication::getSocket()
   if((nRV = getaddrinfo(NULL, PORT, &aHints, &pServinfo)) != 0)
   {
     cerr << "ERROR: getaddrinfo: " << gai_strerror(nRV) << endl;
-    return 1;
+    return nRV;
   }
 
   //Iterate through servinfo and bind to the first available
@@ -369,7 +369,7 @@ GTBCommunication::getSocket()
     // We no longer need this struct
     freeaddrinfo(pServinfo);
     exit(-2);
-    return 2;
+    return -2;
   }
 
   if(pServinfo)
@@ -654,6 +654,16 @@ GTBCommunication::sendNopes(int i_nRetVal)
   return nNumBytes;
 }
 
+
+
+
+
+
+
+/******************************
+* Related to Client Requests *
+******************************/
+
 int 
 GTBCommunication::sendNumberOfCars(Request * i_aPBReq)
 {
@@ -709,8 +719,6 @@ GTBCommunication::sendResponse(
   cout << "c: Replying with RetVal: " << i_nRetVal << endl;
   if (i_pbReq == NULL && i_pbRes == NULL && i_pbPL == NULL)
   {
-
-
     if (i_nRetVal)
     {
       aPBRes.set_nrespid(i_nRetVal);
@@ -779,16 +787,6 @@ GTBCommunication::sendResponse(
   cerr << "ERROR: C: Failed to send response!" << endl;
   return -1;
 }
-
-
-
-
-
-/******************************
-* Related to Client Requests *
-******************************/
-
-
 int 
 GTBCommunication::authRequest (Request * i_aPBReq)
 {
