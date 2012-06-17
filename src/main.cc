@@ -60,6 +60,7 @@ main(int argc, char *argv[])
   if(argc == 2)
     debug = (int) *argv[1];
   
+  cout << "Starting gtbserver...." << endl;
   GTBCommunication aComm(debug);
   sigemptyset(&set);
   sigaddset(&set, SIGIO);
@@ -77,6 +78,8 @@ main(int argc, char *argv[])
     throw new exception();
   }
       
+  thread_id = pthread_self();
+  aComm.threadid_push_back(thread_id);
   nRetVal = pthread_create(&thread_id, &attr, &for_communication, (void *) &aComm);
   if(nRetVal != 0)
   {
@@ -101,7 +104,7 @@ main(int argc, char *argv[])
     }
     if(signum == SIGIO)
     {
-      if(!aComm.requestQueueIsEmpty())
+      while(!aComm.requestQueueIsEmpty())
       {
         aComm.requestQueuePop(&aPBReq);
 	aComm.dealWithReq(aPBReq);
