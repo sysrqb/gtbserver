@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['patronpb',['patronpb',['../sqlconn_8hpp.html#a842322c5ee85180d80be00c8046c5d8f',1,'sqlconn.hpp']]],
   ['port',['PORT',['../gtbcommunication_8hpp.html#a614217d263be1fb1a5f76e2ff7be19a2',1,'gtbcommunication.hpp']]],
   ['ps_5faddlocation',['PS_ADDLOCATION',['../sqlconn_8hpp.html#a7a53a5550d5df83cea31b5e73fd9de5d',1,'sqlconn.hpp']]],
   ['ps_5fgetcurrrides',['PS_GETCURRRIDES',['../sqlconn_8hpp.html#a7e583ca5926f681d54531d2546b05a62',1,'sqlconn.hpp']]],

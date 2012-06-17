@@ -92,11 +92,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">sqlconn.hpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;gnutls/gnutls.h&gt;</code><br/>
-<code>#include &lt;netinet/in.h&gt;</code><br/>
+<div class="textblock"><code>#include &lt;netinet/in.h&gt;</code><br/>
 <code>#include &lt;netdb.h&gt;</code><br/>
 <code>#include &lt;arpa/inet.h&gt;</code><br/>
 <code>#include &lt;sys/socket.h&gt;</code><br/>
+<code>#include &lt;gnutls/gnutls.h&gt;</code><br/>
 <code>#include &lt;mysql_connection.h&gt;</code><br/>
 <code>#include &lt;cppconn/driver.h&gt;</code><br/>
 <code>#include &lt;cppconn/datatype.h&gt;</code><br/>
@@ -105,10 +105,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &lt;cppconn/statement.h&gt;</code><br/>
 <code>#include &lt;cppconn/prepared_statement.h&gt;</code><br/>
 <code>#include &lt;string.h&gt;</code><br/>
-<code>#include &quot;cred.h&quot;</code><br/>
 <code>#include &lt;stdlib.h&gt;</code><br/>
 <code>#include &quot;<a class="el" href="patron_8pb_8h_source.html">patron.pb.h</a>&quot;</code><br/>
 <code>#include &quot;<a class="el" href="communication_8pb_8h_source.html">communication.pb.h</a>&quot;</code><br/>
+<code>#include &quot;cred.h&quot;</code><br/>
 </div>
 <p><a href="sqlconn_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -119,8 +119,6 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2><a name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a842322c5ee85180d80be00c8046c5d8f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sqlconn_8hpp.html#a842322c5ee85180d80be00c8046c5d8f">patronpb</a></td></tr>
-<tr class="memitem:ab9bc62b5b8995e6a7ba22345d4030d87"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sqlconn_8hpp.html#ab9bc62b5b8995e6a7ba22345d4030d87">commnpb</a></td></tr>
 <tr class="memitem:a683663076939360c8940cbcfa1346ff8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sqlconn_8hpp.html#a683663076939360c8940cbcfa1346ff8">HASHSTMT</a>&#160;&#160;&#160;&quot;SELECT car FROM activeusers WHERE nightlyhash = ?&quot;</td></tr>
 <tr class="memitem:ad72dbcf6d0153db1b8d8a58001feed83"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sqlconn_8hpp.html#ad72dbcf6d0153db1b8d8a58001feed83">DEBUG</a>&#160;&#160;&#160;1</td></tr>
 <tr class="memitem:a07c7040f2c656449bfacc432d12bcf55"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sqlconn_8hpp.html#a07c7040f2c656449bfacc432d12bcf55">PS_SETSESSSTMT</a></td></tr>
@@ -143,20 +141,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ac8c8f3de9948a04f1d93921b762f86b9"><td class="memItemLeft" align="right" valign="top">gnutls_datum_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sqlconn_8hpp.html#ac8c8f3de9948a04f1d93921b762f86b9">cpp_retrieve_connection</a> (void *ptr, gnutls_datum_t session_id)</td></tr>
 </table>
 <hr/><h2>Macro Definition Documentation</h2>
-<a class="anchor" id="ab9bc62b5b8995e6a7ba22345d4030d87"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define commnpb</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00050">50</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
-
-</div>
-</div>
 <a class="anchor" id="ad72dbcf6d0153db1b8d8a58001feed83"></a>
 <div class="memitem">
 <div class="memproto">
@@ -167,7 +151,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00056">56</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00046">46</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
 
 </div>
 </div>
@@ -201,7 +185,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00082">82</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00078">78</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
 
 </div>
 </div>
@@ -215,21 +199,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00054">54</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a842322c5ee85180d80be00c8046c5d8f"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define patronpb</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00045">45</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00043">43</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
 
 </div>
 </div>
@@ -243,7 +213,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00076">76</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00072">72</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
 
 </div>
 </div>
@@ -260,7 +230,7 @@ Functions</h2></td></tr>
 <div class="line">    <span class="stringliteral">&quot;WHERE LEFT(ridetimes.ridecreate, 10) = ? AND status=? AND &quot;</span> \</div>
 <div class="line">    <span class="stringliteral">&quot; ridetimes.pid = patron.pid AND car=? ORDER BY car ASC&quot;</span></div>
 </div><!-- fragment -->
-<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00061">61</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00054">54</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
 
 </div>
 </div>
@@ -274,7 +244,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00080">80</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00076">76</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
 
 </div>
 </div>
@@ -290,7 +260,7 @@ Functions</h2></td></tr>
 <b>Value:</b><div class="fragment"><div class="line"><span class="stringliteral">&quot;SELECT lid FROM locations WHERE value = ?&quot;</span> \</div>
 <div class="line">    <span class="stringliteral">&quot; OR name = ?&quot;</span></div>
 </div><!-- fragment -->
-<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00067">67</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00062">62</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
 
 </div>
 </div>
@@ -306,7 +276,7 @@ Functions</h2></td></tr>
 <b>Value:</b><div class="fragment"><div class="line"><span class="stringliteral">&quot;SELECT * FROM saferide.patron, saferide.riderimes &quot;</span> \</div>
 <div class="line">    <span class="stringliteral">&quot;WHERE num = ? AND ridetimes.pid = patron.pid&quot;</span></div>
 </div><!-- fragment -->
-<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00064">64</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00058">58</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
 
 </div>
 </div>
@@ -322,7 +292,7 @@ Functions</h2></td></tr>
 <b>Value:</b><div class="fragment"><div class="line"><span class="stringliteral">&quot;SELECT sessionkey FROM sessionconnection&quot;</span>\</div>
 <div class="line">    <span class="stringliteral">&quot; WHERE ptr=? AND sessiondata=?&quot;</span></div>
 </div><!-- fragment -->
-<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00059">59</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00051">51</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
 
 </div>
 </div>
@@ -338,7 +308,7 @@ Functions</h2></td></tr>
 <b>Value:</b><div class="fragment"><div class="line"><span class="stringliteral">&quot;INSERT INTO patron (name,cell,riders,pickup,dropoff,&quot;</span> \</div>
 <div class="line">    <span class="stringliteral">&quot;clothes,notes,status) VALUES (?,?,?,?,?,?,?,?)&quot;</span></div>
 </div><!-- fragment -->
-<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00073">73</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00069">69</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
 
 </div>
 </div>
@@ -352,7 +322,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00078">78</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00074">74</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
 
 </div>
 </div>
@@ -368,7 +338,7 @@ Functions</h2></td></tr>
 <b>Value:</b><div class="fragment"><div class="line"><span class="stringliteral">&quot;INSERT INTO sessionconnection&quot;</span>\</div>
 <div class="line">    <span class="stringliteral">&quot;(ptr, sessionkey, sessiondata) values (?, ?, ?)&quot;</span></div>
 </div><!-- fragment -->
-<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00057">57</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00048">48</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
 
 </div>
 </div>
@@ -385,7 +355,7 @@ Functions</h2></td></tr>
 <div class="line">    <span class="stringliteral">&quot; status=?, pickup=?, dropoff=?, timetaken=?, timedone=? WHERE num=? AND &quot;</span> \</div>
 <div class="line">    <span class="stringliteral">&quot; car=?&quot;</span></div>
 </div><!-- fragment -->
-<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00070">70</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8hpp_source.html#l00065">65</a> of file <a class="el" href="sqlconn_8hpp_source.html">sqlconn.hpp</a>.</p>
 
 </div>
 </div>
@@ -414,7 +384,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="sqlconn_8cc_source.html#l00047">47</a> of file <a class="el" href="sqlconn_8cc_source.html">sqlconn.cc</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8cc_source.html#l00052">52</a> of file <a class="el" href="sqlconn_8cc_source.html">sqlconn.cc</a>.</p>
 
 </div>
 </div>
@@ -448,7 +418,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="sqlconn_8cc_source.html#l00030">30</a> of file <a class="el" href="sqlconn_8cc_source.html">sqlconn.cc</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8cc_source.html#l00035">35</a> of file <a class="el" href="sqlconn_8cc_source.html">sqlconn.cc</a>.</p>
 
 </div>
 </div>
@@ -476,7 +446,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="sqlconn_8cc_source.html#l00054">54</a> of file <a class="el" href="sqlconn_8cc_source.html">sqlconn.cc</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8cc_source.html#l00059">59</a> of file <a class="el" href="sqlconn_8cc_source.html">sqlconn.cc</a>.</p>
 
 </div>
 </div>
@@ -510,14 +480,14 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="sqlconn_8cc_source.html#l00038">38</a> of file <a class="el" href="sqlconn_8cc_source.html">sqlconn.cc</a>.</p>
+<p>Definition at line <a class="el" href="sqlconn_8cc_source.html#l00043">43</a> of file <a class="el" href="sqlconn_8cc_source.html">sqlconn.cc</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 12 2012 23:44:00 for GTBServer by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Jun 13 2012 02:48:12 for GTBServer by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1
 </small></address>

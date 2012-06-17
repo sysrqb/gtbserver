@@ -8,7 +8,6 @@ var searchData=
   ['patronexception',['PatronException',['../classPatronException.html',1,'PatronException'],['../classPatronException.html#a05f95c7988a2f5ef136fac7a47e58120',1,'PatronException::PatronException()']]],
   ['patroninfo',['PatronInfo',['../classPatronInfo.html',1,'PatronInfo'],['../classPatronInfo.html#ae02623c5e13529fc011dbba7746c716a',1,'PatronInfo::PatronInfo()'],['../classPatronInfo.html#abc18cf076e3826932b73962712786a97',1,'PatronInfo::PatronInfo(const PatronInfo &amp;from)']]],
   ['patronlist',['PatronList',['../classPatronList.html',1,'PatronList'],['../classPatronList.html#af1c10e00e8468c9dc1c4f999a59a12e2',1,'PatronList::PatronList()'],['../classPatronList.html#adc75f5233ac7feed3df55f72e1157c9b',1,'PatronList::PatronList(const PatronList &amp;from)']]],
-  ['patronpb',['patronpb',['../sqlconn_8hpp.html#a842322c5ee85180d80be00c8046c5d8f',1,'sqlconn.hpp']]],
   ['phone',['phone',['../classPatronInfo.html#a15ce60dbafa30f6c63faf467a3c857d2',1,'PatronInfo']]],
   ['pickup',['pickup',['../classPatronInfo.html#a95e3e2bb80dd7f454112412f6225eca3',1,'PatronInfo']]],
   ['pid',['pid',['../classPatronInfo.html#a564fa2ea02f19047b56d9121b09ae861',1,'PatronInfo']]],

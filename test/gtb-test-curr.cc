@@ -35,6 +35,7 @@ TEST(GETCURRENT, CallsGetCurrEmptyVector)
   EXPECT_NE(0, npladdr);
   EXPECT_TRUE(apbRes.has_plpatronlist());
   EXPECT_EQ(0, aMySQLConn->getCurr(5, apbPL, old));
+
 }
 
 TEST(GETCURRENT, CallsGetCurrNonEmptyVector)

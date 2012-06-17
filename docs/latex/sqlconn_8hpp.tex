@@ -1,11 +1,11 @@
 \hypertarget{sqlconn_8hpp}{\section{include/sqlconn.hpp File Reference}
 \label{sqlconn_8hpp}\index{include/sqlconn.\-hpp@{include/sqlconn.\-hpp}}
 }
-{\ttfamily \#include $<$gnutls/gnutls.\-h$>$}\\*
 {\ttfamily \#include $<$netinet/in.\-h$>$}\\*
 {\ttfamily \#include $<$netdb.\-h$>$}\\*
 {\ttfamily \#include $<$arpa/inet.\-h$>$}\\*
 {\ttfamily \#include $<$sys/socket.\-h$>$}\\*
+{\ttfamily \#include $<$gnutls/gnutls.\-h$>$}\\*
 {\ttfamily \#include $<$mysql\-\_\-connection.\-h$>$}\\*
 {\ttfamily \#include $<$cppconn/driver.\-h$>$}\\*
 {\ttfamily \#include $<$cppconn/datatype.\-h$>$}\\*
@@ -14,10 +14,10 @@
 {\ttfamily \#include $<$cppconn/statement.\-h$>$}\\*
 {\ttfamily \#include $<$cppconn/prepared\-\_\-statement.\-h$>$}\\*
 {\ttfamily \#include $<$string.\-h$>$}\\*
-{\ttfamily \#include \char`\"{}cred.\-h\char`\"{}}\\*
 {\ttfamily \#include $<$stdlib.\-h$>$}\\*
 {\ttfamily \#include \char`\"{}patron.\-pb.\-h\char`\"{}}\\*
 {\ttfamily \#include \char`\"{}communication.\-pb.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}cred.\-h\char`\"{}}\\*
 \subsection*{Classes}
 \begin{DoxyCompactItemize}
 \item 
@@ -25,10 +25,6 @@ class \hyperlink{classMySQLConn}{My\-S\-Q\-L\-Conn}
 \begin{DoxyCompactList}\small\item\em Handle connection to My\-S\-Q\-L/\-Maria\-D\-B server. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsection*{Macros}
 \begin{DoxyCompactItemize}
-\item 
-\#define \hyperlink{sqlconn_8hpp_a842322c5ee85180d80be00c8046c5d8f}{patronpb}
-\item 
-\#define \hyperlink{sqlconn_8hpp_ab9bc62b5b8995e6a7ba22345d4030d87}{commnpb}
 \item 
 \#define \hyperlink{sqlconn_8hpp_a683663076939360c8940cbcfa1346ff8}{H\-A\-S\-H\-S\-T\-M\-T}~\char`\"{}S\-E\-L\-E\-C\-T car F\-R\-O\-M activeusers W\-H\-E\-R\-E nightlyhash = ?\char`\"{}
 \item 
@@ -70,19 +66,12 @@ gnutls\-\_\-datum\-\_\-t \hyperlink{sqlconn_8hpp_ac8c8f3de9948a04f1d93921b762f86
 
 
 \subsection{Macro Definition Documentation}
-\hypertarget{sqlconn_8hpp_ab9bc62b5b8995e6a7ba22345d4030d87}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!commnpb@{commnpb}}
-\index{commnpb@{commnpb}!sqlconn.hpp@{sqlconn.\-hpp}}
-\subsubsection[{commnpb}]{\setlength{\rightskip}{0pt plus 5cm}\#define commnpb}}\label{sqlconn_8hpp_ab9bc62b5b8995e6a7ba22345d4030d87}
-
-
-Definition at line 50 of file sqlconn.\-hpp.
-
 \hypertarget{sqlconn_8hpp_ad72dbcf6d0153db1b8d8a58001feed83}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!D\-E\-B\-U\-G@{D\-E\-B\-U\-G}}
 \index{D\-E\-B\-U\-G@{D\-E\-B\-U\-G}!sqlconn.hpp@{sqlconn.\-hpp}}
 \subsubsection[{D\-E\-B\-U\-G}]{\setlength{\rightskip}{0pt plus 5cm}\#define D\-E\-B\-U\-G~1}}\label{sqlconn_8hpp_ad72dbcf6d0153db1b8d8a58001feed83}
 
 
-Definition at line 56 of file sqlconn.\-hpp.
+Definition at line 46 of file sqlconn.\-hpp.
 
 \hypertarget{sqlconn_8hpp_a96b765341170ee21d8f28b12f7c3f08f}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!G\-E\-T\-H\-O\-S\-T@{G\-E\-T\-H\-O\-S\-T}}
 \index{G\-E\-T\-H\-O\-S\-T@{G\-E\-T\-H\-O\-S\-T}!sqlconn.hpp@{sqlconn.\-hpp}}
@@ -95,28 +84,21 @@ Definition at line 56 of file sqlconn.\-hpp.
 )~proto host \char`\"{}\-:\char`\"{} port}}\label{sqlconn_8hpp_a96b765341170ee21d8f28b12f7c3f08f}
 
 
-Definition at line 82 of file sqlconn.\-hpp.
+Definition at line 78 of file sqlconn.\-hpp.
 
 \hypertarget{sqlconn_8hpp_a683663076939360c8940cbcfa1346ff8}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!H\-A\-S\-H\-S\-T\-M\-T@{H\-A\-S\-H\-S\-T\-M\-T}}
 \index{H\-A\-S\-H\-S\-T\-M\-T@{H\-A\-S\-H\-S\-T\-M\-T}!sqlconn.hpp@{sqlconn.\-hpp}}
 \subsubsection[{H\-A\-S\-H\-S\-T\-M\-T}]{\setlength{\rightskip}{0pt plus 5cm}\#define H\-A\-S\-H\-S\-T\-M\-T~\char`\"{}S\-E\-L\-E\-C\-T car F\-R\-O\-M activeusers W\-H\-E\-R\-E nightlyhash = ?\char`\"{}}}\label{sqlconn_8hpp_a683663076939360c8940cbcfa1346ff8}
 
 
-Definition at line 54 of file sqlconn.\-hpp.
-
-\hypertarget{sqlconn_8hpp_a842322c5ee85180d80be00c8046c5d8f}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!patronpb@{patronpb}}
-\index{patronpb@{patronpb}!sqlconn.hpp@{sqlconn.\-hpp}}
-\subsubsection[{patronpb}]{\setlength{\rightskip}{0pt plus 5cm}\#define patronpb}}\label{sqlconn_8hpp_a842322c5ee85180d80be00c8046c5d8f}
-
-
-Definition at line 45 of file sqlconn.\-hpp.
+Definition at line 43 of file sqlconn.\-hpp.
 
 \hypertarget{sqlconn_8hpp_a7a53a5550d5df83cea31b5e73fd9de5d}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!P\-S\-\_\-\-A\-D\-D\-L\-O\-C\-A\-T\-I\-O\-N@{P\-S\-\_\-\-A\-D\-D\-L\-O\-C\-A\-T\-I\-O\-N}}
 \index{P\-S\-\_\-\-A\-D\-D\-L\-O\-C\-A\-T\-I\-O\-N@{P\-S\-\_\-\-A\-D\-D\-L\-O\-C\-A\-T\-I\-O\-N}!sqlconn.hpp@{sqlconn.\-hpp}}
 \subsubsection[{P\-S\-\_\-\-A\-D\-D\-L\-O\-C\-A\-T\-I\-O\-N}]{\setlength{\rightskip}{0pt plus 5cm}\#define P\-S\-\_\-\-A\-D\-D\-L\-O\-C\-A\-T\-I\-O\-N~\char`\"{}I\-N\-S\-E\-R\-T I\-N\-T\-O locations (name, value) V\-A\-L\-U\-E\-S (?, ?)\char`\"{}}}\label{sqlconn_8hpp_a7a53a5550d5df83cea31b5e73fd9de5d}
 
 
-Definition at line 76 of file sqlconn.\-hpp.
+Definition at line 72 of file sqlconn.\-hpp.
 
 \hypertarget{sqlconn_8hpp_a7e583ca5926f681d54531d2546b05a62}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!P\-S\-\_\-\-G\-E\-T\-C\-U\-R\-R\-R\-I\-D\-E\-S@{P\-S\-\_\-\-G\-E\-T\-C\-U\-R\-R\-R\-I\-D\-E\-S}}
 \index{P\-S\-\_\-\-G\-E\-T\-C\-U\-R\-R\-R\-I\-D\-E\-S@{P\-S\-\_\-\-G\-E\-T\-C\-U\-R\-R\-R\-I\-D\-E\-S}!sqlconn.hpp@{sqlconn.\-hpp}}
@@ -129,14 +111,14 @@ Definition at line 76 of file sqlconn.\-hpp.
 \end{DoxyCode}
 
 
-Definition at line 61 of file sqlconn.\-hpp.
+Definition at line 54 of file sqlconn.\-hpp.
 
 \hypertarget{sqlconn_8hpp_a8330e10c0cee03f43afa9528ec466b8d}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!P\-S\-\_\-\-G\-E\-T\-L\-A\-S\-T\-I\-N\-S\-E\-R\-T\-I\-D@{P\-S\-\_\-\-G\-E\-T\-L\-A\-S\-T\-I\-N\-S\-E\-R\-T\-I\-D}}
 \index{P\-S\-\_\-\-G\-E\-T\-L\-A\-S\-T\-I\-N\-S\-E\-R\-T\-I\-D@{P\-S\-\_\-\-G\-E\-T\-L\-A\-S\-T\-I\-N\-S\-E\-R\-T\-I\-D}!sqlconn.hpp@{sqlconn.\-hpp}}
 \subsubsection[{P\-S\-\_\-\-G\-E\-T\-L\-A\-S\-T\-I\-N\-S\-E\-R\-T\-I\-D}]{\setlength{\rightskip}{0pt plus 5cm}\#define P\-S\-\_\-\-G\-E\-T\-L\-A\-S\-T\-I\-N\-S\-E\-R\-T\-I\-D~\char`\"{}S\-E\-L\-E\-C\-T L\-A\-S\-T\-\_\-\-I\-N\-S\-E\-R\-T\-\_\-\-I\-D()\char`\"{}}}\label{sqlconn_8hpp_a8330e10c0cee03f43afa9528ec466b8d}
 
 
-Definition at line 80 of file sqlconn.\-hpp.
+Definition at line 76 of file sqlconn.\-hpp.
 
 \hypertarget{sqlconn_8hpp_a34e92bfe582bf66158f12c8a9a255efb}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!P\-S\-\_\-\-G\-E\-T\-L\-O\-C\-A\-T\-I\-O\-N\-I\-D@{P\-S\-\_\-\-G\-E\-T\-L\-O\-C\-A\-T\-I\-O\-N\-I\-D}}
 \index{P\-S\-\_\-\-G\-E\-T\-L\-O\-C\-A\-T\-I\-O\-N\-I\-D@{P\-S\-\_\-\-G\-E\-T\-L\-O\-C\-A\-T\-I\-O\-N\-I\-D}!sqlconn.hpp@{sqlconn.\-hpp}}
@@ -148,7 +130,7 @@ Definition at line 80 of file sqlconn.\-hpp.
 \end{DoxyCode}
 
 
-Definition at line 67 of file sqlconn.\-hpp.
+Definition at line 62 of file sqlconn.\-hpp.
 
 \hypertarget{sqlconn_8hpp_affe3409a2e79ed4913f2a72e1b5f5133}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!P\-S\-\_\-\-G\-E\-T\-P\-A\-T\-R\-O\-N\-I\-N\-F\-O@{P\-S\-\_\-\-G\-E\-T\-P\-A\-T\-R\-O\-N\-I\-N\-F\-O}}
 \index{P\-S\-\_\-\-G\-E\-T\-P\-A\-T\-R\-O\-N\-I\-N\-F\-O@{P\-S\-\_\-\-G\-E\-T\-P\-A\-T\-R\-O\-N\-I\-N\-F\-O}!sqlconn.hpp@{sqlconn.\-hpp}}
@@ -160,7 +142,7 @@ Definition at line 67 of file sqlconn.\-hpp.
 \end{DoxyCode}
 
 
-Definition at line 64 of file sqlconn.\-hpp.
+Definition at line 58 of file sqlconn.\-hpp.
 
 \hypertarget{sqlconn_8hpp_a72649010617668f23667ea0146c08c1d}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!P\-S\-\_\-\-G\-E\-T\-S\-E\-S\-S\-S\-T\-M\-T@{P\-S\-\_\-\-G\-E\-T\-S\-E\-S\-S\-S\-T\-M\-T}}
 \index{P\-S\-\_\-\-G\-E\-T\-S\-E\-S\-S\-S\-T\-M\-T@{P\-S\-\_\-\-G\-E\-T\-S\-E\-S\-S\-S\-T\-M\-T}!sqlconn.hpp@{sqlconn.\-hpp}}
@@ -172,7 +154,7 @@ Definition at line 64 of file sqlconn.\-hpp.
 \end{DoxyCode}
 
 
-Definition at line 59 of file sqlconn.\-hpp.
+Definition at line 51 of file sqlconn.\-hpp.
 
 \hypertarget{sqlconn_8hpp_aaa79e76bd0b6fd804b612f264f7bc7a0}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!P\-S\-\_\-\-R\-I\-D\-E\-A\-D\-D\-P\-A\-T\-R\-O\-N@{P\-S\-\_\-\-R\-I\-D\-E\-A\-D\-D\-P\-A\-T\-R\-O\-N}}
 \index{P\-S\-\_\-\-R\-I\-D\-E\-A\-D\-D\-P\-A\-T\-R\-O\-N@{P\-S\-\_\-\-R\-I\-D\-E\-A\-D\-D\-P\-A\-T\-R\-O\-N}!sqlconn.hpp@{sqlconn.\-hpp}}
@@ -184,14 +166,14 @@ Definition at line 59 of file sqlconn.\-hpp.
 \end{DoxyCode}
 
 
-Definition at line 73 of file sqlconn.\-hpp.
+Definition at line 69 of file sqlconn.\-hpp.
 
 \hypertarget{sqlconn_8hpp_a257c66791063a5b7b9c5da042f536a44}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!P\-S\-\_\-\-R\-I\-D\-E\-A\-D\-D\-T\-I\-M\-E@{P\-S\-\_\-\-R\-I\-D\-E\-A\-D\-D\-T\-I\-M\-E}}
 \index{P\-S\-\_\-\-R\-I\-D\-E\-A\-D\-D\-T\-I\-M\-E@{P\-S\-\_\-\-R\-I\-D\-E\-A\-D\-D\-T\-I\-M\-E}!sqlconn.hpp@{sqlconn.\-hpp}}
 \subsubsection[{P\-S\-\_\-\-R\-I\-D\-E\-A\-D\-D\-T\-I\-M\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define P\-S\-\_\-\-R\-I\-D\-E\-A\-D\-D\-T\-I\-M\-E~\char`\"{}I\-N\-S\-E\-R\-T I\-N\-T\-O ridetimes (ridecreated, pid) V\-A\-L\-U\-E\-S (?, ?)\char`\"{}}}\label{sqlconn_8hpp_a257c66791063a5b7b9c5da042f536a44}
 
 
-Definition at line 78 of file sqlconn.\-hpp.
+Definition at line 74 of file sqlconn.\-hpp.
 
 \hypertarget{sqlconn_8hpp_a07c7040f2c656449bfacc432d12bcf55}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!P\-S\-\_\-\-S\-E\-T\-S\-E\-S\-S\-S\-T\-M\-T@{P\-S\-\_\-\-S\-E\-T\-S\-E\-S\-S\-S\-T\-M\-T}}
 \index{P\-S\-\_\-\-S\-E\-T\-S\-E\-S\-S\-S\-T\-M\-T@{P\-S\-\_\-\-S\-E\-T\-S\-E\-S\-S\-S\-T\-M\-T}!sqlconn.hpp@{sqlconn.\-hpp}}
@@ -203,7 +185,7 @@ Definition at line 78 of file sqlconn.\-hpp.
 \end{DoxyCode}
 
 
-Definition at line 57 of file sqlconn.\-hpp.
+Definition at line 48 of file sqlconn.\-hpp.
 
 \hypertarget{sqlconn_8hpp_a813974a68b006d37134c9fe8bda96d6b}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!P\-S\-\_\-\-S\-E\-T\-U\-P\-D\-T\-R\-I\-D\-E\-S@{P\-S\-\_\-\-S\-E\-T\-U\-P\-D\-T\-R\-I\-D\-E\-S}}
 \index{P\-S\-\_\-\-S\-E\-T\-U\-P\-D\-T\-R\-I\-D\-E\-S@{P\-S\-\_\-\-S\-E\-T\-U\-P\-D\-T\-R\-I\-D\-E\-S}!sqlconn.hpp@{sqlconn.\-hpp}}
@@ -217,7 +199,7 @@ Definition at line 57 of file sqlconn.\-hpp.
 \end{DoxyCode}
 
 
-Definition at line 70 of file sqlconn.\-hpp.
+Definition at line 65 of file sqlconn.\-hpp.
 
 
 
@@ -232,7 +214,7 @@ Definition at line 70 of file sqlconn.\-hpp.
 )}}\label{sqlconn_8hpp_ab51e25b1102c88a2ec9aeb8034255306}
 
 
-Definition at line 47 of file sqlconn.\-cc.
+Definition at line 52 of file sqlconn.\-cc.
 
 \hypertarget{sqlconn_8hpp_a896ae1b4f151a261834cf03f699ae537}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!c\-\_\-store\-\_\-connection@{c\-\_\-store\-\_\-connection}}
 \index{c\-\_\-store\-\_\-connection@{c\-\_\-store\-\_\-connection}!sqlconn.hpp@{sqlconn.\-hpp}}
@@ -245,7 +227,7 @@ Definition at line 47 of file sqlconn.\-cc.
 )}}\label{sqlconn_8hpp_a896ae1b4f151a261834cf03f699ae537}
 
 
-Definition at line 30 of file sqlconn.\-cc.
+Definition at line 35 of file sqlconn.\-cc.
 
 \hypertarget{sqlconn_8hpp_ac8c8f3de9948a04f1d93921b762f86b9}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!cpp\-\_\-retrieve\-\_\-connection@{cpp\-\_\-retrieve\-\_\-connection}}
 \index{cpp\-\_\-retrieve\-\_\-connection@{cpp\-\_\-retrieve\-\_\-connection}!sqlconn.hpp@{sqlconn.\-hpp}}
@@ -257,7 +239,7 @@ Definition at line 30 of file sqlconn.\-cc.
 )}}\label{sqlconn_8hpp_ac8c8f3de9948a04f1d93921b762f86b9}
 
 
-Definition at line 54 of file sqlconn.\-cc.
+Definition at line 59 of file sqlconn.\-cc.
 
 \hypertarget{sqlconn_8hpp_abc19e97ae9303768a39178f37c6f6a78}{\index{sqlconn.\-hpp@{sqlconn.\-hpp}!cpp\-\_\-store\-\_\-connection@{cpp\-\_\-store\-\_\-connection}}
 \index{cpp\-\_\-store\-\_\-connection@{cpp\-\_\-store\-\_\-connection}!sqlconn.hpp@{sqlconn.\-hpp}}
@@ -270,5 +252,5 @@ Definition at line 54 of file sqlconn.\-cc.
 )}}\label{sqlconn_8hpp_abc19e97ae9303768a39178f37c6f6a78}
 
 
-Definition at line 38 of file sqlconn.\-cc.
+Definition at line 43 of file sqlconn.\-cc.
 

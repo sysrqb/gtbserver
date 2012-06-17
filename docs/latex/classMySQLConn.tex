@@ -50,7 +50,7 @@ Handle connection to My\-S\-Q\-L/\-Maria\-D\-B server.
 
 Used to authenicate clients, store, retrieve, and update patron information. 
 
-Definition at line 115 of file sqlconn.\-hpp.
+Definition at line 111 of file sqlconn.\-hpp.
 
 
 
@@ -68,7 +68,7 @@ Constructor.
 
 
 
-Definition at line 124 of file sqlconn.\-hpp.
+Definition at line 120 of file sqlconn.\-hpp.
 
 \hypertarget{classMySQLConn_a1a78abd249f89676dd3ae9cffe121ba0}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!$\sim$\-My\-S\-Q\-L\-Conn@{$\sim$\-My\-S\-Q\-L\-Conn}}
 \index{$\sim$\-My\-S\-Q\-L\-Conn@{$\sim$\-My\-S\-Q\-L\-Conn}!MySQLConn@{My\-S\-Q\-L\-Conn}}
@@ -83,7 +83,7 @@ Deconstructor.
 
 
 
-Definition at line 130 of file sqlconn.\-hpp.
+Definition at line 126 of file sqlconn.\-hpp.
 
 
 
@@ -115,7 +115,7 @@ Generates S\-H\-A256 hash of location that will be used as the unique value of t
 \item[\hyperlink{todo__todo000010}{Todo}]Handle S\-Q\-L\-Exception better \end{DoxyRefDesc}
 
 
-Definition at line 411 of file sqlconn.\-cc.
+Definition at line 390 of file sqlconn.\-cc.
 
 \hypertarget{classMySQLConn_a017c08a9bfdf5c20509f754af7c8c7f7}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!add\-Patron@{add\-Patron}}
 \index{add\-Patron@{add\-Patron}!MySQLConn@{My\-S\-Q\-L\-Conn}}
@@ -145,7 +145,7 @@ The first pid of the new patrons that were inserted. Actually it is the last pid
 \item[\hyperlink{todo__todo000009}{Todo}]Handle S\-Q\-L\-Exception better \end{DoxyRefDesc}
 
 
-Definition at line 438 of file sqlconn.\-cc.
+Definition at line 417 of file sqlconn.\-cc.
 
 \hypertarget{classMySQLConn_ae96f09e4aa859a5294c90ec498c38928}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!check\-Auth@{check\-Auth}}
 \index{check\-Auth@{check\-Auth}!MySQLConn@{My\-S\-Q\-L\-Conn}}
@@ -178,7 +178,7 @@ Authenticate the client and bind the Net\-Id to the car number. This also ensure
 \item[\hyperlink{todo__todo000006}{Todo}]Implement. This only verifies that the three fields are not empty strings. It must actually query the database and add the information to the D\-B for later verification. \end{DoxyRefDesc}
 
 
-Definition at line 148 of file sqlconn.\-cc.
+Definition at line 159 of file sqlconn.\-cc.
 
 \hypertarget{classMySQLConn_ab0a639e5ebb4220e82f4e4f994059774}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!exec\-Auth@{exec\-Auth}}
 \index{exec\-Auth@{exec\-Auth}!MySQLConn@{My\-S\-Q\-L\-Conn}}
@@ -217,7 +217,7 @@ session\-\_\-data gnutls\-\_\-datum\-\_\-t holding session data
 \end{DoxyReturn}
 
 
-Definition at line 103 of file sqlconn.\-cc.
+Definition at line 108 of file sqlconn.\-cc.
 
 \hypertarget{classMySQLConn_a259785bc51cae6d0c6c950f6bdf6f475}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!get\-Curr@{get\-Curr}}
 \index{get\-Curr@{get\-Curr}!MySQLConn@{My\-S\-Q\-L\-Conn}}
@@ -254,7 +254,7 @@ Check that all rides in old are still assigned to carnum and inform client to re
 Handle S\-Q\-L\-Exception better \end{DoxyRefDesc}
 
 
-Definition at line 167 of file sqlconn.\-cc.
+Definition at line 178 of file sqlconn.\-cc.
 
 \hypertarget{classMySQLConn_ac8aac8ba065bf2f14d1861969a6e2c9e}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!get\-Last\-Insert\-Id@{get\-Last\-Insert\-Id}}
 \index{get\-Last\-Insert\-Id@{get\-Last\-Insert\-Id}!MySQLConn@{My\-S\-Q\-L\-Conn}}
@@ -269,7 +269,7 @@ Returns the last insert I\-D.
 
 
 
-Definition at line 380 of file sqlconn.\-cc.
+Definition at line 476 of file sqlconn.\-cc.
 
 \hypertarget{classMySQLConn_a8ffe3e96eb70c795c4ade821e70dd6bf}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!get\-Location\-I\-D@{get\-Location\-I\-D}}
 \index{get\-Location\-I\-D@{get\-Location\-I\-D}!MySQLConn@{My\-S\-Q\-L\-Conn}}
@@ -301,7 +301,7 @@ get\-Last\-Insert\-I\-D
 \item[\hyperlink{todo__todo000012}{Todo}]Handle S\-Q\-L\-Exception better \end{DoxyRefDesc}
 
 
-Definition at line 281 of file sqlconn.\-cc.
+Definition at line 292 of file sqlconn.\-cc.
 
 \hypertarget{classMySQLConn_ae26fdad9114c884ff5b8bfefebee4254}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!get\-Patron\-Info@{get\-Patron\-Info}}
 \index{get\-Patron\-Info@{get\-Patron\-Info}!MySQLConn@{My\-S\-Q\-L\-Conn}}
@@ -333,7 +333,7 @@ Populate the \hyperlink{classPatronList}{Patron\-List} i\-\_\-apb\-Patl with the
 \end{DoxyExceptions}
 
 
-Definition at line 330 of file sqlconn.\-cc.
+Definition at line 341 of file sqlconn.\-cc.
 
 \hypertarget{classMySQLConn_a0ab687f92039d6f9934bcd638eecd8e6}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!get\-S\-H\-A256\-Hash@{get\-S\-H\-A256\-Hash}}
 \index{get\-S\-H\-A256\-Hash@{get\-S\-H\-A256\-Hash}!MySQLConn@{My\-S\-Q\-L\-Conn}}
@@ -356,7 +356,7 @@ Return S\-H\-A256 hash of input string sdata.
 \end{DoxyParams}
 
 
-Definition at line 477 of file sqlconn.\-cc.
+Definition at line 463 of file sqlconn.\-cc.
 
 \hypertarget{classMySQLConn_a1653065e63d0dc420392b5694e688237}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!set\-Updt@{set\-Updt}}
 \index{set\-Updt@{set\-Updt}!MySQLConn@{My\-S\-Q\-L\-Conn}}
@@ -393,7 +393,7 @@ Handle conflict resolution
 Handle S\-Q\-L\-Exception better \end{DoxyRefDesc}
 
 
-Definition at line 229 of file sqlconn.\-cc.
+Definition at line 240 of file sqlconn.\-cc.
 
 \hypertarget{classMySQLConn_a081f010ada91cd0d0f67ab8dddb5d8af}{\index{My\-S\-Q\-L\-Conn@{My\-S\-Q\-L\-Conn}!store\-Car\-Info@{store\-Car\-Info}}
 \index{store\-Car\-Info@{store\-Car\-Info}!MySQLConn@{My\-S\-Q\-L\-Conn}}
@@ -446,7 +446,7 @@ By enabling session resume, subsequent sessions are established quicker.
 \end{DoxyParams}
 
 
-Definition at line 67 of file sqlconn.\-cc.
+Definition at line 72 of file sqlconn.\-cc.
 
 
 

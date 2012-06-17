@@ -51,18 +51,18 @@
 #define PS_GETSESSSTMT "SELECT sessionkey FROM sessionconnection"\
     " WHERE ptr=? AND sessiondata=?"
 
-#define PS_GETCURRRIDES "SELECT * FROM saferide.rides, saferide.ridetimes " \
-    "WHERE LEFT(ridetimes.ridecreate, 10) = ? AND status=? AND " \
+#define PS_GETCURRRIDES "SELECT * FROM saferide.patron, saferide.ridetimes " \
+    "WHERE LEFT(ridetimes.ridecreated, 10) = ? AND status=? AND " \
     " ridetimes.pid = patron.pid AND car=? ORDER BY car ASC"
 
-#define PS_GETPATRONINFO "SELECT * FROM saferide.patron, saferide.riderimes " \
+#define PS_GETPATRONINFO "SELECT * FROM saferide.patron, saferide.ridetimes " \
     "WHERE num = ? AND ridetimes.pid = patron.pid"
 
 
 #define PS_GETLOCATIONID "SELECT lid FROM locations WHERE value = ?" \
     " OR name = ?"
 
-#define PS_SETUPDTRIDES "UPDATE saferide.rides SET name=?, cell=?, riders=?,"  \
+#define PS_SETUPDTRIDES "UPDATE saferide.patron SET name=?, cell=?, riders=?,"  \
     " status=?, pickup=?, dropoff=?, timetaken=?, timedone=? WHERE num=? AND " \
     " car=?"
 
@@ -119,12 +119,12 @@ class MySQLConn {
     /** \brief Constructor. */
     MySQLConn() {
       driver = get_driver_instance();
-      //con = driver->connect( GTBHOST, GTBUSER, GTBPASS);
+      con = driver->connect( GTBHOST, GTBUSER, GTBPASS);
     }
 
     /** \brief Deconstructor. */
     ~MySQLConn() {
-      //delete con;
+      delete con;
       //free(driver); //deconstructor is protected
     }
 

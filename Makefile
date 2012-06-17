@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-obj = gtbserver.o main.o sqlconn.o gtbcommunication.o
+obj = main.o sqlconn.o gtbcommunication.o
 SRC=src/
 TEST=test/
 INCLUDE=include/
@@ -23,7 +23,7 @@ PKGCOPTS = `pkg-config gnutls --cflags --libs protobuf`
 CC=clang++ -ggdb -Wall -I$(INCLUDE)
 GTEST=../gtest
 
-gtb : $(obj)
+gtb : gtbserver.o
 	$(CC) $(LINKEROPTS) -o gtbserver $(obj) communication.pb.o patron.pb.o $(PKGCOPTS)
 	#doxygen docs/gtbdoxygen.conf
 
@@ -39,7 +39,7 @@ patron.pb.cc :
 	mv $(SRC)patron.pb.h $(INCLUDE)
 
 docs:
-	#doxygen docs/gtbdoxygen.conf
+	doxygen docs/gtbdoxygen.conf
 
 
 ##############
@@ -47,10 +47,16 @@ docs:
 ##############
 
 test : gtest-all.cc
-	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-all $(TEST)gtb-test-curr.cc $(TEST)gtb-test-comm.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)gtbserver.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
+	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-all $(TEST)gtb-test-main.cc $(TEST)gtb-test-curr.cc $(TEST)gtb-test-comm.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
 
 testcomm : gtest-all.cc
-	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-comm $(TEST)gtb-test-comm.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)gtbserver.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
+	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-comm $(TEST)externalfunctions.cc $(TEST)gtb-test-comm.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
+
+testcurr : gtest-all.cc
+	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-curr $(TEST)gtb-test-curr.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
+
+sigtest : gtest-all.cc
+	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-main $(TEST)gtb-test-main.cc libgtest.a $(PKGCOPTS)
 
 gtest-all.cc : gtest_main.o
 	$(CC) -I$(GTEST)/include -I$(GTEST) -c $(GTEST)/src/gtest-all.cc
@@ -68,4 +74,4 @@ cleantest:
 
 .Phony : clean
 clean :
-	rm gtbserver $(obj) communication.pb.o patron.pb.o
+	rm gtbserver $(obj) *.o 
