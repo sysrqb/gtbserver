@@ -207,7 +207,10 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, std::vector<int> old)
       for (; i < old.size(); i++)
       {
         if (old.at(i) == nCarNum)
+	{
+	  old.erase(i);
 	  continue;
+	}
       }
       apbPI = i_apbPatl->add_patron();
       apbPI->set_name(res->getString("name"));
