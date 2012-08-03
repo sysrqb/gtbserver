@@ -427,14 +427,11 @@ int GTBCommunication::handleConnection(int fdAccepted, int sockfd)
     {
       cout << "First Return value: " << nRetVal << endl;
     }
-    /*if (nRetVal == lastret)
-    if ( nRetVal == GNUTLS_E_INTERNAL_ERROR ||
-	 nRetVal == GNUTLS_E_INVALID_SESSION )
+    if ( i > 10 )
     {
       close(fdAccepted);
       throw BadConnectionException("Failed to Handshake");
-    }*/
-    lastret = nRetVal;
+    }
   } while (gnutls_error_is_fatal (nRetVal) != GNUTLS_E_SUCCESS);
   if(debug & 18)
   {
@@ -840,9 +837,13 @@ GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
     vrides.insert(vrides.end(), i_aPBReq->nparams(i));
 
   cout << "C: Getting Current Rides" << endl;
-  nRetVal = m_MySQLConn->getCurr(i_aPBReq->ncarid(), i_pbRes->mutable_plpatronlist(), vrides);
-  if (nRetVal == -1)
+  try
+  {
+    m_MySQLConn->getCurr(i_aPBReq->ncarid(), i_pbRes->mutable_plpatronlist(), vrides);
+  } catch (PatronException &e)
+  {
     i_pbRes->clear_plpatronlist();
+  }
   return 0;
 }
 
