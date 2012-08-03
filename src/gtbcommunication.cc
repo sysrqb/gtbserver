@@ -64,9 +64,9 @@ void GTBCommunication::gtb_wrapperForCommunication()
   initGNUTLS();
 
 
-  fdAccepted = listeningForClient(sockfd);
   for(;;)
   {
+    fdAccepted = listeningForClient(sockfd);
     try
     {
       handleConnection(fdAccepted, sockfd);
