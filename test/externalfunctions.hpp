@@ -19,7 +19,7 @@
 
 #include "../test/gtbcommunicationtest.hpp"
 
-void startserver(bool throws);
+void *(startserver)(void * expectthrow);
 int establishTCPConnection();
 void handleConnectionWrapper(GTBCommunication * aGtbComm, int sockfd, bool throws);
 void gnutls_log_fun(int level, const char * loginfo);

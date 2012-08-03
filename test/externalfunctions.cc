@@ -38,7 +38,7 @@ using namespace std;
  *
  * \sa listenForClient
  */
-void cpp_forCommunication(void * instance)
+void cpp_forCommunicationTestHelper(void * instance)
 {
   struct gtbasyncthread * gtbargs = (gtbasyncthread *) instance;
   gtbargs->aComm->gtb_wrapperForCommunication(gtbargs->throws);
@@ -49,15 +49,15 @@ void cpp_forCommunication(void * instance)
  * \sa cpp_listenForClient
  */
 extern "C"
-void *(for_communication)(void * instance)
+void *(for_communicationTestHelper)(void * instance)
 {
-  cpp_forCommunication(instance);
-  //return 0;
+  cpp_forCommunicationTestHelper(instance);
+  return NULL;
 }
 
 
 void 
-startserver(bool throws)
+*(startserver)(void * expectthrow)
 {
 //FileDescriptors: sockfd (listen), new_fd (new connections)
   pthread_attr_t attr;
@@ -66,6 +66,8 @@ startserver(bool throws)
   int signum(0);
   sigset_t set;
   Request aPBReq;
+  bool * throws;
+  throws = static_cast<bool *>(expectthrow);
 
   GTBCommunicationTest aComm(18);
   sigemptyset(&set);
@@ -88,8 +90,8 @@ startserver(bool throws)
   aComm.threadid_push_back(thread_id);
   struct gtbasyncthread gtbargs;
   gtbargs.aComm = &aComm;
-  gtbargs.throws = throws;
-  nRetVal = pthread_create(&thread_id, &attr, &for_communication, (void *) &gtbargs);
+  gtbargs.throws = *throws;
+  nRetVal = pthread_create(&thread_id, &attr, &for_communicationTestHelper, (void *) &gtbargs);
   if(nRetVal != 0)
   {
     cerr << "Failed to Create pthread!" << endl;
@@ -113,6 +115,7 @@ startserver(bool throws)
     aComm.requestQueuePop(&aPBReq);
     aComm.dealWithReq(aPBReq);
   }
+  return NULL;
 }
 
 
