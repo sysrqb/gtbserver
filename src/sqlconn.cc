@@ -201,14 +201,15 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, std::vector<int> old)
 
     res = prepStmt->executeQuery();
     delete prepStmt;
-  
+
     while ( res->next() ) {
-      int nCarNum = res->getInt("pid"), i = 0;
-      for (; i < old.size(); i++)
+      int nCarNum = res->getInt("pid");
+      std::vector<int>::iterator it;
+      for (it = old.begin(); it < old.end(); it++)
       {
-        if (old.at(i) == nCarNum)
+        if (*it == nCarNum)
 	{
-	  old.erase(i);
+	  old.erase(it);
 	  continue;
 	}
       }
@@ -235,7 +236,7 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, std::vector<int> old)
     cerr << "ERROR: " << e.what();
     cerr << " (MySQL error code: " << e.getErrorCode();
     cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
-    return -1;
+    throw PatronException();
   }
   return 0;
 }
@@ -502,7 +503,7 @@ int MySQLConn::getLastInsertId()
     cerr << "ERROR: " << e.what();
     cerr << " (MySQL error code: " << e.getErrorCode();
     cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
-    return -1;
+    throw PatronException();
   }
   return insertid;
 }
