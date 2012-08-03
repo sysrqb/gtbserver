@@ -42,7 +42,7 @@ extern "C"
 void *(for_communication)(void * instance)
 {
   cpp_forCommunication(instance);
-  //return 0;
+  return NULL;
 }
 
 int 
