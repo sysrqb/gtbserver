@@ -143,10 +143,17 @@ class Request : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_nparams();
   
-  // optional .PatronList plPatronList = 6;
+  // optional int32 nClient = 6;
+  inline bool has_nclient() const;
+  inline void clear_nclient();
+  static const int kNClientFieldNumber = 6;
+  inline ::google::protobuf::int32 nclient() const;
+  inline void set_nclient(::google::protobuf::int32 value);
+  
+  // optional .PatronList plPatronList = 7;
   inline bool has_plpatronlist() const;
   inline void clear_plpatronlist();
-  static const int kPlPatronListFieldNumber = 6;
+  static const int kPlPatronListFieldNumber = 7;
   inline const ::PatronList& plpatronlist() const;
   inline ::PatronList* mutable_plpatronlist();
   inline ::PatronList* release_plpatronlist();
@@ -159,6 +166,8 @@ class Request : public ::google::protobuf::Message {
   inline void clear_has_sreqtype();
   inline void set_has_ncarid();
   inline void clear_has_ncarid();
+  inline void set_has_nclient();
+  inline void clear_has_nclient();
   inline void set_has_plpatronlist();
   inline void clear_has_plpatronlist();
   
@@ -171,9 +180,10 @@ class Request : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > nparams_;
   mutable int _nparams_cached_byte_size_;
   ::PatronList* plpatronlist_;
+  ::google::protobuf::int32 nclient_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
   
   friend void  protobuf_AddDesc_communication_2eproto();
   friend void protobuf_AssignDesc_communication_2eproto();
@@ -498,15 +508,37 @@ Request::mutable_nparams() {
   return &nparams_;
 }
 
-// optional .PatronList plPatronList = 6;
-inline bool Request::has_plpatronlist() const {
+// optional int32 nClient = 6;
+inline bool Request::has_nclient() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
-inline void Request::set_has_plpatronlist() {
+inline void Request::set_has_nclient() {
   _has_bits_[0] |= 0x00000020u;
 }
-inline void Request::clear_has_plpatronlist() {
+inline void Request::clear_has_nclient() {
   _has_bits_[0] &= ~0x00000020u;
+}
+inline void Request::clear_nclient() {
+  nclient_ = 0;
+  clear_has_nclient();
+}
+inline ::google::protobuf::int32 Request::nclient() const {
+  return nclient_;
+}
+inline void Request::set_nclient(::google::protobuf::int32 value) {
+  set_has_nclient();
+  nclient_ = value;
+}
+
+// optional .PatronList plPatronList = 7;
+inline bool Request::has_plpatronlist() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void Request::set_has_plpatronlist() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void Request::clear_has_plpatronlist() {
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void Request::clear_plpatronlist() {
   if (plpatronlist_ != NULL) plpatronlist_->::PatronList::Clear();

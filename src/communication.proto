@@ -25,7 +25,8 @@ message Request {
   optional int32 nCarId = 3;
   repeated string sParams = 4;
   repeated int32 nParams = 5 [packed=true];
-  optional PatronList plPatronList = 6;
+  optional int32 nClient = 6;
+  optional PatronList plPatronList = 7;
 }  
 
 message Response {

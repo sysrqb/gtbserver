@@ -32,12 +32,13 @@ void protobuf_AssignDesc_communication_2eproto() {
       "communication.proto");
   GOOGLE_CHECK(file != NULL);
   Request_descriptor_ = file->message_type(0);
-  static const int Request_offsets_[6] = {
+  static const int Request_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Request, nreqid_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Request, sreqtype_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Request, ncarid_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Request, sparams_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Request, nparams_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Request, nclient_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Request, plpatronlist_),
   };
   Request_reflection_ =
@@ -105,15 +106,15 @@ void protobuf_AddDesc_communication_2eproto() {
 
   ::protobuf_AddDesc_patron_2eproto();
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\023communication.proto\032\014patron.proto\"\204\001\n\007"
+    "\n\023communication.proto\032\014patron.proto\"\225\001\n\007"
     "Request\022\016\n\006nReqId\030\001 \002(\005\022\020\n\010sReqType\030\002 \002("
     "\t\022\016\n\006nCarId\030\003 \001(\005\022\017\n\007sParams\030\004 \003(\t\022\023\n\007nP"
-    "arams\030\005 \003(\005B\002\020\001\022!\n\014plPatronList\030\006 \001(\0132\013."
-    "PatronList\"w\n\010Response\022\017\n\007nRespId\030\001 \002(\005\022"
-    "\021\n\tsResValue\030\002 \002(\t\022\017\n\007sResAdd\030\003 \003(\t\022\023\n\007n"
-    "ResAdd\030\004 \003(\005B\002\020\001\022!\n\014plPatronList\030\005 \001(\0132\013"
-    ".PatronListB$\n\"edu.uconn.guarddogs.guard"
-    "thebridge", 329);
+    "arams\030\005 \003(\005B\002\020\001\022\017\n\007nClient\030\006 \001(\005\022!\n\014plPa"
+    "tronList\030\007 \001(\0132\013.PatronList\"w\n\010Response\022"
+    "\017\n\007nRespId\030\001 \002(\005\022\021\n\tsResValue\030\002 \002(\t\022\017\n\007s"
+    "ResAdd\030\003 \003(\t\022\023\n\007nResAdd\030\004 \003(\005B\002\020\001\022!\n\014plP"
+    "atronList\030\005 \001(\0132\013.PatronListB$\n\"edu.ucon"
+    "n.guarddogs.guardthebridge", 346);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "communication.proto", &protobuf_RegisterTypes);
   Request::default_instance_ = new Request();
@@ -139,6 +140,7 @@ const int Request::kSReqTypeFieldNumber;
 const int Request::kNCarIdFieldNumber;
 const int Request::kSParamsFieldNumber;
 const int Request::kNParamsFieldNumber;
+const int Request::kNClientFieldNumber;
 const int Request::kPlPatronListFieldNumber;
 #endif  // !_MSC_VER
 
@@ -162,6 +164,7 @@ void Request::SharedCtor() {
   nreqid_ = 0;
   sreqtype_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ncarid_ = 0;
+  nclient_ = 0;
   plpatronlist_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -208,6 +211,7 @@ void Request::Clear() {
       }
     }
     ncarid_ = 0;
+    nclient_ = 0;
     if (has_plpatronlist()) {
       if (plpatronlist_ != NULL) plpatronlist_->::PatronList::Clear();
     }
@@ -307,12 +311,28 @@ bool Request::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(50)) goto parse_plPatronList;
+        if (input->ExpectTag(48)) goto parse_nClient;
         break;
       }
       
-      // optional .PatronList plPatronList = 6;
+      // optional int32 nClient = 6;
       case 6: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_nClient:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &nclient_)));
+          set_has_nclient();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(58)) goto parse_plPatronList;
+        break;
+      }
+      
+      // optional .PatronList plPatronList = 7;
+      case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_plPatronList:
@@ -381,10 +401,15 @@ void Request::SerializeWithCachedSizes(
       this->nparams(i), output);
   }
   
-  // optional .PatronList plPatronList = 6;
+  // optional int32 nClient = 6;
+  if (has_nclient()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->nclient(), output);
+  }
+  
+  // optional .PatronList plPatronList = 7;
   if (has_plpatronlist()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      6, this->plpatronlist(), output);
+      7, this->plpatronlist(), output);
   }
   
   if (!unknown_fields().empty()) {
@@ -438,11 +463,16 @@ void Request::SerializeWithCachedSizes(
       WriteInt32NoTagToArray(this->nparams(i), target);
   }
   
-  // optional .PatronList plPatronList = 6;
+  // optional int32 nClient = 6;
+  if (has_nclient()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(6, this->nclient(), target);
+  }
+  
+  // optional .PatronList plPatronList = 7;
   if (has_plpatronlist()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        6, this->plpatronlist(), target);
+        7, this->plpatronlist(), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -477,7 +507,14 @@ int Request::ByteSize() const {
           this->ncarid());
     }
     
-    // optional .PatronList plPatronList = 6;
+    // optional int32 nClient = 6;
+    if (has_nclient()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->nclient());
+    }
+    
+    // optional .PatronList plPatronList = 7;
     if (has_plpatronlist()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
@@ -544,6 +581,9 @@ void Request::MergeFrom(const Request& from) {
     if (from.has_ncarid()) {
       set_ncarid(from.ncarid());
     }
+    if (from.has_nclient()) {
+      set_nclient(from.nclient());
+    }
     if (from.has_plpatronlist()) {
       mutable_plpatronlist()->::PatronList::MergeFrom(from.plpatronlist());
     }
@@ -576,6 +616,7 @@ void Request::Swap(Request* other) {
     std::swap(ncarid_, other->ncarid_);
     sparams_.Swap(&other->sparams_);
     nparams_.Swap(&other->nparams_);
+    std::swap(nclient_, other->nclient_);
     std::swap(plpatronlist_, other->plpatronlist_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
