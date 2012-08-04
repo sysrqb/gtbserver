@@ -27,6 +27,7 @@
 #include <iostream>
 #include <string>
 
+#include <gnutls/x509.h>
 
 #include "gtbcommunication.hpp"
 #include "gtbexceptions.hpp"
@@ -47,8 +48,9 @@ using namespace std;
 void GTBCommunication::gtb_wrapperForCommunication()
 {
   int sockfd, fdAccepted;
-  int nRetVal = 0;
+  int nRetVal = 0, nClient;
   Request request;
+  GTBClient * client;
   
   sockfd = getSocket();
   
@@ -66,13 +68,14 @@ void GTBCommunication::gtb_wrapperForCommunication()
 
   for(;;)
   {
-    fdAccepted = listeningForClient(sockfd);
+    client = listeningForClient(sockfd);
     try
     {
-      handleConnection(fdAccepted, sockfd);
+      nClient = handleConnection(client, sockfd);
     } catch (BadConnectionException &e)
     {
       close(fdAccepted);
+      delete client;
       continue;
     }
     try
@@ -81,8 +84,10 @@ void GTBCommunication::gtb_wrapperForCommunication()
     } catch (BadConnectionException &e)
     {
       close(fdAccepted);
+      delete client;
       continue;
     }
+    request.set_nclient(nClient);
     requestQueue.push(request);
     nRetVal = pthread_kill(thread_ids.front(), SIGIO);
     if(nRetVal != 0)
@@ -396,11 +401,11 @@ void * GTBCommunication::getInAddr (struct sockaddr *i_sa)
 }
 
 
-int GTBCommunication::handleConnection(int fdAccepted, int sockfd)
+int GTBCommunication::handleConnection(GTBClient * client, int sockfd)
 {
   struct stat fdstatus;
-  int error;
-  if((error = fstat(fdAccepted, &fdstatus)) || fdstatus.st_rdev)
+  int error, idx;
+  if((error = fstat(client->getFD(), &fdstatus)) || fdstatus.st_rdev)
   {
     throw BadConnectionException("Bad Accepted Connection");
   }
@@ -413,7 +418,8 @@ int GTBCommunication::handleConnection(int fdAccepted, int sockfd)
   {
     cout << "Start TLS Session" << endl;
   }
-  gnutls_transport_set_ptr (m_aSession, (gnutls_transport_ptr_t) fdAccepted);
+  gnutls_transport_set_ptr (m_aSession, 
+                           (gnutls_transport_ptr_t) client->getFD());
   if(debug & 17)
   {
     cout << "Performing handshake.." << endl;
@@ -429,7 +435,7 @@ int GTBCommunication::handleConnection(int fdAccepted, int sockfd)
     }
     if ( i > 10 )
     {
-      close(fdAccepted);
+      close(client->getFD());
       throw BadConnectionException("Failed to Handshake");
     }
   } while (gnutls_error_is_fatal (nRetVal) != GNUTLS_E_SUCCESS);
@@ -445,7 +451,7 @@ int GTBCommunication::handleConnection(int fdAccepted, int sockfd)
     cerr << "Closing connection..." << endl;
     sendFailureResponse(3);
     gnutls_deinit(m_aSession);
-    close(fdAccepted);
+    close(client->getFD());
     throw BadConnectionException("Handshake Failed");
   }
 
@@ -457,6 +463,36 @@ int GTBCommunication::handleConnection(int fdAccepted, int sockfd)
   {
     cout << "Using cipher: " << sCipherName << endl;
   }
+
+  const gnutls_datum_t * certList;
+  gnutls_x509_crt_t cert = NULL;
+  unsigned int certLength;
+  certList = gnutls_certificate_get_peers(m_aSession, &certLength);
+
+  if(certList)
+  {
+    if(debug & 18)
+    {
+      cout << "Client sent a certificate chain with " << certLength;
+      cout << " certificates." << endl;
+    }
+
+    if(gnutls_x509_crt_import(cert, &certList[0], GNUTLS_X509_FMT_DER))
+    {
+      if(debug & 18)
+        cerr << "Could not parse certificate(s)" << endl;
+      
+      throw BadConnectionException("Bad Client Certs");
+    }
+
+    // We only want the clients certs
+    client->setCertificate(*certList);
+
+    // This may cause problems.
+    gnutls_x509_crt_deinit(cert);
+  }
+  else
+    throw BadConnectionException("No Client Certs");
 
   // unsigned int nstatus;
 
@@ -484,12 +520,20 @@ int GTBCommunication::handleConnection(int fdAccepted, int sockfd)
 
   //TODO
   //cout << "Storing connection information" << endl;
-  return 0;
+  /* Add client to clientsList here and, because we passed the above checks
+   * mark client as verified
+   *
+   * Actually, not verified until after Auth
+   */
 
+  client->setVerified(true);
+  idx = addIfNewClient(client);
+
+  return idx;
 }
   
 
-int 
+GTBClient * 
 GTBCommunication::listeningForClient (int i_fdSock)
 {
   int fdAccepted = 0;
@@ -499,6 +543,8 @@ GTBCommunication::listeningForClient (int i_fdSock)
   socklen_t nSinSize;
   // char: vAddr (stores the IP Addr of the incoming connection so it can be diplayed)
   char vAddr[INET6_ADDRSTRLEN] = "";
+
+  GTBClient * client; 
 
   nSinSize = sizeof aClientAddr;
 
@@ -551,7 +597,9 @@ GTBCommunication::listeningForClient (int i_fdSock)
   //They're already char*, might as well just compare without wasting
   //the time to convert them
   strncpy(m_vIPAddr, vAddr, INET6_ADDRSTRLEN);
-  return fdAccepted;
+  client = new GTBClient(fdAccepted);
+  client->setIPAddr(vAddr);
+  return client;
 }
 
 
@@ -815,7 +863,7 @@ GTBCommunication::authRequest (Request * i_aPBReq)
   }
 
   //TODO Store IP Address, car num, etc for checking later
-	
+
   return 0;
 }
 
@@ -915,6 +963,12 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
       }
       if(!(nAuthRet = authRequest (&i_aPBReq)))
       {
+        int idx = i_aPBReq.nclient();
+        GTBClient * client = clientsList.at(idx);
+        client->setVerified(true);
+        client->setCarNum(i_aPBReq.ncarid());
+        client->setNetIDs(i_aPBReq.sparams(0), i_aPBReq.sparams(1));
+        client->setCarSize(i_aPBReq.nparams(0));
         sendResponse(0, NULL, NULL, NULL);
         moveKey();
       }
@@ -1073,10 +1127,30 @@ wrap_db_delete (void *dbf, gnutls_datum_t key)
     }
 
   return -1;
-
 }
 
-#if __cplusplus
-}
-#endif
+} // extern
 
+/******************************
+ * Client Information Related *
+ ******************************/
+
+int GTBCommunication::addIfNewClient(GTBClient * client)
+{
+  vector<GTBClient *>::iterator it;
+  unsigned char * data;
+  size_t size;
+  int i = 0;
+
+  data = client->getCertificate().data;
+  size = client->getCertificate().size;
+
+  for(it = clientsList.begin(); it < clientsList.end() && ++i; ++it)
+    if (!memcmp((*it)->getCertificate().data, data, size))
+    {
+      (*it)->setIPAddr(client->getIPAddr());
+      return i;
+    }
+  clientsList.push_back(client);
+  return i;
+}

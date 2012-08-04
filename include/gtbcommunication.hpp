@@ -29,6 +29,7 @@
 #include "communication.pb.h"
 #include "patron.pb.h"
 #include "gtbexceptions.hpp"
+#include "gtbclient.hpp"
 
 
 // Sets the priority string for an acceptable TLS handshake
@@ -101,6 +102,11 @@ class GTBCommunication {
      * processed.
      */
     std::queue<Request> requestQueue;
+
+    /** \brief Vector containing all clients who have successfully connected
+     * in the past.
+     */
+    std::vector<GTBClient *> clientsList;
 
   public:
     /** \brief Constructor with optional debug output 
@@ -252,9 +258,9 @@ class GTBCommunication {
      * \todo Figure out why certificate verification segfaults =(
      *
      * \param fdAccepted File descriptor for opened socket connection
-     * \param sockfd File descriptor for bound socket
+     * \param client Contains fields describing client
      */
-    int handleConnection (int fdAccepted, int sockfd);
+    int handleConnection (GTBClient * client, int sockfd);
 
     /** \brief Listen for a client connection
      *
@@ -262,9 +268,9 @@ class GTBCommunication {
      * IP address.
      *
      * \param i_fdSock File descriptor for bound socket
-     * \return File descriptor for opened socket connection
+     * \return new instance of client for this session
      */
-    int listeningForClient (int i_fdSock);
+    GTBClient * listeningForClient (int i_fdSock);
 
     /** \brief Retrieves all incoming requests from client
      *
@@ -410,5 +416,7 @@ class GTBCommunication {
             Request * i_pbReq, 
 	    Response * i_pbRes, 
 	    PatronList * i_pbPL);
+
+    int addIfNewClient(GTBClient * client);
 };
 #endif  // gtbcommunication_h
