@@ -28,7 +28,7 @@ class GTBClient {
     std::string ipaddr;
 
     /** Certificate client used for authenticated */
-    gnutls_x509_crt_t cert;
+    gnutls_datum_t cert;
 
     /** Nightly Auth Code provided */
     std::string authcode;
@@ -65,7 +65,7 @@ class GTBClient {
     std::string getIPAddr() { return ipaddr; }
 
     /**Return the certificate: cert */
-    gnutls_x509_crt_t getCertificate() { return cert; }
+    gnutls_datum_t getCertificate() { return cert; }
 
     /** Return the number of seats in the car: ncarsize */
     int getCarSize() { return ncarsize; }
@@ -96,9 +96,31 @@ class GTBClient {
     }
 
     /** Set cert */
-    int setCertificate(gnutls_x509_crt_t  in_cert)
+    int setCertificate(gnutls_datum_t  in_cert)
     {
       cert = in_cert;
+      return 0;
+    }
+
+    /** Set Auth Code */
+    int setAuthCode(std::string in_authcode)
+    {
+      authcode = in_authcode;
+      return 0;
+    }
+
+    /** Set both NetIDs */
+    int setNetIDs(std::string driver, std::string ridealong)
+    {
+      netidDriver = driver;
+      netidRideAlong = ridealong;
+      return 0;
+    }
+
+    /** Set the number of seats in the car */
+    int setCarSize(int seats)
+    {
+      ncarsize = seats;
       return 0;
     }
 
