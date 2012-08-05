@@ -77,7 +77,6 @@ class GTBCommunication {
     gnutls_priority_t * m_pPriorityCache;
     gnutls_certificate_credentials_t * m_pX509Cred;
     gnutls_dh_params_t * m_pDHParams;
-    gnutls_session_t m_aSession;
     /** Stores IP address of incoming client */
     char m_vIPAddr[INET6_ADDRSTRLEN];
     std::string m_sHash;
@@ -94,6 +93,51 @@ class GTBCommunication {
      * */
     int debug;
 
+    /** Stored Session List
+     *
+     * Linked-List of stored sessions and their corresponding clients
+     */
+    struct ClientSession
+    {
+
+      /** Session ID */
+      gnutls_datum_t session_id;
+
+      /** Session Data */
+      gnutls_datum_t session_data;
+
+      /** Client associated with this session */
+      GTBClient * client;
+
+      /** Next Session */
+      struct ClientSession * next;
+
+      /** End of list - because I'm impatient */
+      struct ClientSession * tail;
+    } * clientSessions;
+
+    /** Retrieve Session from ClientSession Linked-List
+     *
+     * Private method
+     */
+    gnutls_datum_t retrieveSessionRecurse(void * ptr, gnutls_datum_t session_id,
+			       ClientSession * client);
+
+    /** Remove Session from ClientSession Linked-List
+     *
+     * Private method
+     */
+    int removeSessionRecurse(void * ptr, gnutls_datum_t session_id,
+			     ClientSession * client);
+
+
+    /** Session D String Comparison
+     *
+     * \return 0 on equality and -1 otherwise
+     */
+    int sess_strncmp(unsigned char * s1,
+                                        unsigned char * s2,
+                                        size_t n);
   protected:
     /** \brief Vector containing the thread ids all all spawned threads. */
     std::vector<pthread_t> thread_ids;
@@ -109,6 +153,8 @@ class GTBCommunication {
     std::vector<GTBClient *> clientsList;
 
   public:
+    /* set_session_management_functions functions fail if private */
+    gnutls_session_t m_aSession;
     /** \brief Constructor with optional debug output 
      * 
      * Constructor defaults to zero debug output.
@@ -222,7 +268,32 @@ class GTBCommunication {
     /** \brief Unimplemented: May be removed */
     int moveKey();
 
-    
+    /** Store session info
+     *
+     * Assuming I interpret the source code correctly, this function will
+     * be called with params 
+     *  (void *ptr, gnutls_datum_t session_id, gnutls_datum_t session_data) 
+     *  where *ptr will be NULL.
+     */
+    int saveSessionForResume(void * ptr, gnutls_datum_t session_id, 
+                         gnutls_datum_t session_data);
+
+    /** Resume session info
+     *
+     * Assuming I interpret the source code correctly, this function will
+     * be called with params (void *ptr, gnutls_datum_t session_id) where
+     * *ptr will be NULL. From 
+     */
+    gnutls_datum_t retrieveSessionForResume(void * ptr, 
+                                            gnutls_datum_t session_id);
+
+    /** Remove invalid stored session info
+     *
+     * Passed parameters (void * ptr, gnutls_datum_t session_id)
+     */
+    int removeSessionForResume(void * ptr, gnutls_datum_t session_id);
+
+
     /**********************
      * Networking Related *
      **********************/

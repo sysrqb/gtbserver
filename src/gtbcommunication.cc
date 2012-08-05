@@ -37,8 +37,17 @@
 #define MAX_SESSION_ID_SIZE 32
 #define MAX_SESSION_DATA_SIZE 512
 #define TLS_SESSION_CACHE 10
+GTBCommunication * globalComm;
 
 using namespace std;
+extern "C"
+{
+  int saveSessionForResume_C(void * ptr, gnutls_datum_t session_id,
+                             gnutls_datum_t session_data);
+  gnutls_datum_t retrieveSessionForResume_C(void * ptr,
+                                            gnutls_datum_t session_id);
+  int removeSessionForResume_C(void * ptr, gnutls_datum_t session_id);
+}
 
 
 /************************** 
@@ -52,6 +61,7 @@ void GTBCommunication::gtb_wrapperForCommunication()
   Request request;
   GTBClient * client;
   
+  globalComm = this;
   sockfd = getSocket();
   
   if(debug & 17)
@@ -114,6 +124,46 @@ void GTBCommunication::gtb_wrapperForCommunication()
 * GNUTLS related methods *
 **************************/
 
+int saveSessionForResume_CPP(void * ptr, gnutls_datum_t session_id,
+		     gnutls_datum_t session_data)
+{
+  return globalComm->saveSessionForResume(ptr, session_id, session_data);
+}
+gnutls_datum_t retrieveSessionForResume_CPP(void * ptr,
+                                            gnutls_datum_t session_id)
+{
+  return globalComm->retrieveSessionForResume(ptr, session_id);
+}
+int removeSessionForResume_CPP(void * ptr, gnutls_datum_t session_id)
+{
+  return globalComm->removeSessionForResume(ptr, session_id);
+}
+extern "C"
+{
+  int save_session_for_resume(void * ptr, gnutls_datum_t session_id,
+                             gnutls_datum_t session_data)
+  {
+    return saveSessionForResume_CPP(ptr, session_id, session_data);
+  }
+  gnutls_datum_t retrieve_session_for_resume(void * ptr,
+                                            gnutls_datum_t session_id)
+  {
+    return retrieveSessionForResume_CPP(ptr, session_id);
+  }
+  int remove_session_for_resume(void * ptr, gnutls_datum_t session_id)
+  {
+    return removeSessionForResume_CPP(ptr, session_id);
+  }
+
+  void set_session_management_functions(gnutls_session_t * session)
+  {
+    gnutls_db_set_remove_function(*session, &remove_session_for_resume);
+    gnutls_db_set_retrieve_function(*session, &retrieve_session_for_resume);
+    gnutls_db_set_store_function(*session, &save_session_for_resume);
+  }
+}
+    
+
 void GTBCommunication::initGNUTLS()
 {
   if(debug & 17)
@@ -123,6 +173,7 @@ void GTBCommunication::initGNUTLS()
   if( gnutls_global_init() ) cout << "gnutls_global_init: Failed to intialize" 
       << endl;
   loadCertFiles();
+  set_session_management_functions(&m_aSession);
 }
 
 void GTBCommunication::deinitGNUTLS()
@@ -293,6 +344,140 @@ GTBCommunication::moveKey()
 }
 
 
+
+int GTBCommunication::saveSessionForResume(void * ptr, 
+                                           gnutls_datum_t session_id,
+                                           gnutls_datum_t session_data)
+{
+  if(clientSessions == NULL)
+  {
+    clientSessions = new ClientSession();
+    if(clientSessions == NULL)
+    {
+      if(debug & 18)
+        cerr << "Failed to save session" << endl;
+      return GNUTLS_E_DB_ERROR;
+    }
+    clientSessions->session_id = session_id;
+    clientSessions->session_data = session_data;
+    if(debug & 18)
+      cout << "Successfully saved session" << endl;
+  }
+  else
+  {
+    clientSessions->tail = new ClientSession();
+    if(clientSessions->tail == NULL)
+    {
+      if(debug & 18)
+        cerr << "Failed to save session" << endl;
+      return GNUTLS_E_DB_ERROR;
+    }
+    clientSessions->tail->session_id = session_id;
+    clientSessions->tail->session_data = session_data;
+  }
+    
+  if(debug & 18)
+    cout << "Successfully saved session" << endl;
+  return 0;
+}
+
+
+gnutls_datum_t GTBCommunication::retrieveSessionForResume(void * ptr, 
+                                        gnutls_datum_t session_id)
+{
+  if((clientSessions->session_id.size == session_id.size) &&
+     !sess_strncmp(clientSessions->session_id.data, session_id.data,
+                  session_id.size))
+  {
+    if(debug & 18)
+      cout << "Successfully retrieved session" << endl;
+    return clientSessions->session_data;
+  }
+  else
+    return retrieveSessionRecurse(ptr, session_id, clientSessions->next);
+}
+
+
+gnutls_datum_t GTBCommunication::retrieveSessionRecurse(void * ptr, 
+                                             gnutls_datum_t session_id,
+                                             ClientSession * client)
+{
+  if((client->session_id.size == session_id.size) &&
+     !sess_strncmp(client->session_id.data, session_id.data,
+                  session_id.size))
+  {
+    if(debug & 18)
+      cout << "Successfully retrieved session" << endl;
+    return client->session_data;
+  }
+  else if(client->next == NULL)
+  {
+    /* Return an empty struct. Code checks that session-> != NULL. In
+     * this case it will and GNUTLS will handle correctly.
+     */
+    gnutls_datum_t session;
+    if(debug & 18)
+      cerr << "Failed to retrieve session" << endl;
+    return session;
+  }
+  else
+    return retrieveSessionRecurse(ptr, session_id, client->next);
+}
+
+
+int GTBCommunication::removeSessionForResume(void * ptr, gnutls_datum_t session_id)
+{
+  if((clientSessions->session_id.size == session_id.size) &&
+     !sess_strncmp(clientSessions->session_id.data, session_id.data,
+                  session_id.size))
+  {
+    ClientSession * newHead = clientSessions->next;
+    delete clientSessions;
+    clientSessions = newHead;
+    if(debug & 18)
+      cout << "Successfully removed session" << endl;
+    return GNUTLS_E_DB_ERROR;
+  }
+  else
+    return removeSessionRecurse(ptr, session_id, clientSessions);
+}
+
+
+int GTBCommunication::removeSessionRecurse(void * ptr, 
+                                            gnutls_datum_t session_id,
+                                            ClientSession * client)
+{
+  if((client->next->session_id.size == session_id.size) &&
+     !sess_strncmp(client->next->session_id.data, session_id.data,
+                  session_id.size))
+  {
+    ClientSession * next = client->next->next;
+    delete client->next;
+    client->next = next;
+    if(debug & 18)
+      cout << "Successfully removed session" << endl;
+    return 0;
+  }
+  else if (client->next == NULL)
+  {
+    if(debug & 18)
+      cout << "Failed to remove session" << endl;
+    return GNUTLS_E_DB_ERROR;
+  }
+  else
+    return removeSessionRecurse(ptr, session_id, client->next);
+}
+
+int GTBCommunication::sess_strncmp(unsigned char * s1,
+                                    unsigned char * s2,
+                                    size_t n)
+{
+  int i;
+  for(i = 0; i < n; ++i)
+    if (s1[i] != s2[i])
+      return -1;
+  return 0;
+}
 
 /**********************
 * Networking Related *
