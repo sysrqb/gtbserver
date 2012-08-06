@@ -138,8 +138,10 @@ TEST(CommunicationTest, HandlingConnectionThrowBadConnectionExceptionFromInvalid
   int sockfd;
   sockfd = aGtbComm.getSocket();
   aGtbComm.initGNUTLS();
+  GTBClient client;
+  client.setFD(0);
 
-  ASSERT_THROW(aGtbComm.handleConnection(0, 0), BadConnectionException);
+  ASSERT_THROW(aGtbComm.handleConnection(&client, 0), BadConnectionException);
   close(sockfd);
   gnutls_global_deinit();
 }
@@ -175,6 +177,8 @@ TEST(CommunicationTest, HandlingConnectionThrowBadConnectionExceptionFromInvalid
   unsigned int sleep(15000);
   gnutls_certificate_credentials_t xcred;
   gnutls_session_t session;
+  /*gnutls_global_set_log_function(gnutls_log_fun);
+  gnutls_global_set_log_level(9);*/
   gnutls_certificate_allocate_credentials (&xcred);
   gnutls_certificate_set_x509_trust_file (xcred, "pem/oldcerts/cacrt.pem", 
       GNUTLS_X509_FMT_PEM);

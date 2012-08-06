@@ -148,11 +148,12 @@ int establishTCPConnection()
 
 void handleConnectionWrapper(GTBCommunication * aGtbComm, int sockfd, bool throws)
 {
-  int fdAccepted(0);
+  GTBClient client;
+  client.setFD(0);
   if (throws)
-    ASSERT_THROW(aGtbComm->handleConnection(fdAccepted, sockfd), BadConnectionException);
+    ASSERT_THROW(aGtbComm->handleConnection(&client, sockfd), BadConnectionException);
   else
-    ASSERT_NO_THROW(aGtbComm->handleConnection(fdAccepted, sockfd));
+    ASSERT_NO_THROW(aGtbComm->handleConnection(&client, sockfd));
   close(sockfd);
   gnutls_global_deinit();
   exit(0);

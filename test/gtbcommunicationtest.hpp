@@ -18,6 +18,7 @@
 
 #ifndef gtbcommunicationtest_hpp
 #define gtbcommunicationtest_hpp
+#include "gtbclient.hpp"
 
 class GTBCommunicationTest: public GTBCommunication
 {
@@ -30,6 +31,7 @@ public:
     int sockfd, fdAccepted;
     int nRetVal = 0;
     Request request;
+    GTBClient * client;
   
     sockfd = getSocket();
     ASSERT_GT(sockfd, 0);
@@ -38,20 +40,20 @@ public:
     std::cout << "Establish Incoming Connections" << std::endl;;
     std::cout << "Continuing..." << std::endl;
     initGNUTLS();
-    fdAccepted = listeningForClient(sockfd);
-    ASSERT_GT(fdAccepted, 0);
+    client = listeningForClient(sockfd);
+    ASSERT_GT(client->getFD(), 0);
 
     try
     {
       if(throws)
       {
-        EXPECT_THROW(handleConnection(fdAccepted, sockfd), BadConnectionException);
-        close(fdAccepted);
+        EXPECT_THROW(handleConnection(client, sockfd), BadConnectionException);
+        close(client->getFD());
         close(sockfd);
 	return;
       }
       else
-        ASSERT_NO_THROW(handleConnection(fdAccepted, sockfd));
+        ASSERT_NO_THROW(handleConnection(client, sockfd));
     } catch (BadConnectionException &e)
     {
       close(fdAccepted);
@@ -61,7 +63,7 @@ public:
       receiveRequest(&request);
     } catch (BadConnectionException &e)
     {
-      close(fdAccepted);
+      close(client->getFD());
     }
     requestQueue.push(request);
     ASSERT_EQ(requestQueue.size(), 1);
@@ -79,7 +81,7 @@ public:
         std::cerr << "We Can't Send SIGIO To It! Exiting." << std::endl;
       }
     }
-    close(fdAccepted);
+    close(client->getFD());
     close(sockfd);
   }
 };
