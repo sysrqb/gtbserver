@@ -209,9 +209,10 @@ class MySQLConn {
      * are not empty strings. It must actually query the database
      * and add the information to the DB for later verification.
      */
-    int checkAuth(std::string i_snetid, 
+    int checkAuth(std::string i_snetidDriver, 
+        std::string i_snetidRA,
         std::string i_sauth, 
-	std::string i_scarnum);
+        std::string i_scarnum);
     
     /** \brief Unimplemented. I don't remember what this was supposed
      * to do.
