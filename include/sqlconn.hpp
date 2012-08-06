@@ -51,28 +51,53 @@
 #define PS_GETSESSSTMT "SELECT sessionkey FROM sessionconnection"\
     " WHERE ptr=? AND sessiondata=?"
 
+/** Prepared Statement that will return all the patrons' information that 
+ * corresponds to the provided date and status as well as the aasigned
+ * PatronID number and car number.
+ */
 #define PS_GETCURRRIDES "SELECT * FROM saferide.patron, saferide.ridetimes " \
     "WHERE LEFT(ridetimes.ridecreated, 10) = ? AND status=? AND " \
     " ridetimes.pid = patron.pid AND car=? ORDER BY car ASC"
 
+/** Prepared Statement that returns the information for a single patron that
+ * is assigned the provided PatronID.
+ */
 #define PS_GETPATRONINFO "SELECT * FROM saferide.patron, saferide.ridetimes " \
-    "WHERE num = ? AND ridetimes.pid = patron.pid"
+    "WHERE ridetimes.pid = patron.pid"
 
-
+/** Prepared Statement that returns the LocationID the corresponds to either
+ * the value or name provided.
+ */
 #define PS_GETLOCATIONID "SELECT lid FROM locations WHERE value = ?" \
     " OR name = ?"
 
-#define PS_SETUPDTRIDES "UPDATE saferide.patron SET name=?, cell=?, riders=?,"  \
-    " status=?, pickup=?, dropoff=?, timetaken=?, timedone=? WHERE num=? AND " \
-    " car=?"
+/** Prepared Statement that updates the patron information with the provided
+ * details for the entry that was assigned the given PatronID and car.
+ */
+#define PS_SETUPDTRIDES "UPDATE saferide.patron, saferide.ridetimes SET " \
+    "patron.name=?, patron.cell=?, patron.riders=?, patron.status=?, " \
+    "patron.pickup=?, patron.dropoff=?, ridetimes.timepickedup=?, " \
+    "ridetimes.timecomplete=? WHERE patron.pid=? AND patron.car=?"
 
-#define PS_RIDEADDPATRON "INSERT INTO patron (name,cell,riders,pickup,dropoff," \
-    "clothes,notes,status) VALUES (?,?,?,?,?,?,?,?)"
+/** Prepared Statement that adds a new patron into the database with the
+ * provided values.
+ */
+#define PS_RIDEADDPATRON "INSERT INTO patron (name,cell,riders,pickup," \
+    "dropoff,clothes,notes,status) VALUES (?,?,?,?,?,?,?,?)"
 
+/** Prepared Statement that adds a new location into the database with the 
+ * provided values.
+ */
 #define PS_ADDLOCATION "INSERT INTO locations (name, value) VALUES (?, ?)"
 
+/** Prepared Statement that adds a new ridetime into the database with the 
+ * provided values.
+ */
 #define PS_RIDEADDTIME "INSERT INTO ridetimes (ridecreated, pid) VALUES (?, ?)"
 
+/** Prepared Statement that returns the primary key of the last row inserted
+ * into the database.
+ */
 #define PS_GETLASTINSERTID "SELECT LAST_INSERT_ID()"
 
 #define GETHOST(proto, host, port) proto host ":" port
