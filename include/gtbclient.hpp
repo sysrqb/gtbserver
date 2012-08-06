@@ -54,7 +54,10 @@ class GTBClient {
     GTBClient() {}
 
     /** Constructor: Set accepted socket */
-    GTBClient(int acceptedFd) { fdAccepted = acceptedFd; }
+    GTBClient(int acceptedFd)
+    {
+      fdAccepted = acceptedFd;
+    }
 
     /* Accessors */
 
