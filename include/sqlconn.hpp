@@ -260,7 +260,8 @@ class MySQLConn {
      * \todo Handle conflict resolution
      * \todo Handle SQLException better
      */
-    std::map<int, std::string> setUpdt(int carnum, PatronList * i_apbPatl, Request * i_aPBReq);
+    std::map<int, std::string> setUpdt(int carnum, PatronList * i_apbPatl, 
+                                       Request * i_aPBReq);
 
     /** \brief Add a new patron to the database.
      *
