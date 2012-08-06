@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <csignal>
+#include <unistd.h>
 
 #include <iostream>
 #include <string>
@@ -78,7 +79,13 @@ void GTBCommunication::gtb_wrapperForCommunication()
 
   for(;;)
   {
-    client = listeningForClient(sockfd);
+    try
+    {
+      client = listeningForClient(sockfd);
+    } catch (BadConnectionException &e)
+    {
+      continue;
+    }
     try
     {
       nClient = handleConnection(client, sockfd);
@@ -113,6 +120,11 @@ void GTBCommunication::gtb_wrapperForCommunication()
         cerr << "We Can't Send SIGIO To It! Exiting." << endl;
       }
     }
+    /* Extremely important. Client fails otherwise.
+     * Well, at the least the emulator does, so sleep a little before
+     * we continue
+     */
+    sleep(1);
   }
   close(sockfd);
 }
@@ -157,6 +169,8 @@ extern "C"
 
   void set_session_management_functions(gnutls_session_t * session)
   {
+    if(*session == NULL)
+      return;
     gnutls_db_set_remove_function(*session, &remove_session_for_resume);
     gnutls_db_set_retrieve_function(*session, &retrieve_session_for_resume);
     gnutls_db_set_store_function(*session, &save_session_for_resume);
@@ -217,7 +231,7 @@ GTBCommunication::initTLSSession()
   }
 
   // Request client cert
-  /* gnutls_certificate_server_set_request (m_aSession, GNUTLS_CERT_REQUEST);
+ /* gnutls_certificate_server_set_request (m_aSession, GNUTLS_CERT_REQUEST);
   if (TLS_SESSION_CACHE != 0)
   {
     gnutls_db_set_retrieve_function (m_aSession, wrap_db_fetch);
@@ -231,7 +245,7 @@ GTBCommunication::initTLSSession()
   gnutls_certificate_send_x509_rdn_sequence  (
               m_aSession, 
               1); //REMOVE IN ORDER TO COMPLETE CERT EXCHANGE
-  */
+*/  
 }
 
 int
@@ -603,12 +617,14 @@ int GTBCommunication::handleConnection(GTBClient * client, int sockfd)
   {
     cout << "Start TLS Session" << endl;
   }
+
   gnutls_transport_set_ptr (m_aSession, 
                            (gnutls_transport_ptr_t) client->getFD());
   if(debug & 17)
   {
     cout << "Performing handshake.." << endl;
   }
+
   int nRetVal, i=0, lastret = 0;;
   do
   {
@@ -649,6 +665,8 @@ int GTBCommunication::handleConnection(GTBClient * client, int sockfd)
     cout << "Using cipher: " << sCipherName << endl;
   }
 
+/* Uncomment when we request certs
+ * TODO
   const gnutls_datum_t * certList;
   gnutls_x509_crt_t cert = NULL;
   unsigned int certLength;
@@ -678,6 +696,8 @@ int GTBCommunication::handleConnection(GTBClient * client, int sockfd)
   }
   else
     throw BadConnectionException("No Client Certs");
+
+    */
 
   // unsigned int nstatus;
 
@@ -782,8 +802,15 @@ GTBCommunication::listeningForClient (int i_fdSock)
   //They're already char*, might as well just compare without wasting
   //the time to convert them
   strncpy(m_vIPAddr, vAddr, INET6_ADDRSTRLEN);
+
   client = new GTBClient(fdAccepted);
+  if(debug & 18)
+    cout << "client: fdAccepted: " << client->getFD() << endl;
   client->setIPAddr(vAddr);
+  gnutls_datum_t empty;
+  empty.data = NULL;
+  empty.size = 0;
+  client->setCertificate(empty);
   return client;
 }
 
@@ -791,7 +818,9 @@ GTBCommunication::listeningForClient (int i_fdSock)
 void GTBCommunication::receiveRequest(Request * aPBReq)
 {
   int nNumBytes = 0;
-  char vReqBuf[AUTHSIZE] = "";
+  /* This causes a segfault, obviously, why did this work before? 
+   * char vReqBuf[AUTHSIZE] = "";
+   */
   if(debug & 17)
   {
     cout << "Receiving request" << endl;
@@ -810,6 +839,7 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
     cout << "Incoming size: " << nsize << endl;
   }
       
+  char vReqBuf[nsize];
   if((nNumBytes = gnutls_record_recv (m_aSession, &vReqBuf, nsize)) < 0)
   {
     cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
@@ -820,6 +850,7 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
   {
     cout << "Received Transmission Size: " << nNumBytes << endl;
   }
+
 
   aPBReq->ParseFromString(vReqBuf);
 
@@ -900,7 +931,7 @@ GTBCommunication::sendNumberOfCars(Request * i_aPBReq)
   char nNumOfCars = 7;
   int nNumBytes;
   const char * pReqBuf;
-
+  
   pReqBuf = i_aPBReq->sreqtype().c_str();
   cout << "C: Function: numberOfCars: " << i_aPBReq->sreqtype() << endl;
   if(0 != strncmp("CARS", pReqBuf, 5))
@@ -925,7 +956,8 @@ GTBCommunication::sendNumberOfCars(Request * i_aPBReq)
   if ((nNumBytes = gnutls_record_send (
       m_aSession, 
       sResponse.c_str(), 
-      npbsize)) == -1){
+      npbsize)) < 0)
+  {
     cerr << "ERROR: C: Error on send for cars: " << strerror(errno) << endl;
   }
   cout << "C: " << npbsize << ":" << nNumBytes << " Send: ";
@@ -1029,12 +1061,13 @@ GTBCommunication::authRequest (Request * i_aPBReq)
     return -3;
   }
 
-  if (i_aPBReq->sparams_size() == 3)
+  if (i_aPBReq->sparams_size() == 4)
   {
     if((retval = m_MySQLConn->checkAuth(
         i_aPBReq->sparams(0), 
 	i_aPBReq->sparams(1), 
-	i_aPBReq->sparams(2))))
+	i_aPBReq->sparams(2), 
+	i_aPBReq->sparams(3))))
     {
       cerr << "ERROR: C: Authenication Failed: " << retval << endl;;
       return retval;
@@ -1152,10 +1185,13 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
         GTBClient * client = clientsList.at(idx);
         client->setVerified(true);
         client->setCarNum(i_aPBReq.ncarid());
-        client->setNetIDs(i_aPBReq.sparams(0), i_aPBReq.sparams(1));
-        client->setCarSize(i_aPBReq.nparams(0));
-        sendResponse(0, NULL, NULL, NULL);
-        moveKey();
+	if(i_aPBReq.sparams_size() > 1)
+	{
+          client->setNetIDs(i_aPBReq.sparams(0), i_aPBReq.sparams(1));
+          client->setCarSize(i_aPBReq.nparams(0));
+          sendResponse(0, NULL, NULL, NULL);
+          moveKey();
+	}
       }
       else
       {
@@ -1166,7 +1202,7 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
     case 3:
       if(debug & 17)
       {
-        cout << "C: Type CARS, forking...." << endl;
+        cout << "C: Type CARS" << endl;
       }
       if(sendNumberOfCars (&i_aPBReq) < 0)
         return sendFailureResponse(2);
@@ -1327,15 +1363,19 @@ int GTBCommunication::addIfNewClient(GTBClient * client)
   size_t size;
   int i = 0;
 
-  data = client->getCertificate().data;
-  size = client->getCertificate().size;
+  if(client->getCertificate().data != 0)
+  {
+    /* Skip this while we test and not checking client certs */
+    data = client->getCertificate().data;
+    size = client->getCertificate().size;
 
-  for(it = clientsList.begin(); it < clientsList.end() && ++i; ++it)
-    if (!memcmp((*it)->getCertificate().data, data, size))
-    {
-      (*it)->setIPAddr(client->getIPAddr());
-      return i;
-    }
+    for(it = clientsList.begin(); it < clientsList.end() && ++i; ++it)
+      if (!memcmp((*it)->getCertificate().data, data, size))
+      {
+        (*it)->setIPAddr(client->getIPAddr());
+        return i;
+      }
+  }
   clientsList.push_back(client);
   return i;
 }
