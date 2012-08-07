@@ -31,6 +31,9 @@
 #include <fstream>
 #include "threading.hpp"
 
+extern "C" void *(for_communicationTest)(void * instance);
+void cpp_forCommunicationTest(void * instance);
+
 using namespace std;
 
 void 
@@ -49,6 +52,8 @@ void
   GTBCommunicationTest aComm(18);
   sigemptyset(&set);
   sigaddset(&set, SIGIO);
+  sigaddset(&set, SIGUSR1);
+  sigaddset(&set, SIGUSR2);
   nRetVal = pthread_sigmask(SIG_BLOCK, &set, NULL);
   if(nRetVal != 0)
   {
@@ -65,14 +70,18 @@ void
       
   thread_id = pthread_self();
   aComm.threadid_push_back(thread_id);
+  cout << "Main tid: " << thread_id << endl;
   struct gtbasyncthread gtbargs;
   gtbargs.aComm = &aComm;
   gtbargs.throws = *throws;
-  nRetVal = pthread_create(&thread_id, &attr, &gtbAccept_c, (void *) &gtbargs);
+  nRetVal = pthread_create(&thread_id, &attr, &gtbAccept_c, (void *) &aComm);
   aComm.threadid_push_back(thread_id);
-  nRetVal = pthread_create(&thread_id, &attr, &for_communication, (void *) &gtbargs);
+  cout << "Accept tid: " << thread_id << endl;
+  nRetVal = pthread_create(&thread_id, &attr, &for_communicationTest, (void *) &gtbargs);
+  cout << "Comm tid: " << thread_id << endl;
   aComm.threadid_push_back(thread_id);
-  nRetVal = pthread_create(&thread_id, &attr, &for_watchdog, (void *) &gtbargs);
+  nRetVal = pthread_create(&thread_id, &attr, &for_watchdog, (void *) &aComm);
+  cout << "Watchdog tid: " << thread_id << endl;
   aComm.threadid_push_back(thread_id);
   if(nRetVal != 0)
   {
@@ -183,5 +192,22 @@ _verify_certificate_callback (gnutls_session_t session)
   return 0;
 }
 
+/** \brief Wrapper used to allow pthread_create call method 
+ *
+ *
+ */
+void cpp_forCommunicationTest(void * instance)
+{
+  struct gtbasyncthread * gtbargs = (struct gtbasyncthread *) instance;
+  gtbargs->aComm->gtb_wrapperForCommunication(gtbargs->throws);
+}
 
-
+/** \brief Wrapper used to allow pthread_create call method 
+ *
+ */
+extern "C"
+void *(for_communicationTest)(void * instance)
+{
+  cpp_forCommunicationTest(instance);
+  return NULL;
+}

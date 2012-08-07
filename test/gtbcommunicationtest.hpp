@@ -18,72 +18,29 @@
 
 #ifndef gtbcommunicationtest_hpp
 #define gtbcommunicationtest_hpp
-#include "gtbclient.hpp"
+
+#include "gtbcommunication.hpp"
 
 class GTBCommunicationTest: public GTBCommunication
 {
 public:
 
-  GTBCommunicationTest(int debug) : GTBCommunication(debug){}
-  
-  void gtb_wrapperForCommunication(bool throws)
+  GTBCommunicationTest(int debug) : GTBCommunication(debug)
   {
-    int sockfd, fdAccepted;
-    int nRetVal = 0;
-    Request request;
-    GTBClient * client;
-  
-    sockfd = getSocket();
-    ASSERT_GT(sockfd, 0);
-    if(sockfd == 0)
-      std::cout << "Error: " << errno << ", " << strerror(errno) << std::endl;
-    std::cout << "Establish Incoming Connections" << std::endl;;
-    std::cout << "Continuing..." << std::endl;
-    initGNUTLS();
-    client = listeningForClient(sockfd);
-    ASSERT_GT(client->getFD(), 0);
-
-    try
+  /*  if(m_pX509Cred != NULL)
     {
-      if(throws)
-      {
-        EXPECT_THROW(handleConnection(client), BadConnectionException);
-        close(client->getFD());
-        close(sockfd);
-	return;
-      }
-      else
-        ASSERT_NO_THROW(handleConnection(client));
-    } catch (BadConnectionException &e)
-    {
-      close(fdAccepted);
+      delete m_pX509Cred;
+      m_pX509Cred = (gnutls_certificate_credentials_t * ) 
+          operator new (sizeof (gnutls_certificate_credentials_t));
     }
-    try
-    {
-      receiveRequest(&request);
-    } catch (BadConnectionException &e)
-    {
-      close(client->getFD());
-    }
-    requestQueue.push(request);
-    ASSERT_EQ(requestQueue.size(), 1);
-    nRetVal = pthread_kill(thread_ids.front(), SIGIO);
-    if(nRetVal != 0)
-    {
-      if(nRetVal == EINVAL)
-      {
-        std::cerr << "SIGIO Does Not Exist On This System!";
-        std::cerr << " We Need To Use A Different Signal. Exiting." << std::endl;
-      }
-      else if(nRetVal == ESRCH)
-      {
-        std::cerr << "The Main Thread No Longer Exists??"<< 
-        std::cerr << "We Can't Send SIGIO To It! Exiting." << std::endl;
-      }
-    }
-    close(client->getFD());
-    close(sockfd);
+    else
+      m_pX509Cred = (gnutls_certificate_credentials_t * ) 
+          operator new (sizeof (gnutls_certificate_credentials_t));
+    */
   }
+  void gtbAccept();
+  void gtb_wrapperForCommunication(bool throws);
+  
 };
 
 

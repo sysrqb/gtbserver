@@ -77,8 +77,9 @@ TEST(CommunicationTest, HandlingConnectionNoThrow)
   }
 
   int client_sockfd(0);
-  unsigned int sleep(15000);
+  unsigned int sleepfor(1500);
   Request request;
+  cout << "    Initializing Client" << endl;
   //std::fstream cert("/home/mfinkel/repos/gtbserver/pem/certs/gtbt1crt.pem", std::fstream::in);
   std::fstream cert("/home/mfinkel/repos/gtbserver/pem/keys/gtbt1key.pem", 
     std::fstream::in);
@@ -88,7 +89,7 @@ TEST(CommunicationTest, HandlingConnectionNoThrow)
     std::fstream::in);
   ASSERT_TRUE(cert.is_open());
   cert.close();
-  usleep(sleep);
+  usleep(sleepfor);
   gnutls_certificate_credentials_t xcred;
   gnutls_session_t session;
   //gnutls_global_set_log_function(gnutls_log_fun);
@@ -109,6 +110,7 @@ TEST(CommunicationTest, HandlingConnectionNoThrow)
   ASSERT_EQ(gnutls_priority_set_direct (session, "NORMAL", NULL), 0);
   ASSERT_EQ(gnutls_credentials_set (session, GNUTLS_CRD_CERTIFICATE, xcred), 
       0);
+   cout << "    Establishing Connection" << endl;
   client_sockfd = establishTCPConnection();
   gnutls_transport_set_ptr (session, (gnutls_transport_ptr_t) client_sockfd); 
    //int nRetVal = 0;
@@ -116,19 +118,24 @@ TEST(CommunicationTest, HandlingConnectionNoThrow)
   {
     nRetVal = gnutls_handshake(session);
     //std::cout << "Client Return Value: " << nRetVal << std::endl;
-    usleep(sleep);
   } while (gnutls_error_is_fatal (nRetVal) != GNUTLS_E_SUCCESS);
   /* Uncomment when we can successfully establish authenicated connection */
   // ASSERT_EQ(gnutls_certificate_client_get_request_status(session), 1);
   EXPECT_EQ(nRetVal, 0);
+  cout << "    Successfully Completed Handshake" << endl;
   request.set_nreqid(1);
   request.set_sreqtype("test");
   string srequest;
   request.SerializeToString(&srequest);
   int reqsize = request.ByteSize();
+  cout << "    Sending Request" << endl;
   gnutls_record_send(session, &reqsize, sizeof(request.ByteSize()));
   gnutls_record_send(session, srequest.c_str(), request.ByteSize());
+  cout << "    HUP" << endl;
+  /* We can't terminate the TLS session because server hangs up before
+   * we do
   gnutls_bye (session, GNUTLS_SHUT_RDWR);
+  */
   close(client_sockfd);
   gnutls_deinit (session);
   gnutls_certificate_free_credentials (xcred);
@@ -155,7 +162,7 @@ TEST(CommunicationTest, HandlingConnectionThrowBadConnectionExceptionFromInvalid
   nRetVal = pthread_attr_destroy(&attr);
   if(nRetVal)
   {
-     cerr << "Failed to destroy pthread_attr_t!" << endl;
+    cerr << "Failed to destroy pthread_attr_t!" << endl;
     FAIL();
   }
 
