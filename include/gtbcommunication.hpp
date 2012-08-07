@@ -86,24 +86,11 @@
  * in the selected database
  */
 class GTBCommunication {
-    gnutls_priority_t * m_pPriorityCache;
-    gnutls_certificate_credentials_t * m_pX509Cred;
-    gnutls_dh_params_t * m_pDHParams;
     /** Stores IP address of incoming client */
     char m_vIPAddr[INET6_ADDRSTRLEN];
     std::string m_sHash;
     /** SQL connection handler */
     MySQLConn * m_MySQLConn;
-
-    /** Debug bit mask 
-     *
-     * 1 = Current Operation
-     * 2 = Debugging value output (Not in consistant locations)
-     * 4
-     * 8
-     * 16 = All
-     * */
-    int debug;
 
     /** Stored Session List
      *
@@ -161,6 +148,20 @@ class GTBCommunication {
     time_t lostcontrolat;
 
   protected:
+    gnutls_priority_t * m_pPriorityCache;
+    gnutls_certificate_credentials_t * m_pX509Cred;
+    gnutls_dh_params_t * m_pDHParams;
+    /** Debug bit mask 
+     *
+     * 1 = Current Operation
+     * 2 = Debugging value output (Not in consistant locations)
+     * 4
+     * 8
+     * 16 = All
+     * */
+    int debug;
+
+
     /** \brief Vector containing the thread ids all all spawned threads. */
     std::vector<pthread_t> thread_ids;
 
@@ -289,7 +290,7 @@ class GTBCommunication {
     }
 
     /** \brief Internal wrapper for accept(). */
-    void gtbAccept();
+    virtual void gtbAccept();
 
     /** \brief Networking thread handler
      *
