@@ -70,8 +70,11 @@
 
 #define MAINTHREAD 0
 #define ACPTTHREAD 1
-#define CONNTHREAD 2
+#define COMMTHREAD 2
 #define WDOGTHREAD 3
+
+/* How long should a thread be blocked for before we kill it? */
+#define WDOGKILLAFTER 4
 
 /**
  * Class: GTBCommunication
@@ -147,6 +150,16 @@ class GTBCommunication {
     int sess_strncmp(unsigned char * s1,
                                         unsigned char * s2,
                                         size_t n);
+
+    /** Time at which we entered gnutls_record_receive
+     * The watchdog thread checks us to make sure we 
+     * haven't been set for longer than WDOGKILLAFTER
+     * seconds
+     *
+     * If 0 then consider unset
+     */
+    time_t lostcontrolat;
+
   protected:
     /** \brief Vector containing the thread ids all all spawned threads. */
     std::vector<pthread_t> thread_ids;
@@ -283,6 +296,17 @@ class GTBCommunication {
      * Internal class method that handles communication with client.
      */
     void gtb_wrapperForCommunication();
+
+    /** \brief Creates watchdog thread
+     *
+     * We periodically check a variable (or multiple,
+     * if necessary) to ensure the thread isn't being blocked by an 
+     * unresponsive client.
+     *
+     * It takes too long to wait for the connection to timeout, so
+     * we can easily kill the hung thread and recreate it.
+     */
+    void launchWatchDog();
 
 
     /**************************

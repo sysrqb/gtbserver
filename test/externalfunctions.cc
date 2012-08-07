@@ -29,32 +29,9 @@
 #include <cerrno>
 #include <cstring>
 #include <fstream>
+#include "threading.hpp"
 
 using namespace std;
-
-
-/** \brief Wrapper used to allow pthread_create call method 
- *
- *
- * \sa listenForClient
- */
-void cpp_forCommunicationTestHelper(void * instance)
-{
-  struct gtbasyncthread * gtbargs = (gtbasyncthread *) instance;
-  gtbargs->aComm->gtb_wrapperForCommunication(gtbargs->throws);
-}
-
-/** \brief Wrapper used to allow pthread_create call method 
- *
- * \sa cpp_listenForClient
- */
-extern "C"
-void *(for_communicationTestHelper)(void * instance)
-{
-  cpp_forCommunicationTestHelper(instance);
-  return NULL;
-}
-
 
 void 
 *(startserver)(void * expectthrow)
@@ -91,7 +68,12 @@ void
   struct gtbasyncthread gtbargs;
   gtbargs.aComm = &aComm;
   gtbargs.throws = *throws;
-  nRetVal = pthread_create(&thread_id, &attr, &for_communicationTestHelper, (void *) &gtbargs);
+  nRetVal = pthread_create(&thread_id, &attr, &gtbAccept_c, (void *) &gtbargs);
+  aComm.threadid_push_back(thread_id);
+  nRetVal = pthread_create(&thread_id, &attr, &for_communication, (void *) &gtbargs);
+  aComm.threadid_push_back(thread_id);
+  nRetVal = pthread_create(&thread_id, &attr, &for_watchdog, (void *) &gtbargs);
+  aComm.threadid_push_back(thread_id);
   if(nRetVal != 0)
   {
     cerr << "Failed to Create pthread!" << endl;
@@ -104,7 +86,6 @@ void
      cerr << "Failed to destroy pthread_attr_t!" << endl;
      throw new exception();
   }
-  aComm.threadid_push_back(thread_id);
 
   if(sigwait(&set, &signum) != 0)
   {

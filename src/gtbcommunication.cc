@@ -34,6 +34,7 @@
 #include "gtbexceptions.hpp"
 #include "patron.pb.h"
 #include "sqlconn.hpp"
+#include "threading.hpp"
 
 #define MAX_SESSION_ID_SIZE 32
 #define MAX_SESSION_DATA_SIZE 512
@@ -50,10 +51,60 @@ extern "C"
   int removeSessionForResume_C(void * ptr, gnutls_datum_t session_id);
 }
 
+extern inline pthread_t createCommThread(GTBCommunication * aComm, 
+                                         pthread_attr_t * attr);
 
 /************************** 
 * Thread Related Methods *
 **************************/
+
+void GTBCommunication::launchWatchDog()
+{
+  time_t now;
+  pthread_attr_t attr;
+  int signum(0);
+  int nRetVal;
+  sigset_t set;
+  int sleepfor = WDOGKILLAFTER*1000;
+  pthread_t tid = thread_ids[COMMTHREAD];
+  for(;;)
+  {
+    sleep(sleepfor);
+    now = time(NULL);
+    if((lostcontrolat != 0) && ((lostcontrolat + WDOGKILLAFTER) < now))
+    {
+      cerr << "Killing Comm Thread!" << endl;
+      pthread_kill(tid, SIGKILL);
+      sigemptyset(&set);
+      sigaddset(&set, SIGIO);
+      nRetVal = pthread_sigmask(SIG_BLOCK, &set, NULL);
+      if(nRetVal != 0)
+      {
+        cerr << "Failed to sigio mask!" << endl;
+        throw new exception();
+      }
+    
+      nRetVal = pthread_attr_init(&attr);
+      if(nRetVal != 0)
+      {
+        cerr << "Failed to Initialize pthread_attr_t!" << endl;
+        throw new exception();
+      }
+
+      tid = createCommThread(this, &attr);
+      thread_ids[COMMTHREAD] = tid;
+
+      nRetVal = pthread_attr_destroy(&attr);
+      if(nRetVal != 0)
+      {
+         cerr << "Failed to destroy pthread_attr_t!" << endl;
+         throw new exception();
+      }
+    }
+  }
+}
+
+
 void GTBCommunication::gtbAccept()
 {
   int sockfd;
@@ -83,12 +134,12 @@ void GTBCommunication::gtbAccept()
 
     acceptedQueue.push(client);
 
-    pthread_t commthread_id = thread_ids.at(CONNTHREAD);
+    pthread_t commthread_id = thread_ids.at(COMMTHREAD);
     nRetVal = pthread_kill(commthread_id, 0);
     if(nRetVal == 0)
     {
       cout << "Comm is alive and well." << endl;
-      nRetVal = pthread_kill(thread_ids.at(CONNTHREAD), SIGACCEPT);
+      nRetVal = pthread_kill(thread_ids.at(COMMTHREAD), SIGACCEPT);
       if(nRetVal != 0)
       {
         if(nRetVal == EINVAL)
@@ -678,6 +729,7 @@ int GTBCommunication::handleConnection(GTBClient * client)
     cout << "Performing handshake.." << endl;
   }
 
+  lostcontrolat = time(NULL);
   int nRetVal, i=0, lastret = 0;;
   do
   {
@@ -697,6 +749,7 @@ int GTBCommunication::handleConnection(GTBClient * client)
   {
     cout << "Last Return Value: " << nRetVal << endl;
   }
+  lostcontrolat = 0;
   
   if ( nRetVal < 0)
   {
@@ -881,11 +934,13 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
   if(aPBReq == NULL)
     throw new PatronException("NULL Pointer at receiveRequest\n");
   int nsize = 0;
+  lostcontrolat = time(NULL);
   if((nNumBytes = gnutls_record_recv (m_aSession, &nsize, REQSIZE)) < 0)
   {
     cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
     throw BadConnectionException(strerror(errno));
   }
+  lostcontrolat = 0;
 
   if(debug & 18)
   {
@@ -894,11 +949,13 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
       
   ++nsize;
   char vReqBuf[nsize];
+  lostcontrolat = time(NULL);
   if((nNumBytes = gnutls_record_recv (m_aSession, &vReqBuf, nsize)) < 0)
   {
     cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
     throw BadConnectionException(strerror(errno));
   }
+  lostcontrolat = 0;
 
   if(debug & 18)
   {

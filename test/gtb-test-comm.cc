@@ -42,6 +42,8 @@
 #include "../test/externalfunctions.hpp"
 
 using namespace std;
+extern inline pthread_t createCommThread(GTBCommunication * aComm,
+                                         pthread_attr_t * attr);
 
 static int
 cert_callback (gnutls_session_t session,

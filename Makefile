@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-obj = main.o sqlconn.o gtbcommunication.o
+obj = main.o sqlconn.o gtbcommunication.o threading.o
 SRC=src/
 TEST=test/
 INCLUDE=include/
@@ -27,8 +27,8 @@ gtb : gtbserver.o
 	$(CC) $(LINKEROPTS) -o gtbserver $(obj) communication.pb.o patron.pb.o $(PKGCOPTS)
 	#doxygen docs/gtbdoxygen.conf
 
-gtbserver.o : $(SRC)main.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc communication.pb.cc 
-	$(CC) -c $(SRC)main.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)communication.pb.cc $(SRC)patron.pb.cc
+gtbserver.o : $(SRC)main.cc $(SRC)threading.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc communication.pb.cc 
+	$(CC) -c $(SRC)main.cc $(SRC)threading.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)communication.pb.cc $(SRC)patron.pb.cc
 
 communication.pb.cc : patron.pb.cc
 	./protobuf/bin/protoc -I$(SRC) -Iinclude $(SRC)communication.proto --cpp_out=$(SRC) --java_out=$(SRC)
@@ -47,16 +47,16 @@ docs:
 ##############
 
 test : gtest-all.cc
-	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-all $(TEST)externalfunctions.cc $(TEST)gtb-test-main.cc $(TEST)gtb-test-curr.cc $(TEST)gtb-test-comm.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
+	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-all $(TEST)externalfunctions.cc $(SRC)threading.cc $(TEST)gtb-test-main.cc $(TEST)gtb-test-curr.cc $(TEST)gtb-test-comm.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
 
 testcomm : gtest-all.cc
-	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-comm $(TEST)externalfunctions.cc $(TEST)gtb-test-comm.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
+	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-comm $(TEST)externalfunctions.cc $(SRC)threading.cc $(TEST)gtb-test-comm.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
 
 testcurr : gtest-all.cc
-	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-curr $(TEST)externalfunctions.cc $(TEST)gtb-test-curr.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
+	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-curr $(TEST)externalfunctions.cc $(SRC)threading.cc $(TEST)gtb-test-curr.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
 
 sigtest : gtest-all.cc
-	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-main $(TEST)externalfunctions.cc $(TEST)gtb-test-main.cc libgtest.a $(PKGCOPTS)
+	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-main $(TEST)externalfunctions.cc $(SRC)threading.cc $(TEST)gtb-test-main.cc libgtest.a $(PKGCOPTS)
 
 gtest-all.cc : gtest_main.o
 	$(CC) -I$(GTEST)/include -I$(GTEST) -c $(GTEST)/src/gtest-all.cc
