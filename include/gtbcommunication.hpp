@@ -64,6 +64,15 @@
 // Sets number of bytes each authentication request should be from a client
 #define AUTHSIZE 60
 
+/* Signals that are used internally by the threads */
+#define SIGACCEPT SIGUSR1
+#define SIGCLIENT SIGUSR2 
+
+#define MAINTHREAD 0
+#define ACPTTHREAD 1
+#define CONNTHREAD 2
+#define WDOGTHREAD 3
+
 /**
  * Class: GTBCommunication
  * 
@@ -152,6 +161,11 @@ class GTBCommunication {
      */
     std::vector<GTBClient *> clientsList;
 
+    /** \brief Vector containing all remaining accepted connections that 
+     * potentially have pending requests.
+     */
+    std::queue<GTBClient *> acceptedQueue;
+
   public:
     /* set_session_management_functions functions fail if private */
     gnutls_session_t m_aSession;
@@ -201,6 +215,18 @@ class GTBCommunication {
       thread_ids.push_back(id);
     }
 
+    /** \brief Get the number of threads spawned */
+    pthread_t threadid_getSize()
+    {
+      return thread_ids.size();
+    }
+
+    /** \brief Get thread_id at location idx */
+    pthread_t getThreadIDAt(int idx)
+    {
+      return thread_ids.at(idx);
+    }
+
     /** \brief Return if Request Queue is empty
      *
      * Returns if Request queue is empty by calling
@@ -223,7 +249,35 @@ class GTBCommunication {
       *request = requestQueue.front();
       requestQueue.pop();
     }
-    
+
+    /** \brief Return if Accepted Queue is empty
+     *
+     * Returns if Accepted queue is empty by calling
+     * empty() on acceptedQueue.
+     */
+    inline bool acceptedQueueIsEmpty()
+    {
+      return acceptedQueue.empty();
+    }
+
+    /** \brief Return the address of the instance of GTBClient at 
+     * front of queue
+     *
+     * Get and return the first instance in the queue.
+     * This pops the first request, thus removing it.
+     *
+     */
+    GTBClient * acceptedQueuePop()
+    {
+      GTBClient * accepted;
+      accepted = acceptedQueue.front();
+      acceptedQueue.pop();
+      return accepted;
+    }
+
+    /** \brief Internal wrapper for accept(). */
+    void gtbAccept();
+
     /** \brief Networking thread handler
      *
      * Internal class method that handles communication with client.
@@ -331,7 +385,7 @@ class GTBCommunication {
      * \param fdAccepted File descriptor for opened socket connection
      * \param client Contains fields describing client
      */
-    int handleConnection (GTBClient * client, int sockfd);
+    int handleConnection (GTBClient * client);
 
     /** \brief Listen for a client connection
      *

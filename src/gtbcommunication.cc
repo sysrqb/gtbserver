@@ -54,12 +54,10 @@ extern "C"
 /************************** 
 * Thread Related Methods *
 **************************/
-
-void GTBCommunication::gtb_wrapperForCommunication()
+void GTBCommunication::gtbAccept()
 {
-  int sockfd, fdAccepted;
-  int nRetVal = 0, nClient;
-  Request request;
+  int sockfd;
+  int nRetVal = 0;
   GTBClient * client;
   
   globalComm = this;
@@ -70,15 +68,11 @@ void GTBCommunication::gtb_wrapperForCommunication()
     cout << "Establish Incoming Connections" << endl;;
   }
 
-  if(debug & 17)
-  {
-    cout << "Continuing..." << endl;
-  }
   initGNUTLS();
-
-
   for(;;)
   {
+    if(debug & 17)
+      cout << "Returning to listening state" << endl;
     try
     {
       client = listeningForClient(sockfd);
@@ -86,47 +80,110 @@ void GTBCommunication::gtb_wrapperForCommunication()
     {
       continue;
     }
-    try
+
+    acceptedQueue.push(client);
+
+    pthread_t commthread_id = thread_ids.at(CONNTHREAD);
+    nRetVal = pthread_kill(commthread_id, 0);
+    if(nRetVal == 0)
     {
-      nClient = handleConnection(client, sockfd);
-    } catch (BadConnectionException &e)
-    {
-      close(fdAccepted);
-      delete client;
-      continue;
-    }
-    try
-    {
-      receiveRequest(&request);
-    } catch (BadConnectionException &e)
-    {
-      close(fdAccepted);
-      delete client;
-      continue;
-    }
-    request.set_nclient(nClient);
-    requestQueue.push(request);
-    nRetVal = pthread_kill(thread_ids.front(), SIGIO);
-    if(nRetVal != 0)
-    {
-      if(nRetVal == EINVAL)
+      cout << "Comm is alive and well." << endl;
+      nRetVal = pthread_kill(thread_ids.at(CONNTHREAD), SIGACCEPT);
+      if(nRetVal != 0)
       {
-        cerr << "SIGIO Does Not Exist On This System!";
-        cerr << " We Need To Use A Different Signal. Exiting." << endl;
-      }
-      else if(nRetVal == ESRCH)
-      {
-        cerr << "The Main Thread No Longer Exists??"<< 
-        cerr << "We Can't Send SIGIO To It! Exiting." << endl;
+        if(nRetVal == EINVAL)
+        {
+          cerr << "SIGACCEPT Does Not Exist On This System!";
+          cerr << " Why doesn't this work? Exiting." << endl;
+	  exit(-1);
+        }
+        else if(nRetVal == ESRCH)
+        {
+          cerr << "The Comm Thread No Longer Exists??" << endl;
+	  cerr << "Should we try relaunching again?" << endl;
+        }
       }
     }
-    /* Extremely important. Client fails otherwise.
-     * Well, at the least the emulator does, so sleep a little before
-     * we continue
-     */
-    sleep(1);
+    else
+    {
+      if(nRetVal == ESRCH)
+      {
+        cerr << "The Comm Thread No Longer Exists??"; 
+        cerr << "We Can't Send SIGACCEPT To It! Perhaps we should relaunch.";
+	cerr << endl;
+      }
+    }
   }
   close(sockfd);
+}
+
+void GTBCommunication::gtb_wrapperForCommunication()
+{
+  Request request;
+  GTBClient * client;
+  sigset_t set;
+  int nClient;
+  int nRetVal;
+  int signum;
+
+  sigemptyset(&set);
+  sigaddset(&set, SIGACCEPT);
+
+  for(;;)
+  {
+    if(sigwait(&set, &signum) != 0)
+    {
+      cerr << "Error while waiting for signal!" << endl;
+      continue;
+    }
+    cout << "Received a signal" << endl;
+    if(signum == SIGACCEPT)
+    {
+      while(!acceptedQueueIsEmpty())
+      {
+        client = acceptedQueuePop();
+        try
+        {
+          nClient = handleConnection(client);
+        } catch (BadConnectionException &e)
+        {
+          close(client->getFD());
+          delete client;
+          continue;
+        }
+        try
+        {
+          receiveRequest(&request);
+        } catch (BadConnectionException &e)
+        {
+          close(client->getFD());
+          delete client;
+          continue;
+        }
+        request.set_nclient(nClient);
+        requestQueue.push(request);
+        nRetVal = pthread_kill(thread_ids.front(), SIGIO);
+        if(nRetVal != 0)
+        {
+          if(nRetVal == EINVAL)
+          {
+            cerr << "SIGIO Does Not Exist On This System!";
+            cerr << " We Need To Use A Different Signal. Exiting." << endl;
+          }
+          else if(nRetVal == ESRCH)
+          {
+            cerr << "The Main Thread No Longer Exists??" << endl;
+            cerr << "We Can't Send SIGIO To It! Exiting." << endl;
+          }
+        }
+        /* Extremely important. Client fails otherwise.
+         * Well, at the least the emulator does, so sleep a little before
+         * we continue
+         */
+        sleep(1);
+      }
+    }
+  }
 }
 
 
@@ -600,7 +657,7 @@ void * GTBCommunication::getInAddr (struct sockaddr *i_sa)
 }
 
 
-int GTBCommunication::handleConnection(GTBClient * client, int sockfd)
+int GTBCommunication::handleConnection(GTBClient * client)
 {
   struct stat fdstatus;
   int error, idx;
@@ -608,11 +665,7 @@ int GTBCommunication::handleConnection(GTBClient * client, int sockfd)
   {
     throw BadConnectionException("Bad Accepted Connection");
   }
-  if((error = fstat(sockfd, &fdstatus)) || fdstatus.st_rdev)
-  {
-    throw BadConnectionException("Bad Incoming Connection");
-  }
-    
+
   if(debug & 17)
   {
     cout << "Start TLS Session" << endl;
@@ -839,6 +892,7 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
     cout << "Incoming size: " << nsize << endl;
   }
       
+  ++nsize;
   char vReqBuf[nsize];
   if((nNumBytes = gnutls_record_recv (m_aSession, &vReqBuf, nsize)) < 0)
   {
@@ -851,15 +905,20 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
     cout << "Received Transmission Size: " << nNumBytes << endl;
   }
 
+  /* Hack or solution? */
+  vReqBuf[nsize - 1] = '\0';
+  string sReqBuf(vReqBuf);
 
-  aPBReq->ParseFromString(vReqBuf);
+  aPBReq->ParseFromString(sReqBuf);
 
   if(debug & 18)
   {
-    cout << "Request: " << endl;
-    for (int i = 0; i<nsize; i++)
+    cout << "Request: " << sReqBuf << ", size:  " << sReqBuf.size() << endl;
+    for (int i = 0; i<nsize; ++i)
         cout << (int)vReqBuf[i] << " ";
     cout << endl;
+
+    cout << "Type: " << (vReqBuf + 4) << endl;
   
     cout << "Print Debug String: " << endl;
     aPBReq->PrintDebugString();

@@ -47,13 +47,13 @@ public:
     {
       if(throws)
       {
-        EXPECT_THROW(handleConnection(client, sockfd), BadConnectionException);
+        EXPECT_THROW(handleConnection(client), BadConnectionException);
         close(client->getFD());
         close(sockfd);
 	return;
       }
       else
-        ASSERT_NO_THROW(handleConnection(client, sockfd));
+        ASSERT_NO_THROW(handleConnection(client));
     } catch (BadConnectionException &e)
     {
       close(fdAccepted);

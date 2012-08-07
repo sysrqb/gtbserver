@@ -151,9 +151,9 @@ void handleConnectionWrapper(GTBCommunication * aGtbComm, int sockfd, bool throw
   GTBClient client;
   client.setFD(0);
   if (throws)
-    ASSERT_THROW(aGtbComm->handleConnection(&client, sockfd), BadConnectionException);
+    ASSERT_THROW(aGtbComm->handleConnection(&client), BadConnectionException);
   else
-    ASSERT_NO_THROW(aGtbComm->handleConnection(&client, sockfd));
+    ASSERT_NO_THROW(aGtbComm->handleConnection(&client));
   close(sockfd);
   gnutls_global_deinit();
   exit(0);

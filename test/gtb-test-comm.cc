@@ -132,21 +132,6 @@ TEST(CommunicationTest, HandlingConnectionNoThrow)
   gnutls_certificate_free_credentials (xcred);
 }
 
-TEST(CommunicationTest, HandlingConnectionThrowBadConnectionExceptionFromInvalidFD)
-{
-  GTBCommunication aGtbComm;
-  int sockfd;
-  sockfd = aGtbComm.getSocket();
-  aGtbComm.initGNUTLS();
-  GTBClient client;
-  client.setFD(0);
-
-  ASSERT_THROW(aGtbComm.handleConnection(&client, 0), BadConnectionException);
-  close(sockfd);
-  gnutls_global_deinit();
-}
-
-
 TEST(CommunicationTest, HandlingConnectionThrowBadConnectionExceptionFromInvalidCert)
 {
   int nRetVal(0);
