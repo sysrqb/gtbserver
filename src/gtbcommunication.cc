@@ -64,8 +64,9 @@ void GTBCommunication::launchWatchDog()
   pthread_attr_t attr;
   int signum(0);
   int nRetVal;
+  void * joinret;
   sigset_t set;
-  int sleepfor = WDOGKILLAFTER*1000;
+  int sleepfor = WDOGKILLAFTER;
   pthread_t tid = thread_ids[COMMTHREAD];
   for(;;)
   {
@@ -73,33 +74,62 @@ void GTBCommunication::launchWatchDog()
     now = time(NULL);
     if((lostcontrolat != 0) && ((lostcontrolat + WDOGKILLAFTER) < now))
     {
-      cerr << "Killing Comm Thread!" << endl;
-      pthread_kill(tid, SIGKILL);
-      sigemptyset(&set);
-      sigaddset(&set, SIGIO);
-      nRetVal = pthread_sigmask(SIG_BLOCK, &set, NULL);
+      cerr << "Cancelling Comm Thread!" << endl;
+      pthread_cancel(tid);
+      nRetVal = pthread_join(tid, &joinret);
       if(nRetVal != 0)
       {
-        cerr << "Failed to sigio mask!" << endl;
-        throw new exception();
+        cerr << "Join Failed! " << strerror(errno) << endl;
+	continue;
       }
+      cout << "Joining: " << " " << nRetVal << endl;
+      usleep(15000);
+      while(joinret != PTHREAD_CANCELED)
+      {
+        sleep(2);
+	if(debug & 18)
+	{
+	  cout << "Sleep Not Cancelled" << endl;
+	}
+      }
+      if(nRetVal == 0 && joinret == PTHREAD_CANCELED)
+      {
+        if(debug & 18)
+	  cout << "Successfully Cancelled Comm Thread" << endl;
+        sigemptyset(&set);
+        sigaddset(&set, SIGIO);
+        nRetVal = pthread_sigmask(SIG_BLOCK, &set, NULL);
+        if(nRetVal != 0)
+        {
+          cerr << "Failed to sigio mask!" << endl;
+          throw new exception();
+        }
     
-      nRetVal = pthread_attr_init(&attr);
-      if(nRetVal != 0)
-      {
-        cerr << "Failed to Initialize pthread_attr_t!" << endl;
-        throw new exception();
-      }
+        nRetVal = pthread_attr_init(&attr);
+        if(nRetVal != 0)
+        {
+          cerr << "Failed to Initialize pthread_attr_t!" << endl;
+          throw new exception();
+        }
 
-      tid = createCommThread(this, &attr);
-      thread_ids[COMMTHREAD] = tid;
+	cout << "Respawning Now" << endl;
+        tid = createCommThread(this, &attr);
+        thread_ids[COMMTHREAD] = tid;
 
-      nRetVal = pthread_attr_destroy(&attr);
-      if(nRetVal != 0)
-      {
-         cerr << "Failed to destroy pthread_attr_t!" << endl;
-         throw new exception();
+        nRetVal = pthread_attr_destroy(&attr);
+        if(nRetVal != 0)
+        {
+           cerr << "Failed to destroy pthread_attr_t!" << endl;
+           throw new exception();
+        }
+	cout << "Good To Go Again" << endl;
+	lostcontrolat = 0;
       }
+    }
+    else
+    {
+      if(debug & 18)
+        cout << "Comm looks good from here!" << endl;
     }
   }
 }
@@ -179,6 +209,7 @@ void GTBCommunication::gtb_wrapperForCommunication()
 
   sigemptyset(&set);
   sigaddset(&set, SIGACCEPT);
+  pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
   for(;;)
   {
