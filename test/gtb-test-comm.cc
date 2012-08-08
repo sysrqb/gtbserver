@@ -322,6 +322,73 @@ TEST(CommunicationTest, ReceiveRequestNULLRequest)
   gnutls_certificate_free_credentials (xcred);
 }
 
+TEST(CommunicationTest, ForceRestartByWDogTest)
+{
+  int nRetVal(0);
+  bool bserverthrows(0);
+  pthread_attr_t attr;
+  pthread_t thread_id(0);
+  nRetVal = pthread_attr_init(&attr);
+  if(nRetVal)
+  {
+    cerr << "Failed to Initialize pthread_attr_t!" << endl;
+    FAIL();
+  }
+  nRetVal = pthread_create(&thread_id, &attr, &startserver, (void *)&bserverthrows);
+  if(nRetVal)
+  {
+    cerr << "Failed to Create pthread!" << endl;
+    FAIL();
+  }
+  nRetVal = pthread_attr_destroy(&attr);
+  if(nRetVal)
+  {
+     cerr << "Failed to destroy pthread_attr_t!" << endl;
+    FAIL();
+  }
+
+  int client_sockfd(0);
+  Request aPBReq;
+  std::string sPBReq("");
+  unsigned int sleepfor(15000);
+  gnutls_certificate_credentials_t xcred;
+  gnutls_session_t session;
+  gnutls_certificate_allocate_credentials (&xcred);
+  gnutls_certificate_set_x509_trust_file (xcred, "pem/oldcerts/cacrt.pem", 
+      GNUTLS_X509_FMT_PEM);
+  gnutls_certificate_set_x509_key_file (xcred, "pem/oldcert/gtbscrt.pem", 
+      "pem/keys/gtbskey.pem", GNUTLS_X509_FMT_PEM);
+  gnutls_init (&session, GNUTLS_CLIENT);
+  gnutls_priority_set_direct (session, "NORMAL", NULL);
+  gnutls_credentials_set (session, GNUTLS_CRD_CERTIFICATE, xcred);
+  usleep(sleepfor);
+  client_sockfd = establishTCPConnection();
+  gnutls_transport_set_ptr (session, (gnutls_transport_ptr_t) client_sockfd); 
+
+  ASSERT_EQ(gnutls_handshake(session), 0);
+
+  aPBReq.set_sreqtype("CURR");
+  aPBReq.set_nreqid(1);
+  aPBReq.SerializeToString(&sPBReq);
+  int reqsize = aPBReq.ByteSize();
+  if(gnutls_record_send(session, &reqsize, aPBReq.ByteSize()) == -1)
+  {
+    std::cerr << "ERROR: Error on send: " << strerror(errno) << std::endl;
+  }
+  std::cout << "Sleeping for " << WDOGKILLAFTER + 1 << " seconds" << endl;
+  sleep(WDOGKILLAFTER * 3);
+  std::cout << "Waking up now! Did the world explode";
+  std::cout << " or did some[one thing] get cancelled?" << endl;
+  if(gnutls_record_send(session, sPBReq.c_str(), aPBReq.ByteSize()) == -1)
+  {
+    std::cerr << "ERROR: Error on send: " << strerror(errno) << std::endl;
+  }
+  close(client_sockfd);
+  gnutls_deinit (session);
+  gnutls_certificate_free_credentials (xcred);
+}
+
+
 static int
 cert_callback (gnutls_session_t session,
                const gnutls_datum_t * req_ca_rdn, int nreqs,
@@ -378,4 +445,5 @@ cert_callback (gnutls_session_t session,
   st->ncerts = 1;
   return 0;
 }
+
 
