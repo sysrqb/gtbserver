@@ -140,7 +140,13 @@ void GTBCommunication::gtbAccept()
   int sockfd;
   int nRetVal = 0;
   GTBClient * client;
+  sigset_t set;
+  int signum;
   
+  sigemptyset(&set);
+  sigaddset(&set, SIGACCEPT);
+  pthread_sigmask(SIG_BLOCK, &set, NULL);
+
   globalComm = this;
   sockfd = getSocket();
   
@@ -150,6 +156,11 @@ void GTBCommunication::gtbAccept()
   }
 
   initGNUTLS();
+
+  if(debug & 17)
+    cout << "Waiting until Comm thread is ready" << endl;
+  sigwait(&set, &signum);
+
   for(;;)
   {
     if(debug & 17)
@@ -210,6 +221,11 @@ void GTBCommunication::gtb_wrapperForCommunication()
   sigemptyset(&set);
   sigaddset(&set, SIGACCEPT);
   pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+  pthread_sigmask(SIG_BLOCK, &set, NULL);
+      
+  if(debug & 17)
+    cout << "Signal Accept thread that Comm is ready" << endl;
+  pthread_kill(thread_ids.at(ACPTTHREAD), SIGACCEPT);
 
   for(;;)
   {
