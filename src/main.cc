@@ -31,11 +31,17 @@ main(int argc, char *argv[])
   pthread_t thread_id(0);
   int signum(0);
   int debug = 0;
+  int disableWD = 0;
   sigset_t set;
   Request aPBReq;
 
   if(argc == 2)
     debug = (int) *argv[1];
+  else if(argc == 3)
+  {
+    debug = (int) *argv[1];
+    disableWD = (int) *argv[2];
+  }
   
   cout << "Starting gtbserver...." << endl;
   GTBCommunication aComm(debug);
@@ -67,8 +73,11 @@ main(int argc, char *argv[])
   thread_id = createCommThread(&aComm, &attr);
   aComm.threadid_push_back(thread_id);
 
-  thread_id = createWDogThread(&aComm, &attr);
-  aComm.threadid_push_back(thread_id);
+  if(!disableWD)
+  {
+    thread_id = createWDogThread(&aComm, &attr);
+    aComm.threadid_push_back(thread_id);
+  }
 
   /* Get rid of what we don't need */
   nRetVal = pthread_attr_destroy(&attr);
