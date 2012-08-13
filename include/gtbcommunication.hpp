@@ -74,7 +74,7 @@
 #define WDOGTHREAD 3
 
 /* How long should a thread be blocked for before we kill it? */
-#define WDOGKILLAFTER 4
+#define WDOGKILLAFTER 20
 
 /**
  * Class: GTBCommunication

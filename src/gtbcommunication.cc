@@ -229,12 +229,17 @@ void GTBCommunication::gtb_wrapperForCommunication()
 
   for(;;)
   {
-    if(sigwait(&set, &signum) != 0)
+    if(acceptedQueueIsEmpty())
     {
-      cerr << "Error while waiting for signal!" << endl;
-      continue;
+      if(sigwait(&set, &signum) != 0)
+      {
+        cerr << "Error while waiting for signal!" << endl;
+        continue;
+      }
+      cout << "Received a signal" << endl;
     }
-    cout << "Received a signal" << endl;
+    else
+      signum = SIGACCEPT;
     if(signum == SIGACCEPT)
     {
       while(!acceptedQueueIsEmpty())
@@ -985,6 +990,7 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
   if((nNumBytes = gnutls_record_recv (m_aSession, &nsize, REQSIZE)) < 0)
   {
     cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
+    lostcontrolat = 0;
     throw BadConnectionException(strerror(errno));
   }
   lostcontrolat = 0;
@@ -1000,6 +1006,7 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
   if((nNumBytes = gnutls_record_recv (m_aSession, &vReqBuf, nsize)) < 0)
   {
     cerr << "ERROR: Code reqrecv " << strerror(errno) << endl;
+    lostcontrolat = 0;
     throw BadConnectionException(strerror(errno));
   }
   lostcontrolat = 0;
