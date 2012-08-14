@@ -248,11 +248,18 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, std::vector<int> old)
 map<int, string> MySQLConn::setUpdt(int carnum, PatronList * i_apbPatl, Request * i_aPBReq)
 {
   PatronInfo * apbPI;
-  apbPI = i_apbPatl->add_patron();
   sql::PreparedStatement *prepStmt;
-  cout << "Setting Updates" << endl;
-  
   map<int, string> patronErrors;
+  cout << "Setting Updates" << endl;
+
+  /* If we don't have any patron, we can
+   * skip this entire check
+   */
+  if(i_aPBReq->plpatronlist().patron_size() == 0)
+    return patronErrors;
+    
+  apbPI = i_apbPatl->add_patron();
+  
   int i = 0;
   int nRows;
 
@@ -294,7 +301,7 @@ map<int, string> MySQLConn::setUpdt(int carnum, PatronList * i_apbPatl, Request 
     cout << "Updated Rides" << endl;
   }
   delete prepStmt;
-  return patronErrors;;
+  return patronErrors;
 }
 
 int MySQLConn::getLocationID(string loc)
