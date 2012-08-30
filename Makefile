@@ -14,11 +14,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-obj = main.o sqlconn.o gtbcommunication.o threading.o
+obj = main.o sqlconn.o gtbcommunication.o threading.o jsoncpp.o
 SRC=src/
 TEST=test/
 INCLUDE=include/
-LINKEROPTS = -Wl,-lmysqlcppconn,-lpthread,-lgnutls,-lgnutlsxx,-lboost_thread-mt-1_47,-lnettle
+LINKEROPTS = -Wl,-lmysqlcppconn,-lpthread,-lgnutls,-lgnutlsxx,-lboost_thread-mt-1_47,-lnettle,-lcurl 
 PKGCOPTS = `pkg-config gnutls --cflags --libs protobuf`
 CC=clang++ -ggdb -Wall -I$(INCLUDE)
 GTEST=../gtest
@@ -27,8 +27,8 @@ gtb : gtbserver.o
 	$(CC) $(LINKEROPTS) -o gtbserver $(obj) communication.pb.o patron.pb.o $(PKGCOPTS)
 	#doxygen docs/gtbdoxygen.conf
 
-gtbserver.o : $(SRC)main.cc $(SRC)threading.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc communication.pb.cc 
-	$(CC) -c $(SRC)main.cc $(SRC)threading.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)communication.pb.cc $(SRC)patron.pb.cc
+gtbserver.o : $(SRC)main.cc $(SRC)threading.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)communication.pb.cc $(SRC)jsoncpp.cpp
+	$(CC) -c $(SRC)main.cc $(SRC)threading.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)communication.pb.cc $(SRC)patron.pb.cc $(SRC)jsoncpp.cpp
 
 communication.pb.cc : patron.pb.cc
 	./protobuf/bin/protoc -I$(SRC) -Iinclude $(SRC)communication.proto --cpp_out=$(SRC) --java_out=$(SRC)
@@ -67,7 +67,9 @@ gtest_main.o :
 
 verify: verifyingcert.c
 	gcc -ggdb -Wall $(LINKEROPTS) -o verify verifyingcert.c
-	
+
+testgpgjson :
+	$(CC) $(LINKEROPTS) -o gpgjsontest $(TEST)gpgjsontest.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc $(SRC)jsoncpp.cpp $(PKGCOPTS)
 
 cleantest:
 	rm gtb-test-*

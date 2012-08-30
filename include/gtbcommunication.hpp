@@ -24,6 +24,7 @@
 #include <queue>
 #include <pthread.h>
 #include <gnutls/gnutlsxx.h>
+#include <curl/curl.h>
 
 #include "sqlconn.hpp"
 #include "communication.pb.h"
@@ -200,6 +201,13 @@ class GTBCommunication {
       m_MySQLConn = new MySQLConn();
       m_pDHParams = (gnutls_dh_params_t *) operator 
           new (sizeof (gnutls_dh_params_t));
+
+      if(curl_global_init(CURL_GLOBAL_SSL))
+      {
+        std::cerr << "Unable to init libcurl!" << std::endl;
+	std::cerr << "Exiting." << std::endl;
+	exit(-1);
+      }
     }
 
     /** \brief Deconstructor to clean up dynamic info */
@@ -215,6 +223,7 @@ class GTBCommunication {
       delete m_MySQLConn;
       delete m_pX509Cred;
       delete m_pPriorityCache;
+      curl_global_cleanup();
     }
 
 
@@ -492,6 +501,24 @@ class GTBCommunication {
      * \param i_aPBReq The request received from the client.
      */
     int sendNumberOfCars(Request * i_aPBReq);
+
+    /** \brief Called when we receive a response from the server.
+     *
+     * When we receive a response from the server, handle it correctly.
+     * i.e. If the credentials are authenic, then store in the DB that
+     * these credentials have been validated. Else, return an error
+     * message/code.
+     */
+    static size_t
+    authRequest_callback(void *buffer, size_t size, size_t nmemb, void *userp);
+
+    /** \brief Return a filename corresponding to an encrypted file
+     *
+     * We generate a json object using the data provided in aPBReq then
+     * we store it in a file and pass it into gpg where it is encrypted.
+     * We then return the filename of the encrypted file.
+     */
+    std::string getEncryptedPackage(Request * aPBReq);
 
     /** \brief Request to authenticate client.
      *

@@ -21,11 +21,15 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <csignal>
 #include <unistd.h>
+#include <json/json.h>
+#include <curl/curl.h>
 
 #include <iostream>
+#include <fstream>
 #include <string>
 
 #include <gnutls/x509.h>
@@ -35,6 +39,8 @@
 #include "patron.pb.h"
 #include "sqlconn.hpp"
 #include "threading.hpp"
+
+#include <json/json.h>
 
 #define MAX_SESSION_ID_SIZE 32
 #define MAX_SESSION_DATA_SIZE 512
@@ -245,6 +251,8 @@ void GTBCommunication::gtb_wrapperForCommunication()
       while(!acceptedQueueIsEmpty())
       {
         client = acceptedQueuePop();
+	if(debug * 18)
+	  cout << acceptedQueue.size() << " Clients Remaining" << endl;
         try
         {
           nClient = handleConnection(client);
@@ -391,21 +399,20 @@ GTBCommunication::initTLSSession()
   }
 
   // Request client cert
- /* gnutls_certificate_server_set_request (m_aSession, GNUTLS_CERT_REQUEST);
-  if (TLS_SESSION_CACHE != 0)
+  gnutls_certificate_server_set_request (m_aSession, GNUTLS_CERT_REQUEST);
+  /*if (TLS_SESSION_CACHE != 0)
   {
     gnutls_db_set_retrieve_function (m_aSession, wrap_db_fetch);
     gnutls_db_set_remove_function (m_aSession, wrap_db_delete);
     gnutls_db_set_store_function (m_aSession, wrap_db_store);
     gnutls_db_set_ptr (m_aSession, NULL);
-  }
+  }*/
 
   gnutls_certificate_server_set_request (m_aSession, 
               GNUTLS_CERT_REQUIRE); //Require client to provide cert
   gnutls_certificate_send_x509_rdn_sequence  (
               m_aSession, 
               1); //REMOVE IN ORDER TO COMPLETE CERT EXCHANGE
-*/  
 }
 
 int
@@ -782,7 +789,7 @@ int GTBCommunication::handleConnection(GTBClient * client)
   }
 
   lostcontrolat = time(NULL);
-  int nRetVal, i=0, lastret = 0;;
+  int nRetVal, i(0);
   do
   {
     i++;
@@ -1026,7 +1033,7 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
   {
     cout << "Request: " << sReqBuf << ", size:  " << sReqBuf.size() << endl;
     for (int i = 0; i<nsize; ++i)
-        cout << (int)vReqBuf[i] << " ";
+        cout << (unsigned int)vReqBuf[i] << " ";
     cout << endl;
 
     cout << "Type: " << (vReqBuf + 4) << endl;
@@ -1180,9 +1187,10 @@ GTBCommunication::sendResponse(
     {
       cout << "C: Buffer Contents: " << endl;
       i_pbRes->set_nrespid(i_nRetVal);
-      i_pbRes->set_sresvalue("CURR");
       i_pbRes->CheckInitialized();
       i_pbRes->PrintDebugString();
+      cout << "nRespID: " << i_pbRes->nrespid() << endl;
+      cout << "nResValue: " << i_pbRes->sresvalue() << endl;
       string spbRes = "";
       i_pbRes->SerializeToString(&spbRes);
       int nsize = i_pbRes->ByteSize();
@@ -1219,10 +1227,74 @@ GTBCommunication::sendResponse(
   cerr << "ERROR: C: Failed to send response!" << endl;
   return -1;
 }
-int 
+
+size_t
+GTBCommunication::authRequest_callback(void *buffer, size_t size,
+                                              size_t nmemb, void *userp)
+{
+  /* If valid, add authed users to DB for subsequent validation
+   * Rename checkAuth to something more appropriate
+   */
+  return (size * nmemb);
+}
+
+
+string GTBCommunication::getEncryptedPackage(Request * aPBReq)
+{
+  int pid, res;
+  const char * filename = "authreq.json";
+  string encjsonout;
+
+  Json::ValueType type = Json::objectValue;
+  Json::Value root(type);
+  root["AUTH"] = aPBReq->sreqtype(); 
+  root["user1"] = aPBReq->sparams(0); 
+  root["user2"] = aPBReq->sparams(1); 
+  root["NH"] = aPBReq->sparams(2);
+  root["HASH"] = aPBReq->sparams(3);
+  Json::StyledWriter writer;
+  string jsonout = writer.write(root);
+ 
+  if(!(pid = fork()))
+  {
+    fstream fs;
+    fs.open(filename, ios::out);
+    fs.write(jsonout.c_str(), jsonout.size());
+    fs.close();
+    const char * const argv[] = {"/usr/bin/gpg", "--no-tty", "--batch",
+                                 "--passphrase", PASSPHRASE, "-r",
+				 PUBKEYID, "-se", "authreq.json"};
+    res = execv(argv[0], (char * const *) argv);
+    cerr << "GPG EXEC returned: " << res << ": " << strerror(res) << endl;
+    exit(-1);
+  }
+  else
+  {
+    res = waitpid(pid, NULL, 0);
+    if(res != pid)
+      throw new CryptoException("Unsuccessful Return Code");
+    
+    string gpgfilename(filename);
+    gpgfilename.append(".gpg");
+    fstream fs;
+    fs.open(gpgfilename.c_str(), ios::in);
+    if(fs.is_open())
+    {
+      fs.close();
+      return gpgfilename;
+    }
+    else
+    {
+      throw new CryptoException("File Does Not Exist");
+    }
+  }
+  return NULL;
+}
+
+int
 GTBCommunication::authRequest (Request * i_aPBReq)
 {
-  int retval;
+  string filename;
   string sHash;
 	
   if(0 != i_aPBReq->sreqtype().compare("AUTH"))
@@ -1233,24 +1305,61 @@ GTBCommunication::authRequest (Request * i_aPBReq)
 
   if (i_aPBReq->sparams_size() == 4)
   {
-    if((retval = m_MySQLConn->checkAuth(
-        i_aPBReq->sparams(0), 
-	i_aPBReq->sparams(1), 
-	i_aPBReq->sparams(2), 
-	i_aPBReq->sparams(3))))
-    {
-      cerr << "ERROR: C: Authenication Failed: " << retval << endl;;
-      return retval;
-    }
+    fstream fs;
+    filename = getEncryptedPackage(i_aPBReq);
+    fs.open(filename.c_str(), ios::in | ios::binary);
+    if(!fs.is_open())
+      throw new CryptoException("File Does Not Exist");
+    fs.close();
+
+    CURL * curl;
+    CURLcode res;
+    struct curl_httppost * formpost = NULL;
+    struct curl_httppost * lastptr = NULL;
+
+    curl = curl_easy_init();
+    if(curl == NULL)
+      throw new GTBException("Could not get cURL handle");
+
+    res = curl_easy_setopt(curl, CURLOPT_URL,
+                      "http://guarddogs.uconn.edu/index.php?id=42");
+    if(res != CURLE_OK)
+      cerr << "URLOPT_URL failed: " <<  curl_easy_strerror(res) << endl;
+
+    res = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0);
+    if(res != CURLE_OK)
+      cerr << "CURLOPT_FOLLOWLOCATION failed: " <<
+              curl_easy_strerror(res) << endl;
+
+    res = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, authRequest_callback);
+    if(res != CURLE_OK)
+      cerr << "CURLOPT_WRITEFUNCTION failed: " <<
+              curl_easy_strerror(res) << endl;
+    res = curl_easy_setopt(curl, CURLOPT_WRITEDATA, i_aPBReq);
+    if(res != CURLE_OK)
+      cerr << "CURLOPT_WRITEDATA failed: " <<
+              curl_easy_strerror(res) << endl;
+
+    curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "filename",
+                 CURLFORM_FILE, filename.c_str(), CURLFORM_END);
+
+    curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+
+    res = curl_easy_perform(curl);
+    if(res != CURLE_OK)
+      cerr << "curl_easy_perform() failed: " <<
+              curl_easy_strerror(res) << endl;
+
+    curl_easy_cleanup(curl);
+    curl_formfree(formpost);
   }
   else
   {
-    cerr << "ERROR: C: Missing Paramters: Only " << i_aPBReq->sparams_size() 
-        << " provided!" << endl;
-    return -1;
+    if(debug & 17)
+      cerr << "ERROR: C: Missing Paramters: Only " << i_aPBReq->sparams_size()
+           << " provided!" << endl;
+    throw new UserException("All fields were not filled in");
   }
-
-  //TODO Store IP Address, car num, etc for checking later
 
   return 0;
 }
@@ -1258,8 +1367,6 @@ GTBCommunication::authRequest (Request * i_aPBReq)
 int 
 GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
 {
-  int nRetVal;
-
   if(0 != i_aPBReq->sreqtype().compare("CURR"))
   {
     cerr << "ERROR: C: Not CURR: " << i_aPBReq->sreqtype()  << endl;
@@ -1285,7 +1392,7 @@ GTBCommunication::currRequest (Request * i_aPBReq, Response * i_pbRes)
 
 
 int 
-GTBCommunication::updtRequest (Request * i_aPBReq, Response * i_pbRes)
+GTBCommunication::updtRequest (Request * i_aPBReq, Response * i_aPBRes)
 {
   map<int, string> vRetVal;
   map<int, string>::iterator vrvIt;
@@ -1293,17 +1400,17 @@ GTBCommunication::updtRequest (Request * i_aPBReq, Response * i_pbRes)
   if(0 != i_aPBReq->sreqtype().compare("UPDT"))
   {
     cerr << "ERROR: C: Not UPDT: " << i_aPBReq->sreqtype()  << endl;
-    i_pbRes->set_nrespid(-1);
-    i_pbRes->set_sresvalue("Not UPDT");
+    i_aPBRes->set_nrespid(-1);
+    i_aPBRes->set_sresvalue("Not UPDT");
     return -2;
   }
   cout << "C: Setting Ride Updates" << endl;
-  vRetVal = m_MySQLConn->setUpdt(i_aPBReq->ncarid(), i_pbRes->mutable_plpatronlist(), i_aPBReq);
-  
+  vRetVal = m_MySQLConn->setUpdt(i_aPBReq->ncarid(), i_aPBRes->mutable_plpatronlist(), i_aPBReq);
+ 
   for(vrvIt = vRetVal.begin(); vrvIt != vRetVal.end(); vrvIt++)
   {
-    i_pbRes->add_nresadd(vrvIt->first);
-    i_pbRes->add_sresadd(vrvIt->second);
+    i_aPBRes->add_nresadd(vrvIt->first);
+    i_aPBRes->add_sresadd(vrvIt->second);
   }
   return 0;
 }
@@ -1328,6 +1435,7 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
       {
         cout << "Type CURR" << endl;
       }
+      apbRes.set_sresvalue("CURR");
       if(!(nCurrRet = currRequest (&i_aPBReq, &apbRes)))
       {
         if(debug & 17)
@@ -1349,23 +1457,32 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
       {
         cout << "Type AUTH" << endl;
       }
-      if(!(nAuthRet = authRequest (&i_aPBReq)))
+      try
       {
-        int idx = i_aPBReq.nclient();
-        GTBClient * client = clientsList.at(idx);
-        client->setVerified(true);
-        client->setCarNum(i_aPBReq.ncarid());
-	if(i_aPBReq.sparams_size() > 1)
-	{
-          client->setNetIDs(i_aPBReq.sparams(0), i_aPBReq.sparams(1));
-          client->setCarSize(i_aPBReq.nparams(0));
-          sendResponse(0, NULL, NULL, NULL);
-          moveKey();
-	}
-      }
-      else
+        if(!(nAuthRet = authRequest (&i_aPBReq)))
+        {
+          int idx = i_aPBReq.nclient();
+          GTBClient * client = clientsList.at(idx);
+          client->setVerified(true);
+          client->setCarNum(i_aPBReq.ncarid());
+          if(i_aPBReq.sparams_size() > 1)
+          {
+            client->setNetIDs(i_aPBReq.sparams(0), i_aPBReq.sparams(1));
+            client->setCarSize(i_aPBReq.nparams(0));
+            sendResponse(0, NULL, NULL, NULL);
+            moveKey();
+          }
+        }
+        else
+        {
+          sendResponse(nAuthRet, NULL, NULL, NULL);
+        }
+      } catch(CryptoException &e)
       {
-        sendResponse(nAuthRet, NULL, NULL, NULL);
+        sendResponse(-3, NULL, NULL, NULL);
+      } catch (UserException &e)
+      {
+        sendResponse(-1, NULL, NULL, NULL);
       }
       break;
     // CARS
@@ -1374,7 +1491,7 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
       {
         cout << "C: Type CARS" << endl;
       }
-      if(sendNumberOfCars (&i_aPBReq) < 0)
+      if(sendNumberOfCars(&i_aPBReq) < 0)
         return sendFailureResponse(2);
       break;
     // UPDT
@@ -1384,7 +1501,8 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
       {
         cout << "Type UPDT" << endl;
       }
-      if(!(nUpdtRet = updtRequest (&i_aPBReq, &apbRes)))
+      apbRes.set_sresvalue("UPDT");
+      if(!(nUpdtRet = updtRequest(&i_aPBReq, &apbRes)))
       {
 	if(debug & 17)
 	{
@@ -1400,6 +1518,7 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
       break;
     default:
       break;
+    
   }
   return 0;
 }

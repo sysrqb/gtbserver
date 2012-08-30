@@ -48,5 +48,36 @@ class BadConnectionException: public std::exception
     }
 };
 
+class GTBException : public std::exception
+{
+  public:
+    GTBException(std::string m="Process failed",
+                    std::string r="A error occurred while processing the"
+		    " request. Please try again.") : msg(m), reterror(r) {}
+    ~GTBException() throw() {}
+    const char* what() const throw() { return msg.c_str(); }
+    virtual const char* propErrorWhat() const throw() { return reterror.c_str(); }
 
+  protected:
+    std::string msg;
+    std::string reterror;
+};
+
+
+class CryptoException : public GTBException
+{
+  public:
+    CryptoException(std::string m="Crypto process failed",
+                    std::string r="A error occurred while processing the"
+		    " request. Please try again.") : GTBException(m, r) {}
+};
+
+class UserException : public GTBException
+{
+  public:
+    UserException(std::string m="User input was incorrect or insufficient",
+                    std::string r="A error occurred while processing the"
+                    " request. Please try again and make sure all fields are"
+                    "filled correctly.") : GTBException(m, r) {}
+};
 #endif //gtbexceptions_h
