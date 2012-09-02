@@ -75,7 +75,6 @@ void GTBCommunication::launchWatchDog()
 {
   time_t now;
   pthread_attr_t attr;
-  int signum(0);
   int nRetVal;
   void * joinret;
   sigset_t set;
@@ -1540,7 +1539,7 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
   return 0;
 }
 
-
+#ifdef usedbfunctions
 /* Functions and other stuff needed for session resuming.
  * This is done using a very simple list which holds session ids
  * and session data.
@@ -1657,6 +1656,7 @@ wrap_db_delete (void *dbf, gnutls_datum_t key)
 }
 
 } // extern
+#endif //usedbfunctions
 
 /******************************
  * Client Information Related *
