@@ -59,6 +59,13 @@ extern "C"
 
 extern inline pthread_t createCommThread(GTBCommunication * aComm, 
                                          pthread_attr_t * attr);
+/** \brief Output log messages to stdout
+*/
+void gnutls_log_fun(int level, const char * loginfo)
+{
+  std::cout << "GnuTLS LOG " << level << ": " << loginfo << std::endl;
+}
+ 
 
 /************************** 
 * Thread Related Methods *
@@ -93,14 +100,14 @@ void GTBCommunication::launchWatchDog()
       while(joinret != PTHREAD_CANCELED)
       {
         sleep(2);
-	if(debug & 18)
+	if(debug & 1)
 	{
 	  cout << "Sleep Not Cancelled" << endl;
 	}
       }
       if(nRetVal == 0 && joinret == PTHREAD_CANCELED)
       {
-        if(debug & 18)
+        if(debug & 1)
 	  cout << "Successfully Cancelled Comm Thread" << endl;
         sigemptyset(&set);
         sigaddset(&set, SIGIO);
@@ -134,7 +141,7 @@ void GTBCommunication::launchWatchDog()
     }
     else
     {
-      if(debug & 18)
+      if(debug & 1)
         cout << "Comm looks good from here!" << endl;
     }
   }
@@ -156,20 +163,20 @@ void GTBCommunication::gtbAccept()
   globalComm = this;
   sockfd = getSocket();
   
-  if(debug & 17)
+  if(debug & 1)
   {
     cout << "Establish Incoming Connections" << endl;;
   }
 
   initGNUTLS();
 
-  if(debug & 17)
+  if(debug & 1)
     cout << "Waiting until Comm thread is ready" << endl;
   sigwait(&set, &signum);
 
   for(;;)
   {
-    if(debug & 17)
+    if(debug & 1)
       cout << "Returning to listening state" << endl;
     try
     {
@@ -229,7 +236,7 @@ void GTBCommunication::gtb_wrapperForCommunication()
   pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
   pthread_sigmask(SIG_BLOCK, &set, NULL);
       
-  if(debug & 17)
+  if(debug & 1)
     cout << "Signal Accept thread that Comm is ready" << endl;
   pthread_kill(thread_ids.at(ACPTTHREAD), SIGACCEPT);
 
@@ -251,7 +258,7 @@ void GTBCommunication::gtb_wrapperForCommunication()
       while(!acceptedQueueIsEmpty())
       {
         client = acceptedQueuePop();
-	if(debug * 18)
+	if(debug * 4)
 	  cout << acceptedQueue.size() << " Clients Remaining" << endl;
         try
         {
@@ -348,7 +355,7 @@ extern "C"
 
 void GTBCommunication::initGNUTLS()
 {
-  if(debug & 17)
+  if(debug & 1)
   {
     cout << "Initialize gnutls" << endl;
   }
@@ -356,6 +363,14 @@ void GTBCommunication::initGNUTLS()
       << endl;
   loadCertFiles();
   set_session_management_functions(&m_aSession);
+  gnutls_global_set_log_function(gnutls_log_fun);
+  if(debug)
+  {
+    int loglevel = debug >> 4;
+    if(loglevel)
+      cout << "Enableing GnuTLS Debug Level: " << loglevel << endl;
+    gnutls_global_set_log_level(loglevel);
+  }
 }
 
 void GTBCommunication::deinitGNUTLS()
@@ -432,20 +447,20 @@ GTBCommunication::loadCertFiles ()
 {
   int retval;
 
-  if(debug & 17)
+  if(debug & 1)
   {
     cout << "loadCertFiles: allocate creds" << endl;
   }
   if ((retval = gnutls_certificate_allocate_credentials (m_pX509Cred)))
   {
     //TODO
-    if(debug & 17)
+    if(debug & 1)
     {
       cout << "loadCertFiles: gnutls_certificate_allocate_credentials: false" 
           << endl;
     }
   }
-  if(debug & 17)
+  if(debug & 1)
   {
     cout << "loadCertFiles: load cert trust file" << endl;
   }
@@ -458,13 +473,13 @@ GTBCommunication::loadCertFiles ()
     if ( retval <= 0 )
       cerr << "ERROR: loadCertFiles: gnutls_certificate_set_x509_trust_file " << 
           "error code: " << strerror(retval) << endl;
-    if(debug & 18)
+    if(debug & 4)
     {
       cout << "loadCertFiles: gnutls_certificate_set_x509_trust_file: " << 
           "certs loaded: " << retval << endl;
     }
   }
-  if(debug & 17)
+  if(debug & 1)
   {
     cout << "loadCertFiles: load CSL" << endl;
   }
@@ -476,7 +491,7 @@ GTBCommunication::loadCertFiles ()
         << retval << endl;
   }
     
-  if(debug & 17)
+  if(debug & 1)
   {
     cout << "loadCertFiles: load key" << endl;
   }
@@ -489,12 +504,12 @@ GTBCommunication::loadCertFiles ()
           "error code: " << strerror(retval) << endl;
   
 
-  if(debug & 17)
+  if(debug & 1)
   {
     cout << "loadCertFiles: gen DH params" << endl;
   }
   generateDHParams ();
-  if(debug & 17)
+  if(debug & 1)
   {
     cout << "loadCertFiles: priority init" << endl;
   }
@@ -507,7 +522,7 @@ GTBCommunication::loadCertFiles ()
     cerr << "ERROR: loadCertFiles: gnutls_priority_init error code: &s" << *cErrLoc << endl;
   }
 
-  if((debug & 17) || (debug & 18))
+  if(debug & 4)
   {
     cout << "Set priority: " << GNUTLS_PRIORITY << endl;
   }
@@ -535,13 +550,13 @@ int GTBCommunication::saveSessionForResume(void * ptr,
     clientSessions = new ClientSession();
     if(clientSessions == NULL)
     {
-      if(debug & 18)
+      if(debug & 1)
         cerr << "Failed to save session" << endl;
       return GNUTLS_E_DB_ERROR;
     }
     clientSessions->session_id = session_id;
     clientSessions->session_data = session_data;
-    if(debug & 18)
+    if(debug & 4)
       cout << "Successfully saved session" << endl;
   }
   else
@@ -549,7 +564,7 @@ int GTBCommunication::saveSessionForResume(void * ptr,
     clientSessions->tail = new ClientSession();
     if(clientSessions->tail == NULL)
     {
-      if(debug & 18)
+      if(debug & 1)
         cerr << "Failed to save session" << endl;
       return GNUTLS_E_DB_ERROR;
     }
@@ -557,7 +572,7 @@ int GTBCommunication::saveSessionForResume(void * ptr,
     clientSessions->tail->session_data = session_data;
   }
     
-  if(debug & 18)
+  if(debug & 1)
     cout << "Successfully saved session" << endl;
   return 0;
 }
@@ -570,7 +585,7 @@ gnutls_datum_t GTBCommunication::retrieveSessionForResume(void * ptr,
      !sess_strncmp(clientSessions->session_id.data, session_id.data,
                   session_id.size))
   {
-    if(debug & 18)
+    if(debug & 1)
       cout << "Successfully retrieved session" << endl;
     return clientSessions->session_data;
   }
@@ -587,7 +602,7 @@ gnutls_datum_t GTBCommunication::retrieveSessionRecurse(void * ptr,
      !sess_strncmp(client->session_id.data, session_id.data,
                   session_id.size))
   {
-    if(debug & 18)
+    if(debug & 1)
       cout << "Successfully retrieved session" << endl;
     return client->session_data;
   }
@@ -597,7 +612,7 @@ gnutls_datum_t GTBCommunication::retrieveSessionRecurse(void * ptr,
      * this case it will and GNUTLS will handle correctly.
      */
     gnutls_datum_t session;
-    if(debug & 18)
+    if(debug & 1)
       cerr << "Failed to retrieve session" << endl;
     return session;
   }
@@ -615,7 +630,7 @@ int GTBCommunication::removeSessionForResume(void * ptr, gnutls_datum_t session_
     ClientSession * newHead = clientSessions->next;
     delete clientSessions;
     clientSessions = newHead;
-    if(debug & 18)
+    if(debug & 1)
       cout << "Successfully removed session" << endl;
     return GNUTLS_E_DB_ERROR;
   }
@@ -635,13 +650,13 @@ int GTBCommunication::removeSessionRecurse(void * ptr,
     ClientSession * next = client->next->next;
     delete client->next;
     client->next = next;
-    if(debug & 18)
+    if(debug & 1)
       cout << "Successfully removed session" << endl;
     return 0;
   }
   else if (client->next == NULL)
   {
-    if(debug & 18)
+    if(debug & 1)
       cout << "Failed to remove session" << endl;
     return GNUTLS_E_DB_ERROR;
   }
@@ -776,14 +791,14 @@ int GTBCommunication::handleConnection(GTBClient * client)
     throw BadConnectionException("Bad Accepted Connection");
   }
 
-  if(debug & 17)
+  if(debug & 1)
   {
     cout << "Start TLS Session" << endl;
   }
 
   gnutls_transport_set_ptr (m_aSession, 
                            (gnutls_transport_ptr_t) client->getFD());
-  if(debug & 17)
+  if(debug & 1)
   {
     cout << "Performing handshake.." << endl;
   }
@@ -794,9 +809,10 @@ int GTBCommunication::handleConnection(GTBClient * client)
   {
     i++;
     nRetVal = gnutls_handshake (m_aSession);
-    if(debug & 18)
+    if(debug & 4)
     {
-      cout << "First Return value: " << nRetVal << endl;
+      cout << "First Return value: " << nRetVal << ": " << 
+              gnutls_strerror(nRetVal) << endl;
     }
     if ( i > 10 )
     {
@@ -804,7 +820,7 @@ int GTBCommunication::handleConnection(GTBClient * client)
       throw BadConnectionException("Failed to Handshake");
     }
   } while (gnutls_error_is_fatal (nRetVal) != GNUTLS_E_SUCCESS);
-  if(debug & 18)
+  if(debug & 4)
   {
     cout << "Last Return Value: " << nRetVal << endl;
   }
@@ -825,7 +841,7 @@ int GTBCommunication::handleConnection(GTBClient * client)
       gnutls_cipher_get (m_aSession);
   const char * sCipherName;
   sCipherName = gnutls_cipher_get_name(aUsingCipher);
-  if(debug & 18)
+  if(debug & 4)
   {
     cout << "Using cipher: " << sCipherName << endl;
   }
@@ -839,7 +855,7 @@ int GTBCommunication::handleConnection(GTBClient * client)
 
   if(certList)
   {
-    if(debug & 18)
+    if(debug & 4)
     {
       cout << "Client sent a certificate chain with " << certLength;
       cout << " certificates." << endl;
@@ -847,8 +863,9 @@ int GTBCommunication::handleConnection(GTBClient * client)
 
     if(gnutls_x509_crt_import(cert, &certList[0], GNUTLS_X509_FMT_DER))
     {
-      if(debug & 18)
-        cerr << "Could not parse certificate(s)" << endl;
+      if(debug & 4)
+        cerr << "Could not parse certificate(s): " <<
+	        gnutls_strerror(nRetVal) << endl;
       
       throw BadConnectionException("Bad Client Certs");
     }
@@ -925,20 +942,20 @@ GTBCommunication::listeningForClient (int i_fdSock)
   }
   */
 
-  if(debug & 17)
+  if(debug & 1)
   {
     cout << endl;
     cout << "Initialize TLS Session" << endl;
   }
   initTLSSession();
 
-  if(debug & 17)
+  if(debug & 1)
   {
     cout << "Accepting Connection" << endl;
   }
   fdAccepted = accept(i_fdSock, (struct sockaddr *)&aClientAddr, &nSinSize);
   
-  if(debug & 17)
+  if(debug & 1)
   {
     cout << "accept fdAccepted:" << fdAccepted << endl;
   }
@@ -959,7 +976,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
     cerr << "ERROR: Closing connection..." << endl;
     close(fdAccepted);
   }
-  if(debug & 17)
+  if(debug & 1)
   {
     cout << "Accepting Connection from: " << vAddr << endl;
   }
@@ -969,7 +986,7 @@ GTBCommunication::listeningForClient (int i_fdSock)
   strncpy(m_vIPAddr, vAddr, INET6_ADDRSTRLEN);
 
   client = new GTBClient(fdAccepted);
-  if(debug & 18)
+  if(debug & 1)
     cout << "client: fdAccepted: " << client->getFD() << endl;
   client->setIPAddr(vAddr);
   gnutls_datum_t empty;
@@ -986,7 +1003,7 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
   /* This causes a segfault, obviously, why did this work before? 
    * char vReqBuf[AUTHSIZE] = "";
    */
-  if(debug & 17)
+  if(debug & 1)
   {
     cout << "Receiving request" << endl;
   }
@@ -1002,7 +1019,7 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
   }
   lostcontrolat = 0;
 
-  if(debug & 18)
+  if(debug & 4)
   {
     cout << "Incoming size: " << nsize << endl;
   }
@@ -1018,7 +1035,7 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
   }
   lostcontrolat = 0;
 
-  if(debug & 18)
+  if(debug & 4)
   {
     cout << "Received Transmission Size: " << nNumBytes << endl;
   }
@@ -1029,7 +1046,7 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
 
   aPBReq->ParseFromString(sReqBuf);
 
-  if(debug & 18)
+  if(debug & 4)
   {
     cout << "Request: " << sReqBuf << ", size:  " << sReqBuf.size() << endl;
     for (int i = 0; i<nsize; ++i)
@@ -1355,7 +1372,7 @@ GTBCommunication::authRequest (Request * i_aPBReq)
   }
   else
   {
-    if(debug & 17)
+    if(debug & 4)
       cerr << "ERROR: C: Missing Paramters: Only " << i_aPBReq->sparams_size()
            << " provided!" << endl;
     throw new UserException("All fields were not filled in");
@@ -1431,14 +1448,14 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
     case 1:
       int nCurrRet;
 
-      if(debug & 17)
+      if(debug & 1)
       {
         cout << "Type CURR" << endl;
       }
       apbRes.set_sresvalue("CURR");
       if(!(nCurrRet = currRequest (&i_aPBReq, &apbRes)))
       {
-        if(debug & 17)
+        if(debug & 1)
 	{
           cout << "C: Sending Response for CURR" << endl;
 	}
@@ -1453,7 +1470,7 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
     // AUTH
     case 2:
       int nAuthRet;
-      if(debug & 17)
+      if(debug & 1)
       {
         cout << "Type AUTH" << endl;
       }
@@ -1487,7 +1504,7 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
       break;
     // CARS
     case 3:
-      if(debug & 17)
+      if(debug & 1)
       {
         cout << "C: Type CARS" << endl;
       }
@@ -1497,14 +1514,14 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
     // UPDT
     case 4:
       int nUpdtRet;
-      if(debug & 17)
+      if(debug & 1)
       {
         cout << "Type UPDT" << endl;
       }
       apbRes.set_sresvalue("UPDT");
       if(!(nUpdtRet = updtRequest(&i_aPBReq, &apbRes)))
       {
-	if(debug & 17)
+	if(debug & 1)
 	{
           cout << "C: Sending Response for UPDT" << endl;
 	}

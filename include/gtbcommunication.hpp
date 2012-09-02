@@ -155,10 +155,25 @@ class GTBCommunication {
     /** Debug bit mask 
      *
      * 1 = Current Operation
-     * 2 = Debugging value output (Not in consistant locations)
-     * 4
-     * 8
-     * 16 = All
+     * 2 = 
+     * 4 = Debugging value output (Not in consistant locations)
+     * 5 = All
+     * 8 = GnuTLS log level 1
+     * 9 = GnuTLS log level 1 + Current Operation
+     * 12 = GnuTLS log level 1 + Debugging value output
+     * 16 = GnuTLS log level 2
+     * 17 = GnuTLS log level 2 + Current Operation
+     * 20 = GnuTLS log level 2 + Debugging value output
+     * 32 = GnuTLS log level 3
+     * 33 = GnuTLS log level 3 + Current Operation
+     * 36 = GnuTLS log level 3 + Debugging value output
+     *
+     *          -- debug <       debug
+     * Level = |
+     *          -- debug >= 8    8*<GnuTLS log level> +
+     *                             ((1 for Current Operation) or
+     *                              (4 Debugging value output))
+     * etc
      * */
     int debug;
 
@@ -194,6 +209,9 @@ class GTBCommunication {
     GTBCommunication(int indebug = 0)
     {
       debug = indebug;
+      if(debug & 4)
+        std::cout << "Entering Debug Level: " << debug << std::endl;
+
       m_pPriorityCache = (gnutls_priority_t *) 
           operator new (sizeof (gnutls_priority_t));
       m_pX509Cred = (gnutls_certificate_credentials_t * ) 
@@ -342,7 +360,7 @@ class GTBCommunication {
      * Set certificate to use and connection requirements.
      */
     void initTLSSession ();
- 
+
     /** \brief Prepare Diffie-Hellman Parameters
      *
      * Initialize Diffie-Hellman parameters for new TLS session

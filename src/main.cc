@@ -36,7 +36,10 @@ main(int argc, char *argv[])
   Request aPBReq;
 
   if(argc == 2)
-    debug = (int) *argv[1];
+  {
+    /* Convert from ASCII string */
+    debug = atoi(argv[1]);
+  }
   else if(argc == 3)
   {
     debug = (int) *argv[1];
