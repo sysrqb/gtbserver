@@ -393,7 +393,7 @@ class GTBCommunication {
      *
      * Find free port and bind it it.
      */
-    int getSocket ();
+    virtual int getSocket ();
 
     /** \brief Return incoming client as IPv4 or IPv6
      *
@@ -405,7 +405,7 @@ class GTBCommunication {
      * \param i_sa struct sockaddr_storage; Address of peer layer
      * as known to the communication layer
      */
-    void *getInAddr (struct sockaddr *i_sa);
+    virtual void *getInAddr (struct sockaddr *i_sa);
 
     /** \brief Perform TLS handshake with client
      *
@@ -419,7 +419,7 @@ class GTBCommunication {
      * \param fdAccepted File descriptor for opened socket connection
      * \param client Contains fields describing client
      */
-    int handleConnection (GTBClient * client);
+    virtual int handleConnection (GTBClient * client);
 
     /** \brief Listen for a client connection
      *
@@ -429,7 +429,7 @@ class GTBCommunication {
      * \param i_fdSock File descriptor for bound socket
      * \return new instance of client for this session
      */
-    GTBClient * listeningForClient (int i_fdSock);
+    virtual GTBClient * listeningForClient (int i_fdSock);
 
     /** \brief Retrieves all incoming requests from client
      *
@@ -439,7 +439,7 @@ class GTBCommunication {
      * param aPBReq Where incoming request is stored because it's content
      * will be used throughout the request's lifetime
      */
-    void receiveRequest(Request * aPBReq);
+    virtual void receiveRequest(Request * aPBReq);
 
 
 
@@ -449,7 +449,7 @@ class GTBCommunication {
      *************************************/
 
     /** \brief Accessor: Returns the IP Address of the current client */
-    std::string getClientAddr(){ return std::string(m_vIPAddr); } 
+    virtual std::string getClientAddr(){ return std::string(m_vIPAddr); } 
 
     /*GNUTLS variables accessor methods */
 
@@ -475,7 +475,7 @@ class GTBCommunication {
      *
      * \param errorcode The errorcode returned from processing the request.
      */
-    int sendFailureResponse(int errorcode);
+    virtual int sendFailureResponse(int errorcode);
 
     /** \brief Return 0 = Successful to client. */
     int sendAOK();
@@ -500,7 +500,7 @@ class GTBCommunication {
      * is queried and the result is returned in a Response packet.
      * \param i_aPBReq The request received from the client.
      */
-    int sendNumberOfCars(Request * i_aPBReq);
+    virtual int sendNumberOfCars(Request * i_aPBReq);
 
     /** \brief Called when we receive a response from the server.
      *
@@ -518,7 +518,7 @@ class GTBCommunication {
      * we store it in a file and pass it into gpg where it is encrypted.
      * We then return the filename of the encrypted file.
      */
-    std::string getEncryptedPackage(Request * aPBReq);
+    virtual std::string getEncryptedPackage(Request * aPBReq);
 
     /** \brief Request to authenticate client.
      *
