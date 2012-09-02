@@ -417,7 +417,7 @@ GTBCommunication::initTLSSession()
   }
 
   // Request client cert
-  gnutls_certificate_server_set_request (m_aSession, GNUTLS_CERT_REQUEST);
+  //gnutls_certificate_server_set_request (m_aSession, GNUTLS_CERT_REQUEST);
   /*if (TLS_SESSION_CACHE != 0)
   {
     gnutls_db_set_retrieve_function (m_aSession, wrap_db_fetch);
@@ -428,9 +428,9 @@ GTBCommunication::initTLSSession()
 
   gnutls_certificate_server_set_request (m_aSession, 
               GNUTLS_CERT_REQUIRE); //Require client to provide cert
-  gnutls_certificate_send_x509_rdn_sequence  (
+  /*gnutls_certificate_send_x509_rdn_sequence  (
               m_aSession, 
-              1); //REMOVE IN ORDER TO COMPLETE CERT EXCHANGE
+              1); //REMOVE IN ORDER TO COMPLETE CERT EXCHANGE*/
 }
 
 int
@@ -519,10 +519,13 @@ GTBCommunication::loadCertFiles ()
   
   // Set gnutls priority string
   const char * cErrLoc;
-  if((retval = gnutls_priority_init (m_pPriorityCache, GNUTLS_PRIORITY, &cErrLoc)))
+  if((retval = gnutls_priority_init (m_pPriorityCache,
+                                     GNUTLS_PRIORITY, &cErrLoc)))
   {
     //TODO
-    cerr << "ERROR: loadCertFiles: gnutls_priority_init error code: &s" << *cErrLoc << endl;
+    cerr << "ERROR: loadCertFiles: gnutls_priority_init error code: " <<
+            retval << ": " << gnutls_strerror(retval) << " at " << 
+	    cErrLoc << endl;
   }
 
   if(debug & 4)
@@ -850,11 +853,20 @@ int GTBCommunication::handleConnection(GTBClient * client)
   }
 
 /* Uncomment when we request certs
- * TODO
+ * TODO*/
   const gnutls_datum_t * certList;
   gnutls_x509_crt_t cert = NULL;
   unsigned int certLength;
   certList = gnutls_certificate_get_peers(m_aSession, &certLength);
+
+  if((nRetVal = gnutls_x509_crt_init(&cert)))
+  {
+    if(debug & 4)
+      cerr << "Failed to initialize cert: " <<
+               gnutls_strerror(nRetVal) << endl;
+      
+    throw BadConnectionException("Bad Client Certs");
+  }
 
   if(certList)
   {
@@ -862,9 +874,11 @@ int GTBCommunication::handleConnection(GTBClient * client)
     {
       cout << "Client sent a certificate chain with " << certLength;
       cout << " certificates." << endl;
+      cout << "Certificate is " << certList[0].size << " bytes" << endl;
     }
 
-    if(gnutls_x509_crt_import(cert, &certList[0], GNUTLS_X509_FMT_DER))
+    if((nRetVal = gnutls_x509_crt_import(cert, &(certList[0]),
+                                         GNUTLS_X509_FMT_DER)))
     {
       if(debug & 4)
         cerr << "Could not parse certificate(s): " <<
@@ -882,19 +896,19 @@ int GTBCommunication::handleConnection(GTBClient * client)
   else
     throw BadConnectionException("No Client Certs");
 
-    */
+    /**/
 
-  // unsigned int nstatus;
+  unsigned int nstatus;
 
   /* Need to uncomment when we can successfully establish authenicated 
    * connection 
    */
-  /*if( gnutls_certificate_verify_peers2 (m_aSession, &nstatus) )
+  if( gnutls_certificate_verify_peers2 (m_aSession, &nstatus) )
   {
     cerr << "ERROR: Failed to verify client certificate, error code ";
     //TODO: Send Plaintext message
     cerr << "Closing connection..." << endl;
-    close(fdAccepted);
+    close(client->getFD());
     gnutls_deinit(m_aSession);
     throw BadConnectionException("Client Verification Failed");
   }
@@ -903,10 +917,10 @@ int GTBCommunication::handleConnection(GTBClient * client)
   {
     cerr << "ERROR: Failed to verify client certificate, error code ";
     cerr << "Closing connection..." << endl;
-    close(fdAccepted);
+    close(client->getFD());
     gnutls_deinit(m_aSession);
     throw BadConnectionException("Client Verification Failed. Invalid Certificate.");
-  }*/
+  }
 
   //TODO
   //cout << "Storing connection information" << endl;
@@ -916,7 +930,7 @@ int GTBCommunication::handleConnection(GTBClient * client)
    * Actually, not verified until after Auth
    */
 
-  client->setVerified(true);
+  //client->setVerified(true);
   idx = addIfNewClient(client);
 
   return idx;

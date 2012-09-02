@@ -34,11 +34,11 @@
 
 
 // Sets the priority string for an acceptable TLS handshake
-/*#define GNUTLS_PRIORITY "+VERS-TLS1.2:+VERS-TLS1.1:+DHE-RSA:"\
+#define GNUTLS_PRIORITY "+VERS-TLS1.2:+VERS-TLS1.1:+RSA:+DHE-RSA:"\
     "+DHE-DSS:+AES-256-CBC:+AES-128-CBC:"\
-    "+SHA256:+SHA128:+SHA1:+COMP-NULL:+NORMAL:%SAFE_RENEGOTIATION"
-*/
-#define GNUTLS_PRIORITY "NORMAL"
+    "+SHA256:+SHA1:+COMP-NULL:%SAFE_RENEGOTIATION"
+
+//#define GNUTLS_PRIORITY "NORMAL"
 
 //Number of bits to be used for the DHE
 #define DH_BITS 1024
