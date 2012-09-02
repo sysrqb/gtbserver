@@ -264,6 +264,8 @@ void GTBCommunication::gtb_wrapperForCommunication()
           nClient = handleConnection(client);
         } catch (BadConnectionException &e)
         {
+	  /* Reset timer */
+          lostcontrolat = 0;
           close(client->getFD());
           delete client;
           continue;
@@ -273,6 +275,8 @@ void GTBCommunication::gtb_wrapperForCommunication()
           receiveRequest(&request);
         } catch (BadConnectionException &e)
         {
+	  /* Reset timer */
+          lostcontrolat = 0;
           close(client->getFD());
           delete client;
           continue;
