@@ -31,6 +31,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 
 #include <gnutls/x509.h>
 
@@ -114,14 +115,14 @@ void GTBCommunication::launchWatchDog()
         if(nRetVal != 0)
         {
           cerr << "Failed to sigio mask!" << endl;
-          throw new exception();
+          throw exception();
         }
     
         nRetVal = pthread_attr_init(&attr);
         if(nRetVal != 0)
         {
           cerr << "Failed to Initialize pthread_attr_t!" << endl;
-          throw new exception();
+          throw exception();
         }
 
 	cout << "Respawning Now" << endl;
@@ -132,7 +133,7 @@ void GTBCommunication::launchWatchDog()
         if(nRetVal != 0)
         {
            cerr << "Failed to destroy pthread_attr_t!" << endl;
-           throw new exception();
+           throw exception();
         }
 	cout << "Good To Go Again" << endl;
 	lostcontrolat = 0;
@@ -1025,7 +1026,7 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
     cout << "Receiving request" << endl;
   }
   if(aPBReq == NULL)
-    throw new PatronException("NULL Pointer at receiveRequest\n");
+    throw PatronException("NULL Pointer at receiveRequest\n");
   int nsize = 0;
   lostcontrolat = time(NULL);
   if((nNumBytes = gnutls_record_recv (m_aSession, &nsize, REQSIZE)) < 0)
@@ -1390,7 +1391,14 @@ string GTBCommunication::getEncryptedPackage(Request * aPBReq)
  
   if(!(pid = fork()))
   {
+    string gpgfilename(filename);
+    gpgfilename.append(".gpg");
     fstream fs;
+    fs.open(gpgfilename.c_str(), ios::in);
+    if(fs.is_open()){
+      fs.close();
+      unlink(gpgfilename.c_str());
+    }
     fs.open(filename, ios::out);
     fs.write(jsonout.c_str(), jsonout.size());
     fs.close();
@@ -1405,7 +1413,7 @@ string GTBCommunication::getEncryptedPackage(Request * aPBReq)
   {
     res = waitpid(pid, NULL, 0);
     if(res != pid)
-      throw new CryptoException("Unsuccessful Return Code");
+      throw CryptoException("Unsuccessful Return Code");
     
     string gpgfilename(filename);
     gpgfilename.append(".gpg");
@@ -1414,13 +1422,16 @@ string GTBCommunication::getEncryptedPackage(Request * aPBReq)
     if(fs.is_open())
     {
       fs.close();
+      unlink(filename);
       return gpgfilename;
     }
     else
     {
-      throw new CryptoException("File Does Not Exist");
+      unlink(filename);
+      throw CryptoException("File Does Not Exist");
     }
   }
+  unlink(filename);
   return NULL;
 }
 
@@ -1438,11 +1449,13 @@ GTBCommunication::authRequest (Request * i_aPBReq)
 
   if (i_aPBReq->sparams_size() == 4)
   {
+    stringstream errstream;
+    string errmsg;
     fstream fs;
     filename = getEncryptedPackage(i_aPBReq);
     fs.open(filename.c_str(), ios::in | ios::binary);
     if(!fs.is_open())
-      throw new CryptoException("File Does Not Exist");
+      throw CryptoException("File Does Not Exist");
     fs.close();
 
     CURL * curl;
@@ -1452,37 +1465,77 @@ GTBCommunication::authRequest (Request * i_aPBReq)
 
     curl = curl_easy_init();
     if(curl == NULL)
-      throw new GTBException("Could not get cURL handle");
+      throw GTBException("Could not get cURL handle");
 
     res = curl_easy_setopt(curl, CURLOPT_URL,
                       "http://guarddogs.uconn.edu/index.php?id=42");
-    if(res != CURLE_OK)
+    if(res != CURLE_OK){
       cerr << "URLOPT_URL failed: " <<  curl_easy_strerror(res) << endl;
+      errstream << "URLOPT_URL failed: " <<  curl_easy_strerror(res) << endl;
+      curl_easy_cleanup(curl);
+      curl_formfree(formpost);
+      errstream >> errmsg;
+      throw GTBException(errmsg);
+    }
 
     res = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0);
-    if(res != CURLE_OK)
+    if(res != CURLE_OK){
       cerr << "CURLOPT_FOLLOWLOCATION failed: " <<
               curl_easy_strerror(res) << endl;
+      errstream << "CURLOPT_FOLLOWLOCATION failed: " <<
+              curl_easy_strerror(res) << endl;
+      curl_easy_cleanup(curl);
+      curl_formfree(formpost);
+      errstream >> errmsg;
+      throw GTBException(errmsg);
+    }
 
     res = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, authRequest_callback);
-    if(res != CURLE_OK)
+    if(res != CURLE_OK){
       cerr << "CURLOPT_WRITEFUNCTION failed: " <<
               curl_easy_strerror(res) << endl;
+      errstream << "CURLOPT_WRITEFUNCTION failed: " <<
+              curl_easy_strerror(res) << endl;
+      curl_easy_cleanup(curl);
+      curl_formfree(formpost);
+      errstream >> errmsg;
+      throw GTBException(errmsg);
+    }
     res = curl_easy_setopt(curl, CURLOPT_WRITEDATA, i_aPBReq);
-    if(res != CURLE_OK)
+    if(res != CURLE_OK){
       cerr << "CURLOPT_WRITEDATA failed: " <<
               curl_easy_strerror(res) << endl;
+      errstream << "CURLOPT_WRITEDATA failed: " <<
+              curl_easy_strerror(res) << endl;
+      curl_easy_cleanup(curl);
+      curl_formfree(formpost);
+      errstream >> errmsg;
+      throw GTBException(errmsg);
+    }
 
     curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "filename",
                  CURLFORM_FILE, filename.c_str(), CURLFORM_END);
 
     curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
 
-    res = curl_easy_perform(curl);
-    if(res != CURLE_OK)
+    try
+    {
+      res = curl_easy_perform(curl);
+    } catch (CryptoException &e)
+    {
+      throw e;
+    }
+    if(res != CURLE_OK){
       cerr << "curl_easy_perform() failed: " <<
               curl_easy_strerror(res) << endl;
-
+      errstream << "curl_easy_perform() failed: " <<
+              curl_easy_strerror(res) << endl;
+      curl_easy_cleanup(curl);
+      curl_formfree(formpost);
+      errstream >> errmsg;
+      throw GTBException(errmsg);
+    }
+    unlink(filename.c_str());
     curl_easy_cleanup(curl);
     curl_formfree(formpost);
   }
@@ -1491,7 +1544,7 @@ GTBCommunication::authRequest (Request * i_aPBReq)
     if(debug & 4)
       cerr << "ERROR: C: Missing Paramters: Only " << i_aPBReq->sparams_size()
            << " provided!" << endl;
-    throw new UserException("All fields were not filled in");
+    throw UserException("All fields were not filled in");
   }
 
   return 0;
@@ -1595,6 +1648,9 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
         if(!(nAuthRet = authRequest (&i_aPBReq)))
         {
           int idx = i_aPBReq.nclient();
+	  if(idx > clientsList.size())
+            cerr << "Client is not in list! Client idx: " << idx <<
+                    ", clientList.size() = " << clientsList.size() << endl;
           GTBClient * client = clientsList.at(idx);
           client->setVerified(true);
           client->setCarNum(i_aPBReq.ncarid());
@@ -1616,6 +1672,12 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
       } catch (UserException &e)
       {
         sendResponse(-1, NULL, NULL, NULL);
+      } catch (BadConnectionException &e)
+      {
+        sendResponse(-10, NULL, NULL, NULL);
+      } catch(GTBException &e)
+      {
+        sendResponse(-10, NULL, NULL, NULL);
       }
       break;
     // CARS
