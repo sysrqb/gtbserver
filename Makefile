@@ -18,14 +18,25 @@ obj = main.o sqlconn.o gtbcommunication.o threading.o jsoncpp.o
 SRC=src/
 TEST=test/
 INCLUDE=include/
-LINKEROPTS = -Wl,-lmysqlcppconn,-lpthread,-lgnutls,-lgnutlsxx,-lboost_thread-mt-1_47,-lnettle,-lcurl 
+LIB=lib/
+LINKEROPTS = -Wl -lmysqlcppconn -lpthread -lnettle -lcurl 
+GNUTLS=/usr/lib/libtasn1.a /usr/lib/libnettle.a /usr/lib/libgnutls.a
 PKGCOPTS = `pkg-config gnutls --cflags --libs protobuf`
 CC=clang++ -ggdb -Wall -I$(INCLUDE)
-GTEST=../gtest
+GMOCK=../gmock-1.6.0
+GTEST=$(GMOCK)/gtest
+TESTING_INCLUDES=-I$(GTEST)/include -I$(GTEST) -I$(GMOCK)/include -I$(GMOCK)
 
 gtb : gtbserver.o
 	$(CC) $(LINKEROPTS) -o gtbserver $(obj) communication.pb.o patron.pb.o $(PKGCOPTS)
 	#doxygen docs/gtbdoxygen.conf
+
+static : gtbserver.o
+	$(CC) -v -L$(LIB) $(LINKEROPTS) -o gtbserver $(obj) communication.pb.o patron.pb.o $(PKGCOPTS)
+	#ar -rv gtb main.o threading.o sqlconn.o gtbcommunication.o communication.pb.o patron.pb.o jsoncpp.o
+	#ar -rv libdeps $(GNUTLS) 
+	#ar -srv gtbserver-ar gtb libdeps
+	#$(CC) -static -o gtbserver gtbserver-ar
 
 gtbserver.o : $(SRC)main.cc $(SRC)threading.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)communication.pb.cc $(SRC)jsoncpp.cpp
 	$(CC) -c $(SRC)main.cc $(SRC)threading.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)communication.pb.cc $(SRC)patron.pb.cc $(SRC)jsoncpp.cpp
@@ -47,20 +58,21 @@ docs:
 ##############
 
 test : gtest-all.cc
-	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-all $(TEST)gtbcommunicationtest.cc $(TEST)externalfunctions.cc $(SRC)threading.cc $(TEST)gtb-test-main.cc $(TEST)gtb-test-curr.cc $(TEST)gtb-test-comm.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
+	$(CC) $(TESTING_INCLUDES) $(LINKEROPTS) -o gtb-test-all $(TEST)gtbcommunicationtest.cc $(TEST)externalfunctions.cc $(SRC)threading.cc $(TEST)gtb-test-main.cc $(TEST)gtb-test-curr.cc $(TEST)gtb-test-comm.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc $(SRC)jsoncpp.cpp libgmock.a $(PKGCOPTS)
 
 testcomm : gtest-all.cc
-	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-comm $(TEST)gtbcommunicationtest.cc $(TEST)externalfunctions.cc $(SRC)threading.cc $(TEST)gtb-test-comm.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
+	$(CC) $(TESTING_INCLUDES) $(LINKEROPTS) -o gtb-test-comm $(TEST)gtbcommunicationtest.cc $(TEST)externalfunctions.cc $(SRC)threading.cc $(TEST)gtb-test-comm.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc $(SRC)jsoncpp.cpp libgmock.a $(PKGCOPTS)
 
 testcurr : gtest-all.cc
-	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-curr $(TEST)gtbcommunicationtest.cc $(TEST)externalfunctions.cc $(SRC)threading.cc $(TEST)gtb-test-curr.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc libgtest.a $(PKGCOPTS)
+	$(CC) $(TESTING_INCLUDES) $(LINKEROPTS) -o gtb-test-curr $(TEST)gtbcommunicationtest.cc $(TEST)externalfunctions.cc $(SRC)threading.cc $(TEST)gtb-test-curr.cc $(SRC)sqlconn.cc $(SRC)gtbcommunication.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc $(SRC)jsoncpp.cpp libgmock.a $(PKGCOPTS)
 
 sigtest : gtest-all.cc
-	$(CC) -I$(GTEST)/include -I$(GTEST) $(LINKEROPTS) -o gtb-test-main $(TEST)gtbcommunicationtest.cc $(TEST)externalfunctions.cc $(SRC)threading.cc $(TEST)gtb-test-main.cc libgtest.a $(PKGCOPTS)
+	$(CC) $(TESTING_INCLUDES) $(LINKEROPTS) -o gtb-test-main $(TEST)gtbcommunicationtest.cc $(TEST)externalfunctions.cc $(SRC)threading.cc $(TEST)gtb-test-main.cc libgmock.a $(PKGCOPTS)
 
 gtest-all.cc : gtest_main.o
-	$(CC) -I$(GTEST)/include -I$(GTEST) -c $(GTEST)/src/gtest-all.cc
-	ar -rv libgtest.a gtest-all.o gtest_main.o
+	$(CC) $(TESTING_INCLUDES) -c $(GTEST)/src/gtest-all.cc
+	$(CC) $(TESTING_INCLUDES) -c $(GMOCK)/src/gmock-all.cc
+	ar -rv libgmock.a gtest-all.o gtest_main.o gmock-all.o
 
 gtest_main.o : 
 	$(CC) -I$(GTEST)/include -I$(GTEST) -c $(GTEST)/src/gtest_main.cc
@@ -70,6 +82,9 @@ verify: verifyingcert.c
 
 testgpgjson :
 	$(CC) $(LINKEROPTS) -o gpgjsontest $(TEST)gpgjsontest.cc $(SRC)patron.pb.cc $(SRC)communication.pb.cc $(SRC)jsoncpp.cpp $(PKGCOPTS)
+
+testjsonparse :
+	$(CC) $(LINKEROPTS) -o testjsonparse $(TEST)testjsonparse.cc $(SRC)jsoncpp.cpp $(PKGCOPTS)
 
 cleantest:
 	rm gtb-test-*
