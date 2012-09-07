@@ -100,6 +100,12 @@
  */
 #define PS_GETLASTINSERTID "SELECT LAST_INSERT_ID()"
 
+/** Prepared Statement that stores authenticated user info that will be used
+ * for future validation
+ */
+#define PS_STOREAUTH "INSERT INTO gtbdb.activeusers (netid, nightlyhash, position," \
+                     " car, date) VALUES (?, ?, ?, ?, NOW())"
+
 #define GETHOST(proto, host, port) proto host ":" port
 
 #if __cplusplus
@@ -195,9 +201,10 @@ class MySQLConn {
         std::string ipaddr, 
 	int car);
 
-    /** \brief Authenticate client.
+    /** \brief Store Authenticated Client.
      *
-     * Authenticate the client and bind the NetId to the car number.
+     * After clients have been validated, store the cleints info
+     * and bind the NetId to the car number for future verification.
      * This also ensures that no other car registers as the same 
      * car number.
      *
@@ -209,7 +216,7 @@ class MySQLConn {
      * are not empty strings. It must actually query the database
      * and add the information to the DB for later verification.
      */
-    int checkAuth(std::string i_snetidDriver, 
+    int storeAuth(std::string i_snetidDriver, 
         std::string i_snetidRA,
         std::string i_sauth, 
         std::string i_scarnum);

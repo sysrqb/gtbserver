@@ -19,6 +19,7 @@
 #include <time.h>
 #include <nettle/sha.h>
 #include <map>
+#include <sstream>
 
 #include "sqlconn.hpp"
 #include "gtbexceptions.hpp"
@@ -156,8 +157,8 @@ gnutls_datum_t MySQLConn::getConnection (
  ****************************************************/
 
 
-int MySQLConn::checkAuth(std::string i_snetidDriver, std::string i_snetidRA, 
-                         std::string i_sauth, std::string i_scarnum)
+int MySQLConn::storeAuth(string i_snetidDriver, string i_snetidRA,
+                         string i_sauth, string i_scarnum)
 {
   int retval (0);
   //TODO
@@ -165,6 +166,11 @@ int MySQLConn::checkAuth(std::string i_snetidDriver, std::string i_snetidRA,
   cout << "Ride-Along NetID: " << i_snetidRA << endl;
   cout << "AUTH: " << i_sauth << endl;
   cout << "Car Number: " << i_scarnum << endl;
+  int ncarnum(0);
+  istringstream stream(i_scarnum);
+  stream >> ncarnum;
+  if(!stream)
+    return -10;
 
   if (i_snetidDriver.compare("") == 0)
     retval = 1;
@@ -174,6 +180,56 @@ int MySQLConn::checkAuth(std::string i_snetidDriver, std::string i_snetidRA,
     retval = retval | 4;
   if (i_scarnum.compare("") == 0)
     retval = retval | 8;
+
+  sql::PreparedStatement *prepStmt;
+
+  try
+  {
+    prepStmt = con->prepareStatement(PS_STOREAUTH);
+    prepStmt->setString(1, i_snetidDriver);
+    prepStmt->setString(2, i_sauth);
+    prepStmt->setString(3, "Driver");
+    prepStmt->setInt(4, ncarnum);
+
+
+    cout << "Storing Auth" << endl;
+
+    prepStmt->execute();
+  }
+  catch (sql::SQLException &e)
+  {
+    cerr << "ERROR: SQLException in " << __FILE__;
+    cerr << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+    cerr << "ERROR: " << e.what();
+    cerr << " (MySQL error code: " << e.getErrorCode();
+    cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
+    delete prepStmt;
+    return -1;
+  }
+  try
+  {
+    prepStmt->setString(1, i_snetidRA);
+    prepStmt->setString(2, i_sauth);
+    prepStmt->setString(3, "RA");
+    prepStmt->setInt(4, ncarnum);
+
+
+    cout << "Storing Auth" << endl;
+
+    prepStmt->execute();
+  }
+  catch (sql::SQLException &e)
+  {
+    cerr << "ERROR: SQLException in " << __FILE__;
+    cerr << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+    cerr << "ERROR: " << e.what();
+    cerr << " (MySQL error code: " << e.getErrorCode();
+    cerr << ", SQLState: " << e.getSQLState() << " )" << endl;
+    delete prepStmt;
+    return -1;
+  }
+
+  delete prepStmt;
 
   return retval;
 
