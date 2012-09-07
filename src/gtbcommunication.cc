@@ -1264,14 +1264,113 @@ GTBCommunication::sendResponse(
 
 size_t
 GTBCommunication::authRequest_callback(void *buffer, size_t size,
-                                              size_t nmemb, void *userp)
+                                       size_t nmemb, void *userp)
 {
   /* If valid, add authed users to DB for subsequent validation
    * Rename checkAuth to something more appropriate
    */
-  return (size * nmemb);
+  GTBCommunication agtbc;
+  MySQLConn aMySQLConn;
+  string gpgfilename("authres.json.gpg");
+  fstream fs;
+  fs.open(gpgfilename.c_str(), ios::out | ios::binary);
+  fs.write((char *)buffer, (size*nmemb));
+  fs.close();
+  string filename;
+  try
+  {
+    filename = agtbc.getDecryptedPackage(gpgfilename);
+  } catch(CryptoException &e)
+  {
+    return 0;
+  }
+  char * stringbuf;
+  stringstream strbuf;
+  fs.open(filename.c_str(), ios::in);
+  if(fs.is_open()){
+    fs.seekp(0, ios_base::end);
+    int length = fs.tellp();
+    fs.seekp(0, ios_base::beg);
+    stringbuf = (char *) malloc(sizeof(char) * length);
+    fs.read(stringbuf, length);
+    strbuf << stringbuf;
+    if(!strbuf){
+      cerr << "Failed to input buffer into stream" << endl;
+      return 0;
+    }
+  } else{
+    cerr << "Failed to open plaintext json file" << endl;
+    return 0;
+  }
+  fs.close();
+  Json::Value root;
+  Json::Reader reader;
+  string retval("0");
+  bool parsingSuccessful = reader.parse(filename, root);
+  parsingSuccessful = reader.parse(strbuf, root);
+  if(parsingSuccessful)
+  { 
+    retval = root.get("response", "0").asString();
+    if(!retval.compare("1"))
+    {
+      Request * aPBReq = (Request *)userp;
+      try
+      {
+        aMySQLConn.storeAuth(aPBReq->sparams(0), aPBReq->sparams(1),
+                               aPBReq->sparams(2), aPBReq->sparams(3));
+      } catch (exception &e)
+      {
+        return 0;
+      }
+      return (size * nmemb);
+    }
+  }
+  cerr << reader.getFormattedErrorMessages() << endl;
+  return 0;
 }
 
+
+string GTBCommunication::getDecryptedPackage(string gpgfilename)
+{
+  int pid, res;
+  string jsonout;
+
+  if(!(pid = fork()))
+  {
+    const char * const argv[] = {"/usr/bin/gpg", "--no-tty", "--batch",
+                                 "--passphrase", PASSPHRASE, "-d", "-o",
+                                 "authres.json", "authres.json.gpg"};
+    for(int i = 0; i < 7; ++i)
+      cout << argv[i] << " ";
+    cout << endl;
+    res = execv(argv[0], (char * const *) argv);
+    cerr << "GPG EXEC returned: " << res << ": " << strerror(res) << endl;
+    exit(-1);
+  }
+  else
+  {
+    res = waitpid(pid, NULL, 0);
+    if(res != pid)
+      throw CryptoException("Unsuccessful Return Code");
+    
+    string filename(gpgfilename);
+    filename.replace(filename.size() - 4, filename.size() - 1, "");
+    fstream fs;
+    fs.open(filename.c_str(), ios::in);
+    if(fs.is_open())
+    {
+      fs.close();
+      unlink(gpgfilename.c_str());
+      return filename;
+    }
+    else
+    {
+      unlink(gpgfilename.c_str());
+      throw CryptoException("File Does Not Exist");
+    }
+  }
+  return NULL;
+}
 
 string GTBCommunication::getEncryptedPackage(Request * aPBReq)
 {

@@ -538,6 +538,14 @@ class GTBCommunication {
      */
     virtual std::string getEncryptedPackage(Request * aPBReq);
 
+    /** \brief Return a filename corresponding to a decrypted file
+     *
+     * Using the provided filename corresponding to a file with encrypted
+     * content, we fork a child process to exec gpg that decrypt it and
+     * then we return the filename corresponding to the plaintext file.
+     */
+    virtual std::string getDecryptedPackage(std::string gpgfilename);
+
     /** \brief Request to authenticate client.
      *
      * Checks that i_aPBReq is a valid request. If so, the provided
