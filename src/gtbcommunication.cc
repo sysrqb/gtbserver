@@ -1854,13 +1854,19 @@ int GTBCommunication::addIfNewClient(GTBClient * client)
     data = client->getCertificate().data;
     size = client->getCertificate().size;
 
-    for(it = clientsList.begin(); it < clientsList.end() && ++i; ++it)
+    for(it = clientsList.begin(); it < clientsList.end(); ++it){
       if (!memcmp((*it)->getCertificate().data, data, size))
       {
         (*it)->setIPAddr(client->getIPAddr());
+	if(debug & 1)
+	  cout << "We found an existing cert in list, returning " << i << endl;
         return i;
       }
+      ++i;
+    }
   }
   clientsList.push_back(client);
+  if(debug & 1)
+    cout << "We were given a new cert, returning new index " << i << endl;
   return i;
 }
