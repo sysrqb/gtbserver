@@ -1,0 +1,123 @@
+GTBServer - Used to proxy requests from Android App to MySQL Database,
+            with some data manipulation in-between.
+
+
+INSTALLATION:
+
+  On Linux:
+
+  This project has been built and tested with:
+    Dependencies:
+      - Protocol Buffers 2.4.1
+      - GnuTLS 2.12.x
+      - libcURL 7.24
+      - MySQL Connector/C++ 1.1.0
+      - Nettle 2.5
+      - zlib 1.2.6
+      - Json-Cpp 0.5.0 (*)
+       - GnuPG 2.0.18 (*)
+      - GCC 4.6.2
+      - CLang 3.0 (*)
+
+      (*) denotes that this package/program is not required during compilation.
+          CLang is currently used in the Makefile, but it can easily be
+          replaced with g++.
+
+  No guarantees may be made about compatability with earlier or later versions,
+  but as development and testing continues, these versions may change or
+  additional versions may be added (as well as additional dependencies).
+
+  Prerequisite to Compilation:
+    - Create cred.h file in include/
+      - The cred.h file contains all credentials related to your installation
+      - It consists of 7 entries
+      - GTBHOST: IP Address of server hosting MySQL database
+      - GTBUSER: Username of user that has access to database and tables
+      - GTBPASS: Users password (as above)
+      - GTBDB: Name of database
+      - GTBSQLPORT: Port the SQL Server listens on
+      - PASSPHRASE: Passphrase encrypting private key used by GnuPG
+      - PUBKEYID: Public key ID of the public key in the keyring for the
+        authentication server
+
+      All entries are made as #define, ex:
+        #define GTBHOST "xxx.xxx.xxx.xxx"
+	#define GTBUSER "dbuser"
+	#define GTBPASS "dbuserpasswd"
+	#define GTBDB   "dbname"
+	#define GTBSQLPORT      "3306"
+	#define PASSPHRASE "privkeypassphrase"
+	#define PUBKEYID "0xpubkeyid"
+
+
+  When all dependencies have been installed, the project may be
+  compiled with Make by running:
+
+    $ make
+
+  Currently there is no autoconf or system level install recipe,
+  but they will be implemented later.
+
+  
+  If the compilation completes successfully, then you should have an
+  executable file named gtbserver in the root of the project.
+
+
+BEFORE RUNNING:
+  Please run the Perl script initdb.pl that creates and
+  initializes the database. If this program is being used with
+  the Dispatch project then it will provide the necessary functionality
+  to set up all of tables.
+
+  You must also generate an X.509 certificate and have it signed by a
+  self-signed Certificate Authority or another.
+  
+  - Place the CA certificate cacrt.pem in pem/certs/
+  - Place the server's certificate gtbsvdevcrt.pem in pem/certs/
+  - Place the server's secret key gtbskey.pem in pem/keys
+
+
+RUNNING:
+  To run, simply execute:
+    $ ./gtbserver
+
+  For debug levels, the following will provide further details:
+    1: Will output the basic operation taking place
+    4: Will output various variable values that have been used for debugging
+       in the past
+    5: Both 1 and 4
+    8: GnuTLS log level 1
+    9: 8 and 1
+    12: 8 and 4
+    16: GnuTLS log level 2
+
+    The pattern is 1, 4, 5 are just operational output. For GnuTLS output, all
+    all levels have been bit-shifted by 4 and may be ANDed with 1, 4 or 5.
+
+    The value you choose must be the second argument. i.e:
+      $ ./gtbserver 5
+
+
+    Note: For now, all recipes include the -ggdb flag during compilation to
+    ease debugging.
+
+
+LICENSING:
+
+GTBServer
+Copyright (C) 2012  Matthew Finkel <Matthew.Finkel@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+The full license text is included in COPYING/COPYING
