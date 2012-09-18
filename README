@@ -15,7 +15,7 @@ INSTALLATION:
       - Nettle 2.5
       - zlib 1.2.6
       - Json-Cpp 0.5.0 (*)
-       - GnuPG 2.0.18 (*)
+      - GnuPG 2.0.18 (*)
       - GCC 4.6.2
       - CLang 3.0 (*)
 
