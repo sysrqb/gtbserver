@@ -254,26 +254,41 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, std::vector<int> old)
   {
     prepStmt = con->prepareStatement(PS_GETCURRRIDES);
     prepStmt->setDateTime(1, date);
-    prepStmt->setString(2, "waiting");
+    prepStmt->setString(2, "assigned");
     prepStmt->setInt(3, carnum);
 
     cout << "Retrieving Rides" << endl;
+    cout << old.size() << " previous rides' pid sent" << endl;
 
     res = prepStmt->executeQuery();
     delete prepStmt;
-
-    while ( res->next() ) {
+    
+    cout << res->rowsCount() << " result(s) returned" << endl;
+    if(res->isLast())
+      cout << "And is last row" << endl;
+    res->afterLast();
+    
+    vector<int>::iterator it;
+    bool hasAlready = false;
+    while ( res->previous() ) {
+      if(res->isLast())
+        cout << "And is last row" << endl;
       int nCarNum = res->getInt("pid");
-      std::vector<int>::iterator it;
       for (it = old.begin(); it < old.end(); it++)
       {
+        cout << "Retreived pid " << nCarNum << " and comparing it to " <<
+	        *it << endl;
         if (*it == nCarNum)
 	{
 	  old.erase(it);
-	  continue;
+	  hasAlready = true;
+	  break;
 	}
       }
+      if(hasAlready)
+        continue;
       apbPI = i_apbPatl->add_patron();
+      apbPI->set_pid(res->getInt("pid"));
       apbPI->set_name(res->getString("name"));
       apbPI->set_phone(res->getString("cell"));
       apbPI->set_passangers(res->getInt("riders"));
@@ -286,8 +301,21 @@ int MySQLConn::getCurr(int carnum, PatronList * i_apbPatl, std::vector<int> old)
       apbPI->set_rideassigned(res->getString("rideassigned"));
       apbPI->set_timepickedup(res->getString("timepickedup"));
     }
-    
     delete res;
+
+    for (it = old.begin(); it < old.end(); it++)
+    {
+      prepStmt = con->prepareStatement(PS_GETPATRONINFO);
+      prepStmt->setInt(1, *it);
+      res = prepStmt->executeQuery();
+      delete prepStmt;
+      while ( res->next() ) {
+        apbPI = i_apbPatl->add_patron();
+        apbPI->set_pid(res->getInt("pid"));
+        apbPI->set_status("Reassigned");
+      }
+      delete res;
+    }
   }
   catch (sql::SQLException &e)
   {
