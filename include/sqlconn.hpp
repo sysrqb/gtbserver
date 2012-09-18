@@ -55,15 +55,15 @@
  * corresponds to the provided date and status as well as the aasigned
  * PatronID number and car number.
  */
-#define PS_GETCURRRIDES "SELECT * FROM saferide.patron, saferide.ridetimes " \
+#define PS_GETCURRRIDES "SELECT * FROM "GTBDB".patron, "GTBDB".ridetimes " \
     "WHERE LEFT(ridetimes.ridecreated, 10) = ? AND status=? AND " \
     " ridetimes.pid = patron.pid AND car=? ORDER BY car ASC"
 
-/** Prepared Statement that returns the information for a single patron that
+/** Prepared Statement that returns the information for a patrons that
  * is assigned the provided PatronID.
  */
-#define PS_GETPATRONINFO "SELECT * FROM saferide.patron, saferide.ridetimes " \
-    "WHERE ridetimes.pid = patron.pid"
+#define PS_GETPATRONINFO "SELECT * FROM "GTBDB".patron, "GTBDB".ridetimes " \
+    "WHERE patron.pid = ? AND ridetimes.pid = patron.pid"
 
 /** Prepared Statement that returns the LocationID the corresponds to either
  * the value or name provided.
@@ -74,7 +74,7 @@
 /** Prepared Statement that updates the patron information with the provided
  * details for the entry that was assigned the given PatronID and car.
  */
-#define PS_SETUPDTRIDES "UPDATE saferide.patron, saferide.ridetimes SET " \
+#define PS_SETUPDTRIDES "UPDATE "GTBDB".patron, "GTBDB".ridetimes SET " \
     "patron.name=?, patron.cell=?, patron.riders=?, patron.status=?, " \
     "patron.pickup=?, patron.dropoff=?, ridetimes.timepickedup=?, " \
     "ridetimes.timecomplete=? WHERE patron.pid=? AND patron.car=?"
@@ -103,7 +103,7 @@
 /** Prepared Statement that stores authenticated user info that will be used
  * for future validation
  */
-#define PS_STOREAUTH "INSERT INTO gtbdb.activeusers (netid, nightlyhash, position," \
+#define PS_STOREAUTH "INSERT INTO "GTBDB".gtbactiveusers (netid, nightlykey, position," \
                      " car, date) VALUES (?, ?, ?, ?, NOW())"
 
 #define GETHOST(proto, host, port) proto host ":" port
