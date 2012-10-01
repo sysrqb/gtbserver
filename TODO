@@ -1,0 +1,9 @@
+In no particular order:
+
+- HTTP status interface and administrative control
+  - Either third-party lib or custom-written linkable lib
+- autoconf setup
+- Configuration file instead of macros
+- Write unit tests
+- Add event-driven request handling implementation
+  - either select-based or poll-based will work, but select is preferred
