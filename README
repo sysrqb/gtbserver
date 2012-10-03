@@ -8,6 +8,7 @@ INSTALLATION:
 
   This project has been built and tested with:
     Dependencies:
+      - Autoconf 2.60
       - Protocol Buffers 2.4.1
       - GnuTLS 2.12.x
       - libcURL 7.24
@@ -51,12 +52,13 @@ INSTALLATION:
 
 
   When all dependencies have been installed, the project may be
-  compiled with Make by running:
+  setup with Autoconf and compiled with Make by running:
 
+    $ sh autogen.sh
+    $ ./configure
     $ make
 
-  Currently there is no autoconf or system level install recipe,
-  but they will be implemented later.
+  Please read Install.txt if you experience any problems during setup.
 
   
   If the compilation completes successfully, then you should have an
