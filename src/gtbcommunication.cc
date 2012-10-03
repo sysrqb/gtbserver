@@ -366,7 +366,12 @@ void GTBCommunication::initGNUTLS()
   if( gnutls_global_init() ) cout << "gnutls_global_init: Failed to intialize" 
       << endl;
   loadCertFiles();
-  set_session_management_functions(&m_aSession);
+  /* -O2 optimization optimizes out m_aSession, thus resulting in segfault.
+   * This is the current workaround
+   */
+  gnutls_session_t aSession;
+  set_session_management_functions(&aSession);
+  memcpy(&m_aSession, &aSession, sizeof(m_aSession));
   gnutls_global_set_log_function(gnutls_log_fun);
   if(debug)
   {
