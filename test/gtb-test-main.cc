@@ -6,7 +6,7 @@
 #include <cerrno>
 #include <iostream>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 using namespace std;
 
@@ -15,7 +15,7 @@ using namespace std;
  *
  * \sa listenForClient
  */
-void cpp_forCommunication(void * in)
+void cpp_forCommunicationMainTest(void * in)
 {
   pthread_t threadId;
   int nRetVal = 0;
@@ -55,9 +55,9 @@ void cpp_forCommunication(void * in)
  * \sa cpp_listenForClient
  */
 extern "C"
-void *(for_communication)(void * instance)
+void *(for_communication_main_test)(void * instance)
 {
-  cpp_forCommunication(instance);
+  cpp_forCommunicationMainTest(instance);
   return NULL;
 }
 
@@ -97,7 +97,7 @@ TEST(TreadingTest, ActionTakenWhenSignalRecieved)
       
   thread_id = pthread_self();
   thread_ids.push_back(thread_id);
-  nRetVal = pthread_create(&thread_id2, &attr, &for_communication, (void *) &thread_id);
+  nRetVal = pthread_create(&thread_id2, &attr, &for_communication_main_test, (void *) &thread_id);
   if(nRetVal != 0)
   {
     cerr << "Failed to Create pthread!" << endl;

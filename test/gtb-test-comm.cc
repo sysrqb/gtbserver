@@ -17,7 +17,7 @@
  */
 
 #include "gtbcommunication.hpp"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "communication.pb.h"
 #include "gtbexceptions.hpp"
 
@@ -92,7 +92,7 @@ TEST(CommunicationTest, HandlingConnectionNoThrow)
   usleep(sleepfor);
   gnutls_certificate_credentials_t xcred;
   gnutls_session_t session;
-  //gnutls_global_set_log_function(gnutls_log_fun);
+  //gnutls_global_set_log_function(gnutls_log_fun_test);
   //gnutls_global_set_log_level(6);
   gnutls_global_init();
   gnutls_certificate_allocate_credentials (&xcred);
@@ -171,7 +171,7 @@ TEST(CommunicationTest, HandlingConnectionThrowBadConnectionExceptionFromInvalid
   unsigned int sleep(15000);
   gnutls_certificate_credentials_t xcred;
   gnutls_session_t session;
-  /*gnutls_global_set_log_function(gnutls_log_fun);
+  /*gnutls_global_set_log_function(gnutls_log_fun_test);
   gnutls_global_set_log_level(9);*/
   gnutls_certificate_allocate_credentials (&xcred);
   gnutls_certificate_set_x509_trust_file (xcred, "pem/oldcerts/cacrt.pem", 

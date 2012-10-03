@@ -22,7 +22,7 @@
 void *(startserver)(void * expectthrow);
 int establishTCPConnection();
 void handleConnectionWrapper(GTBCommunication * aGtbComm, int sockfd, bool throws);
-void gnutls_log_fun(int level, const char * loginfo);
+void gnutls_log_fun_test(int level, const char * loginfo);
 
 struct gtbasyncthread
 {

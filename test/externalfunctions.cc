@@ -149,7 +149,7 @@ void handleConnectionWrapper(GTBCommunication * aGtbComm, int sockfd, bool throw
   exit(0);
 }
 
-void gnutls_log_fun(int level, const char * loginfo)
+void gnutls_log_fun_test(int level, const char * loginfo)
 {
   std::cout << "LOG" << level << ": " << loginfo << std::endl;
 }

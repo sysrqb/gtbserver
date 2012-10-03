@@ -18,7 +18,7 @@
 
 #include "gtbcommunication.hpp"
 #include "sqlconn.hpp"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "patron.pb.h"
 #include "communication.pb.h"
 
