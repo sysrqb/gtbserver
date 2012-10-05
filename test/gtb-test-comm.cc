@@ -55,6 +55,18 @@ cert_callback (gnutls_session_t session,
                const gnutls_pk_algorithm_t * sign_algos,
                int sign_algos_length, gnutls_retr2_st * st);
 
+GTBTEST(CommunicationTest, IsFDStillValidThrowsBCE)
+  GTBClient aClient;
+  aClient.setFD(-1);
+  ASSERT_THROW(aComm.isFDStillValid(aClient.getFD()), BadConnectionException);
+}
+
+GTBTEST(CommunicationTest, IsFDStillValidNoThrowsBCE)
+  GTBClient aClient;
+  aClient.setFD(0);
+  ASSERT_NO_THROW(aComm.isFDStillValid(aClient.getFD()));
+}
+
 TEST(CommunicationTest, HandlingConnectionNoThrow)
 {
   int nRetVal(0);
