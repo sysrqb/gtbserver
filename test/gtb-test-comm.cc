@@ -82,6 +82,17 @@ TEST(CommunicationTest, AddIfNewClientThrowBCE_NoCertificate) {
   ASSERT_THROW(aComm.addIfNewClientTest(&aCert), BadConnectionException);
 }
 
+GTBTEST(CommunicationTest, RecieveRequestThrowPE_NullRequestPtr)
+  ASSERT_THROW(aComm.receiveRequest(0), PatronException);
+}
+
+GTBTEST(CommunicationTest, ParseRequestFromBufferThrowBCE_EmptyRequest)
+  Request aPBReq;
+  std::string sReqBuf("");
+  ASSERT_THROW(aComm.parseRequestFromBuffer(&aPBReq, &sReqBuf),
+               BadConnectionException);
+}
+
 TEST(CommunicationTest, HandlingConnectionNoThrow)
 {
   int nRetVal(0);
