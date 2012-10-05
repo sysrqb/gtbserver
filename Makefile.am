@@ -11,7 +11,7 @@ dist_doc_DATA = README TODO
 AM_CPPFLAGS = -Iinclude/
 
 test : all
-	$(CXX) $(LIBS) $(AM_CPPFLAGS) -lgmock_main -o gtb-test-all test/gtbcommunicationtest.cc \
+	$(CXX) -g -O2 $(LIBS) $(AM_CPPFLAGS) -lgmock_main -o gtb-test-all test/gtbcommunicationtest.cc \
   test/externalfunctions.cc threading.o test/gtb-test-main.cc \
   test/gtb-test-curr.cc test/gtb-test-comm.cc sqlconn.o gtbcommunication.o \
   patron.pb.o communication.pb.o jsoncpp.o
