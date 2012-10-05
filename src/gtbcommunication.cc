@@ -1083,7 +1083,7 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
   vReqBuf[nsize - 1] = '\0';
   string sReqBuf(vReqBuf);
 
-  aPBReq->ParseFromString(sReqBuf);
+  parseRequestFromBuffer(aPBReq, &sReqBuf);
 
   if(debug & 4)
   {
@@ -1099,7 +1099,22 @@ void GTBCommunication::receiveRequest(Request * aPBReq)
   }
 }
 
+void GTBCommunication::parseRequestFromBuffer(Request * aPBReq,
+                                              std::string * buf) {
+  string sReqBuf(*buf);
+  if(!sReqBuf.compare(""))
+  {
+    throw BadConnectionException("Empty Request");
+  }
 
+  try
+  {
+    aPBReq->ParseFromString(*buf);
+  } catch (...)
+  {
+    throw BadConnectionException("Unparsable Request");
+  }
+}
 
 /*****************************
 * Communication with client *

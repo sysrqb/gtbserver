@@ -456,6 +456,14 @@ class GTBCommunication {
                         gnutls_x509_crt_t * cert,
                         unsigned int * certLength);
 
+    /** \brief Parse request from buffer and place in provided instance
+     *
+     * Wrap the ParseFromString method provided by the library but perform
+     * additional checks on input such as ensuring buf is not empty and catch
+     * any exceptions that are thrown by the parser.
+     */
+    void parseRequestFromBuffer(Request * aPBReq, std::string * buf);
+
     /** \brief Listen for a client connection
      *
      * Initialize TLS session. When a client connects, store the client's
