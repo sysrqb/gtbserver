@@ -76,6 +76,12 @@ GTBTEST(CommunicationTest, DoesCertVerifyFailsThrowsBCE_ZeroCerts)
                   BadConnectionException);
 }
 
+TEST(CommunicationTest, AddIfNewClientThrowBCE_NoCertificate) {
+  GTBCommunicationTest aComm(5);
+  GTBClient aCert;
+  ASSERT_THROW(aComm.addIfNewClientTest(&aCert), BadConnectionException);
+}
+
 TEST(CommunicationTest, HandlingConnectionNoThrow)
 {
   int nRetVal(0);
