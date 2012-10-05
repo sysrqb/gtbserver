@@ -860,37 +860,15 @@ int GTBCommunication::handleConnection(GTBClient * client)
   unsigned int certLength;
   int idx;
 
-  doesCertVerify(certList, &cert, &certLength);
-
-  if(certList)
-  {
-    if(debug & 4)
-    {
-      cout << "Client sent a certificate chain with " << certLength;
-      cout << " certificates." << endl;
-      cout << "Certificate is " << certList[0].size << " bytes" << endl;
-    }
-
-    if((nRetVal = gnutls_x509_crt_import(cert, &(certList[0]),
-                                         GNUTLS_X509_FMT_DER)))
-    {
-      if(debug & 4)
-        cerr << "Could not parse certificate(s): " <<
-	        gnutls_strerror(nRetVal) << endl;
-      
-      throw BadConnectionException("Bad Client Certs");
-    }
-
+  if(doesCertVerify(certList, &cert, &certLength))
+   {
     // We only want the clients certs
-    client->setCertificate(*certList);
+    client->setCertificate(certList[0]);
 
     // This may cause problems.
     gnutls_x509_crt_deinit(cert);
-  }
-  else
-    throw BadConnectionException("No Client Certs");
-
-    /**/
+   /**/
+ }
 
   unsigned int nstatus;
 
@@ -955,6 +933,29 @@ bool GTBCommunication::doesCertVerify(const gnutls_datum_t * certList,
       
     throw BadConnectionException("Bad Client Certs");
   }
+
+  if(certList)
+  {
+    if(debug & 4)
+    {
+      cout << "Client sent a certificate chain with " << certLength;
+      cout << " certificates." << endl;
+      cout << "Certificate is " << certList[0].size << " bytes" << endl;
+    }
+
+    if((nRetVal = gnutls_x509_crt_import(*cert, &(certList[0]),
+                                         GNUTLS_X509_FMT_DER)))
+    {
+      if(debug & 4)
+        cerr << "Could not parse certificate(s): " <<
+	        gnutls_strerror(nRetVal) << endl;
+      
+      throw BadConnectionException("Bad Client Certs");
+    }
+  }
+  else
+    throw BadConnectionException("No Client Certs");
+
   return true;
 }
 
