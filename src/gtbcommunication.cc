@@ -912,7 +912,7 @@ int GTBCommunication::handleConnection(GTBClient * client)
 bool GTBCommunication::isFDStillValid(int fd) {
   struct stat fdstatus;
   int error;
-  if((error = fstat(fd, &fdstatus)) || fdstatus.st_rdev)
+  if((error = fstat(fd, &fdstatus)) || !fdstatus.st_ino)
   {
     throw BadConnectionException("Bad Accepted Connection");
   }
