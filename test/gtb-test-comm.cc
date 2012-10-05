@@ -67,6 +67,15 @@ GTBTEST(CommunicationTest, IsFDStillValidNoThrowsBCE)
   ASSERT_NO_THROW(aComm.isFDStillValid(aClient.getFD()));
 }
 
+GTBTEST(CommunicationTest, DoesCertVerifyFailsThrowsBCE_ZeroCerts)
+  const gnutls_datum_t * certList;
+  gnutls_x509_crt_t cert = NULL;
+  unsigned int certLength;
+
+  ASSERT_THROW(aComm.doesCertVerify(certList, &cert, &certLength),
+                  BadConnectionException);
+}
+
 TEST(CommunicationTest, HandlingConnectionNoThrow)
 {
   int nRetVal(0);
