@@ -620,6 +620,16 @@ class GTBCommunication {
 	    Response * i_pbRes, 
 	    PatronList * i_pbPL);
 
+  protected:
+    /** \brief Add client to internal linked-list
+     *
+     * We want to be able to track when we receive a connection from
+     * clients that have already been verified and we need to make sure
+     * unverified clients never gain access privileged operations.
+     *
+     * All clients with their current status are added to this list for
+     * future checking.
+     */
     int addIfNewClient(GTBClient * client);
 };
 #endif  // gtbcommunication_h

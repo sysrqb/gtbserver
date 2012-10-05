@@ -40,6 +40,9 @@ public:
   }
   void gtbAccept();
   void gtb_wrapperForCommunication(bool throws);
+  int addIfNewClientTest(GTBClient * client) {
+    return GTBCommunication::addIfNewClient(client);
+  }
   
 };
 
