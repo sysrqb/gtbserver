@@ -77,12 +77,12 @@ GTBTEST(CommunicationTest, DoesCertVerifyFailsThrowsBCE_ZeroCerts)
 }
 
 TEST(CommunicationTest, AddIfNewClientThrowBCE_NoCertificate) {
-  GTBCommunicationTest aComm(5);
+  GTBCommunicationTest aComm(0);
   GTBClient aCert;
   ASSERT_THROW(aComm.addIfNewClientTest(&aCert), BadConnectionException);
 }
 
-GTBTEST(CommunicationTest, RecieveRequestThrowPE_NullRequestPtr)
+GTBTEST(CommunicationTest, ReceiveRequestThrowPE_NullRequestPtr)
   ASSERT_THROW(aComm.receiveRequest(0), PatronException);
 }
 
