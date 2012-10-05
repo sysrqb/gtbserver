@@ -1901,9 +1901,12 @@ int GTBCommunication::addIfNewClient(GTBClient * client)
       }
       ++i;
     }
+    clientsList.push_back(client);
+    if(debug & 1)
+      cout << "We were given a new cert, returning new index " << i << endl;
+    return i;
+  } else
+  {
+    throw BadConnectionException("No Certificate To Check");
   }
-  clientsList.push_back(client);
-  if(debug & 1)
-    cout << "We were given a new cert, returning new index " << i << endl;
-  return i;
 }
