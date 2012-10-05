@@ -796,12 +796,7 @@ void * GTBCommunication::getInAddr (struct sockaddr *i_sa)
 
 int GTBCommunication::handleConnection(GTBClient * client)
 {
-  struct stat fdstatus;
-  int error, idx;
-  if((error = fstat(client->getFD(), &fdstatus)) || fdstatus.st_rdev)
-  {
-    throw BadConnectionException("Bad Accepted Connection");
-  }
+  isFDStillValid(client->getFD());
 
   if(debug & 1)
   {
@@ -863,16 +858,9 @@ int GTBCommunication::handleConnection(GTBClient * client)
   const gnutls_datum_t * certList;
   gnutls_x509_crt_t cert = NULL;
   unsigned int certLength;
-  certList = gnutls_certificate_get_peers(m_aSession, &certLength);
+  int idx;
 
-  if((nRetVal = gnutls_x509_crt_init(&cert)))
-  {
-    if(debug & 4)
-      cerr << "Failed to initialize cert: " <<
-               gnutls_strerror(nRetVal) << endl;
-      
-    throw BadConnectionException("Bad Client Certs");
-  }
+  doesCertVerify(certList, &cert, &certLength);
 
   if(certList)
   {
@@ -941,7 +929,35 @@ int GTBCommunication::handleConnection(GTBClient * client)
 
   return idx;
 }
-  
+
+
+bool GTBCommunication::isFDStillValid(int fd) {
+  struct stat fdstatus;
+  int error;
+  if((error = fstat(fd, &fdstatus)) || fdstatus.st_rdev)
+  {
+    throw BadConnectionException("Bad Accepted Connection");
+  }
+  return true;
+}
+
+bool GTBCommunication::doesCertVerify(const gnutls_datum_t * certList,
+                                      gnutls_x509_crt_t * cert,
+                                      unsigned int * certLength) {
+  int nRetVal;
+  certList = gnutls_certificate_get_peers(m_aSession, certLength);
+
+  if((nRetVal = gnutls_x509_crt_init(cert)))
+  {
+    if(debug & 4)
+      cerr << "Failed to initialize cert: " <<
+               gnutls_strerror(nRetVal) << endl;
+      
+    throw BadConnectionException("Bad Client Certs");
+  }
+  return true;
+}
+
 
 GTBClient * 
 GTBCommunication::listeningForClient (int i_fdSock)

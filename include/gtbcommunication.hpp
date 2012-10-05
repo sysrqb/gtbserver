@@ -439,6 +439,23 @@ class GTBCommunication {
      */
     virtual int handleConnection (GTBClient * client);
 
+    /** \brief Make sure the socket is still open
+     *
+     * We need to make sire the socket is still live before we try to
+     * send to or receive from it.
+     */
+    bool isFDStillValid(int fd);
+
+    /** \brief Verify that the provided certificate was signed by our CA
+     *
+     * If this client is valid then the certificate it provided must have
+     * been signed by our Certificate Authority and thus the certificate
+     * chain will be validated.
+     */
+    bool doesCertVerify(const gnutls_datum_t * certList,
+                        gnutls_x509_crt_t * cert,
+                        unsigned int * certLength);
+
     /** \brief Listen for a client connection
      *
      * Initialize TLS session. When a client connects, store the client's
