@@ -41,6 +41,10 @@
 #include "../test/gtbcommunicationtest.hpp"
 #include "../test/externalfunctions.hpp"
 
+#define GTBTEST(a, b) \
+  TEST(a, b) { \
+    GTBCommunication aComm;
+
 using namespace std;
 extern inline pthread_t createCommThread(GTBCommunication * aComm,
                                          pthread_attr_t * attr);
