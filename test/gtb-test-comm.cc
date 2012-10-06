@@ -115,16 +115,16 @@ TEST(CommunicationTest, ClientHasPermission_NotVerified) {
   aPBReq.set_nclient(idx);
   aPBReq.set_sreqtype("CARS");
   aPBReq.set_nreqid(3);
-  ASSERT_TRUE(aComm.clientHasPermissionTest(&aPBReq));
+  ASSERT_TRUE(aComm.clientHasPermission(&aPBReq));
   aPBReq.set_sreqtype("AUTH");
   aPBReq.set_nreqid(2);
-  ASSERT_TRUE(aComm.clientHasPermissionTest(&aPBReq));
+  ASSERT_TRUE(aComm.clientHasPermission(&aPBReq));
   aPBReq.set_sreqtype("CURR");
   aPBReq.set_nreqid(1);
-  ASSERT_FALSE(aComm.clientHasPermissionTest(&aPBReq));
+  ASSERT_FALSE(aComm.clientHasPermission(&aPBReq));
   aPBReq.set_sreqtype("UPDT");
   aPBReq.set_nreqid(4);
-  ASSERT_FALSE(aComm.clientHasPermissionTest(&aPBReq));
+  ASSERT_FALSE(aComm.clientHasPermission(&aPBReq));
 }
 
 TEST(CommunicationTest, ClientHasPermission_Verified) {
@@ -137,16 +137,16 @@ TEST(CommunicationTest, ClientHasPermission_Verified) {
   aPBReq.set_nclient(idx);
   aPBReq.set_sreqtype("CARS");
   aPBReq.set_nreqid(3);
-  ASSERT_FALSE(aComm.clientHasPermissionTest(&aPBReq));
+  ASSERT_FALSE(aComm.clientHasPermission(&aPBReq));
   aPBReq.set_sreqtype("AUTH");
   aPBReq.set_nreqid(2);
-  ASSERT_FALSE(aComm.clientHasPermissionTest(&aPBReq));
+  ASSERT_FALSE(aComm.clientHasPermission(&aPBReq));
   aPBReq.set_sreqtype("CURR");
   aPBReq.set_nreqid(1);
-  ASSERT_TRUE(aComm.clientHasPermissionTest(&aPBReq));
+  ASSERT_TRUE(aComm.clientHasPermission(&aPBReq));
   aPBReq.set_sreqtype("UPDT");
   aPBReq.set_nreqid(4);
-  ASSERT_TRUE(aComm.clientHasPermissionTest(&aPBReq));
+  ASSERT_TRUE(aComm.clientHasPermission(&aPBReq));
 }
 
 
