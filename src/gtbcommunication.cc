@@ -1927,7 +1927,7 @@ int GTBCommunication::addIfNewClient(GTBClient * client)
     }
     clientsList.push_back(client);
     if(debug & 1)
-      cout << "We were given a new cert, returning new index " << i << endl;
+      cout << "We were given a new cert, returning new index " << ++i << endl;
     return i;
   } else
   {
