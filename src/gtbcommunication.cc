@@ -1579,7 +1579,7 @@ GTBCommunication::authRequest (Request * i_aPBReq)
 
   if (i_aPBReq->sparams_size() == 4)
   {
-    return sendAuthReq(i_aPBreq);
+    return sendAuthReq(i_aPBReq);
   }
   else
   {
