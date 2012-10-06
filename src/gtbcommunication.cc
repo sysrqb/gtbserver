@@ -1643,8 +1643,7 @@ GTBCommunication::updtRequest (Request * i_aPBReq, Response * i_aPBRes)
   return 0;
 }
 
-int GTBCommunication::dealWithReq (Request i_aPBReq) 
-{
+int GTBCommunication::dealWithUnPrivReq (Request i_aPBReq) {
   /*
    * Case 1: CURR
    * Case 2: AUTH
@@ -1678,6 +1677,46 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
         sendResponse(nCurrRet, NULL, &apbRes, NULL);
       }
       break;
+    // UPDT
+    case 4:
+      int nUpdtRet;
+      if(debug & 1)
+      {
+        cout << "Type UPDT" << endl;
+      }
+      apbRes.set_sresvalue("UPDT");
+      if(!(nUpdtRet = updtRequest(&i_aPBReq, &apbRes)))
+      {
+	if(debug & 1)
+	{
+          cout << "C: Sending Response for UPDT" << endl;
+	}
+        sendResponse(0, NULL, &apbRes, NULL);
+      }
+      else
+      {
+        cerr << "ERROR: C: Sending ERROR Response for UPDT" << endl;
+        sendResponse(nUpdtRet, NULL, &apbRes, NULL);
+      }
+      break;
+    default:
+      break;
+  }
+  return 0;
+}
+
+int GTBCommunication::dealWithPrivReq (Request i_aPBReq) 
+{
+  /*
+   * Case 1: CURR
+   * Case 2: AUTH
+   * Case 3: CARS
+   * Case 4: UPDT
+   */
+
+  Response apbRes;
+  switch (i_aPBReq.nreqid())
+  {
     // AUTH
     case 2:
       int nAuthRet;
@@ -1731,31 +1770,8 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
       if(sendNumberOfCars(&i_aPBReq) < 0)
         return sendFailureResponse(2);
       break;
-    // UPDT
-    case 4:
-      int nUpdtRet;
-      if(debug & 1)
-      {
-        cout << "Type UPDT" << endl;
-      }
-      apbRes.set_sresvalue("UPDT");
-      if(!(nUpdtRet = updtRequest(&i_aPBReq, &apbRes)))
-      {
-	if(debug & 1)
-	{
-          cout << "C: Sending Response for UPDT" << endl;
-	}
-        sendResponse(0, NULL, &apbRes, NULL);
-      }
-      else
-      {
-        cerr << "ERROR: C: Sending ERROR Response for UPDT" << endl;
-        sendResponse(nUpdtRet, NULL, &apbRes, NULL);
-      }
-      break;
     default:
       break;
-    
   }
   return 0;
 }

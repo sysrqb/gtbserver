@@ -620,17 +620,33 @@ class GTBCommunication {
      */
     int updtRequest (Request * i_aPBReq, Response * i_apbRes);
 
-    /** \brief Handle incoming request.
+    /** \brief Handle incoming unprivileged request.
      *
      * When a request is received, determine the request ID number. Using
      * this number, the request is then handed off to the correct method
      *
      * \param i_sPBReq The request received from the client.
+     * \sa clientHasPermission
+     * \sa dealWithPrivReq
      * \sa authRequest
      * \sa currRequest
      * \sa updtRequest
      */
-    int dealWithReq (Request i_sPBReq);
+    int dealWithUnPrivReq (Request i_sPBReq);
+
+    /** \brief Handle incoming privileged request.
+     *
+     * When a request is received, determine the request ID number. Using
+     * this number, the request is then handed off to the correct method
+     *
+     * \param i_sPBReq The request received from the client.
+     * \sa clientHasPermission
+     * \sa dealWithUnPrivReq
+     * \sa authRequest
+     * \sa currRequest
+     * \sa updtRequest
+     */
+    int dealWithPrivReq (Request i_sPBReq);
 
   private:
     /** \brief Sends response to client.

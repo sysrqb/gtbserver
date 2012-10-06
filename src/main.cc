@@ -126,7 +126,12 @@ main(int argc, char *argv[])
       while(!aComm.requestQueueIsEmpty())
       {
         aComm.requestQueuePop(&aPBReq);
-	aComm.dealWithReq(aPBReq);
+	if(aComm.clientHasPermission(&aPBReq))
+	{
+          aComm.dealWithPrivReq(aPBReq);
+	} else {
+          aComm.dealWithUnPrivReq(aPBReq);
+	} 
       }
     }
   }

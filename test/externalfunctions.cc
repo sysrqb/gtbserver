@@ -103,7 +103,7 @@ void
   if(signum == SIGIO)
   {
     aComm.requestQueuePop(&aPBReq);
-    aComm.dealWithReq(aPBReq);
+    aComm.dealWithUnPrivReq(aPBReq);
   }
   return NULL;
 }
