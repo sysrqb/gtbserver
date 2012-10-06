@@ -93,6 +93,64 @@ GTBTEST(CommunicationTest, ParseRequestFromBufferThrowBCE_EmptyRequest)
                BadConnectionException);
 }
 
+GTBTEST(CommunicationTest, ClientIsVerified_False)
+  GTBClient aClient;
+  aClient.setVerified(false);
+  ASSERT_FALSE(aClient.isVerified());
+}
+
+GTBTEST(CommunicationTest, ClientIsVerified_True)
+  GTBClient aClient;
+  aClient.setVerified(true);
+  ASSERT_TRUE(aClient.isVerified());
+}
+
+TEST(CommunicationTest, ClientHasPermission_NotVerified) {
+  int idx;
+  GTBCommunicationTest aComm(0);
+  GTBClient aClient;
+  Request aPBReq;
+  aClient.setVerified(false);
+  idx = aComm.addClientToList_BypassChecks(&aClient);
+  aPBReq.set_nclient(idx);
+  aPBReq.set_sreqtype("CARS");
+  aPBReq.set_nreqid(3);
+  ASSERT_TRUE(aComm.clientHasPermissionTest(&aPBReq));
+  aPBReq.set_sreqtype("AUTH");
+  aPBReq.set_nreqid(2);
+  ASSERT_TRUE(aComm.clientHasPermissionTest(&aPBReq));
+  aPBReq.set_sreqtype("CURR");
+  aPBReq.set_nreqid(1);
+  ASSERT_FALSE(aComm.clientHasPermissionTest(&aPBReq));
+  aPBReq.set_sreqtype("UPDT");
+  aPBReq.set_nreqid(4);
+  ASSERT_FALSE(aComm.clientHasPermissionTest(&aPBReq));
+}
+
+TEST(CommunicationTest, ClientHasPermission_Verified) {
+  int idx;
+  GTBCommunicationTest aComm(0);
+  GTBClient aClient;
+  Request aPBReq;
+  aClient.setVerified(true);
+  idx = aComm.addClientToList_BypassChecks(&aClient);
+  aPBReq.set_nclient(idx);
+  aPBReq.set_sreqtype("CARS");
+  aPBReq.set_nreqid(3);
+  ASSERT_FALSE(aComm.clientHasPermissionTest(&aPBReq));
+  aPBReq.set_sreqtype("AUTH");
+  aPBReq.set_nreqid(2);
+  ASSERT_FALSE(aComm.clientHasPermissionTest(&aPBReq));
+  aPBReq.set_sreqtype("CURR");
+  aPBReq.set_nreqid(1);
+  ASSERT_TRUE(aComm.clientHasPermissionTest(&aPBReq));
+  aPBReq.set_sreqtype("UPDT");
+  aPBReq.set_nreqid(4);
+  ASSERT_TRUE(aComm.clientHasPermissionTest(&aPBReq));
+}
+
+
+
 TEST(CommunicationTest, HandlingConnectionNoThrow)
 {
   int nRetVal(0);
