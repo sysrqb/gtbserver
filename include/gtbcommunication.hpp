@@ -667,5 +667,15 @@ class GTBCommunication {
      */
     int sendAuthReq(Request * i_aPBReq);
 
+    /** \brief Verify client has permission to access privileged area
+     *
+     * Check that the client is at least verified, though other checks may be
+     * added later.
+     *
+     * A privileged area provides access to personally identifiable information
+     * i.e. by requesting CURR the client will be given identifing information
+     * about a patron. Access to this MUST be restricted.
+     */
+    bool clientHasPermission(Request * i_aPBReq);
 };
 #endif  // gtbcommunication_h

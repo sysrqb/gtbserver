@@ -1760,6 +1760,25 @@ int GTBCommunication::dealWithReq (Request i_aPBReq)
   return 0;
 }
 
+bool GTBCommunication::clientHasPermission(Request * i_aPBReq) {
+  GTBClient * aClient;
+  int idx;
+  idx = i_aPBReq->nclient();
+  if(idx > clientsList.size()) {
+    cerr << "Client is not in list! Client idx: " << idx <<
+            ", clientList.size() = " << clientsList.size() << endl;
+  }
+  aClient = clientsList.at(idx);
+  if((i_aPBReq->nreqid() == 1) || i_aPBReq->nreqid() == 4)
+  {
+    return aClient->isVerified();
+  } else if((i_aPBReq->nreqid() == 2) || i_aPBReq->nreqid() == 3)
+  {
+    return !aClient->isVerified();
+  } 
+  return false;
+}
+
 #ifdef usedbfunctions
 /* Functions and other stuff needed for session resuming.
  * This is done using a very simple list which holds session ids
