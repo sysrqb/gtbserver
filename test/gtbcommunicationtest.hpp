@@ -43,7 +43,13 @@ public:
   int addIfNewClientTest(GTBClient * client) {
     return GTBCommunication::addIfNewClient(client);
   }
-  
+  int addClientToList_BypassChecks(GTBClient * client) {
+    clientsList.push_back(client);
+    return clientsList.size() - 1;
+  }
+  bool clientHasPermissionTest(Request * i_aPBReq) {
+    return GTBCommunication::clientHasPermission(i_aPBReq);
+  }
 };
 
 
