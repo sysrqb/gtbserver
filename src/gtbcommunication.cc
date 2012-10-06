@@ -1643,7 +1643,7 @@ GTBCommunication::updtRequest (Request * i_aPBReq, Response * i_aPBRes)
   return 0;
 }
 
-int GTBCommunication::dealWithUnPrivReq (Request i_aPBReq) {
+int GTBCommunication::dealWithPrivReq (Request i_aPBReq) {
   /*
    * Case 1: CURR
    * Case 2: AUTH
@@ -1705,7 +1705,7 @@ int GTBCommunication::dealWithUnPrivReq (Request i_aPBReq) {
   return 0;
 }
 
-int GTBCommunication::dealWithPrivReq (Request i_aPBReq) 
+int GTBCommunication::dealWithUnPrivReq (Request i_aPBReq) 
 {
   /*
    * Case 1: CURR
