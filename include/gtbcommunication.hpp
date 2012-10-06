@@ -578,6 +578,7 @@ class GTBCommunication {
      *
      * \param i_aPBReq The request received from the client
      * \sa checkAuth
+     * \sa sendAuthReq
      * \todo Store car number, ip address, cert uid for future 
      * authentication
      */
@@ -656,5 +657,15 @@ class GTBCommunication {
      * future checking.
      */
     int addIfNewClient(GTBClient * client);
+
+    /** \brief Internal method to handle auth for authRequest
+     *
+     * Implements the authentication mechanism used to validate the provided
+     * client information.
+     *
+     * \sa authRequest
+     */
+    int sendAuthReq(Request * i_aPBReq);
+
 };
 #endif  // gtbcommunication_h

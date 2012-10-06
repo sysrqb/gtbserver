@@ -1472,12 +1472,105 @@ string GTBCommunication::getEncryptedPackage(Request * aPBReq)
   return NULL;
 }
 
-int
-GTBCommunication::authRequest (Request * i_aPBReq)
-{
+int GTBCommunication::sendAuthReq(Request * i_aPBReq) {
   string filename;
   string sHash;
 	
+  stringstream errstream;
+  string errmsg;
+  fstream fs;
+  filename = getEncryptedPackage(i_aPBReq);
+  fs.open(filename.c_str(), ios::in | ios::binary);
+  if(!fs.is_open())
+    throw CryptoException("File Does Not Exist");
+  fs.close();
+
+  CURL * curl;
+  CURLcode res;
+  struct curl_httppost * formpost = NULL;
+  struct curl_httppost * lastptr = NULL;
+
+  curl = curl_easy_init();
+  if(curl == NULL)
+    throw GTBException("Could not get cURL handle");
+
+  res = curl_easy_setopt(curl, CURLOPT_URL,
+                         "http://guarddogs.uconn.edu/index.php?id=42");
+  if(res != CURLE_OK){
+    cerr << "URLOPT_URL failed: " <<  curl_easy_strerror(res) << endl;
+    errstream << "URLOPT_URL failed: " <<  curl_easy_strerror(res) << endl;
+    curl_easy_cleanup(curl);
+    curl_formfree(formpost);
+    errstream >> errmsg;
+    throw GTBException(errmsg);
+  }
+
+  res = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0);
+  if(res != CURLE_OK){
+    cerr << "CURLOPT_FOLLOWLOCATION failed: " <<
+            curl_easy_strerror(res) << endl;
+    errstream << "CURLOPT_FOLLOWLOCATION failed: " <<
+            curl_easy_strerror(res) << endl;
+    curl_easy_cleanup(curl);
+    curl_formfree(formpost);
+    errstream >> errmsg;
+    throw GTBException(errmsg);
+  }
+
+  res = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, authRequest_callback);
+  if(res != CURLE_OK){
+    cerr << "CURLOPT_WRITEFUNCTION failed: " <<
+            curl_easy_strerror(res) << endl;
+    errstream << "CURLOPT_WRITEFUNCTION failed: " <<
+                  curl_easy_strerror(res) << endl;
+    curl_easy_cleanup(curl);
+    curl_formfree(formpost);
+    errstream >> errmsg;
+    throw GTBException(errmsg);
+  }
+  res = curl_easy_setopt(curl, CURLOPT_WRITEDATA, i_aPBReq);
+  if(res != CURLE_OK){
+    cerr << "CURLOPT_WRITEDATA failed: " <<
+            curl_easy_strerror(res) << endl;
+    errstream << "CURLOPT_WRITEDATA failed: " <<
+                  curl_easy_strerror(res) << endl;
+    curl_easy_cleanup(curl);
+    curl_formfree(formpost);
+    errstream >> errmsg;
+    throw GTBException(errmsg);
+  }
+
+  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "filename",
+               CURLFORM_FILE, filename.c_str(), CURLFORM_END);
+  curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+
+  try
+  {
+    res = curl_easy_perform(curl);
+  } catch (CryptoException &e)
+  {
+    throw e;
+  }
+  if(res != CURLE_OK)
+  {
+    cerr << "curl_easy_perform() failed: " <<
+            curl_easy_strerror(res) << endl;
+    errstream << "curl_easy_perform() failed: " <<
+                 curl_easy_strerror(res) << endl;
+    curl_easy_cleanup(curl);
+    curl_formfree(formpost);
+    errstream >> errmsg;
+    throw GTBException(errmsg);
+  }
+  unlink(filename.c_str());
+  curl_easy_cleanup(curl);
+  curl_formfree(formpost);
+  return 0;
+}
+
+int
+GTBCommunication::authRequest (Request * i_aPBReq)
+{
   if(0 != i_aPBReq->sreqtype().compare("AUTH"))
   {
     cerr << "ERROR: C: Not AUTH" << endl;
@@ -1486,95 +1579,7 @@ GTBCommunication::authRequest (Request * i_aPBReq)
 
   if (i_aPBReq->sparams_size() == 4)
   {
-    stringstream errstream;
-    string errmsg;
-    fstream fs;
-    filename = getEncryptedPackage(i_aPBReq);
-    fs.open(filename.c_str(), ios::in | ios::binary);
-    if(!fs.is_open())
-      throw CryptoException("File Does Not Exist");
-    fs.close();
-
-    CURL * curl;
-    CURLcode res;
-    struct curl_httppost * formpost = NULL;
-    struct curl_httppost * lastptr = NULL;
-
-    curl = curl_easy_init();
-    if(curl == NULL)
-      throw GTBException("Could not get cURL handle");
-
-    res = curl_easy_setopt(curl, CURLOPT_URL,
-                      "http://guarddogs.uconn.edu/index.php?id=42");
-    if(res != CURLE_OK){
-      cerr << "URLOPT_URL failed: " <<  curl_easy_strerror(res) << endl;
-      errstream << "URLOPT_URL failed: " <<  curl_easy_strerror(res) << endl;
-      curl_easy_cleanup(curl);
-      curl_formfree(formpost);
-      errstream >> errmsg;
-      throw GTBException(errmsg);
-    }
-
-    res = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0);
-    if(res != CURLE_OK){
-      cerr << "CURLOPT_FOLLOWLOCATION failed: " <<
-              curl_easy_strerror(res) << endl;
-      errstream << "CURLOPT_FOLLOWLOCATION failed: " <<
-              curl_easy_strerror(res) << endl;
-      curl_easy_cleanup(curl);
-      curl_formfree(formpost);
-      errstream >> errmsg;
-      throw GTBException(errmsg);
-    }
-
-    res = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, authRequest_callback);
-    if(res != CURLE_OK){
-      cerr << "CURLOPT_WRITEFUNCTION failed: " <<
-              curl_easy_strerror(res) << endl;
-      errstream << "CURLOPT_WRITEFUNCTION failed: " <<
-              curl_easy_strerror(res) << endl;
-      curl_easy_cleanup(curl);
-      curl_formfree(formpost);
-      errstream >> errmsg;
-      throw GTBException(errmsg);
-    }
-    res = curl_easy_setopt(curl, CURLOPT_WRITEDATA, i_aPBReq);
-    if(res != CURLE_OK){
-      cerr << "CURLOPT_WRITEDATA failed: " <<
-              curl_easy_strerror(res) << endl;
-      errstream << "CURLOPT_WRITEDATA failed: " <<
-              curl_easy_strerror(res) << endl;
-      curl_easy_cleanup(curl);
-      curl_formfree(formpost);
-      errstream >> errmsg;
-      throw GTBException(errmsg);
-    }
-
-    curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "filename",
-                 CURLFORM_FILE, filename.c_str(), CURLFORM_END);
-
-    curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
-
-    try
-    {
-      res = curl_easy_perform(curl);
-    } catch (CryptoException &e)
-    {
-      throw e;
-    }
-    if(res != CURLE_OK){
-      cerr << "curl_easy_perform() failed: " <<
-              curl_easy_strerror(res) << endl;
-      errstream << "curl_easy_perform() failed: " <<
-              curl_easy_strerror(res) << endl;
-      curl_easy_cleanup(curl);
-      curl_formfree(formpost);
-      errstream >> errmsg;
-      throw GTBException(errmsg);
-    }
-    unlink(filename.c_str());
-    curl_easy_cleanup(curl);
-    curl_formfree(formpost);
+    return sendAuthReq(i_aPBreq);
   }
   else
   {
